@@ -1,0 +1,71 @@
+<resources>
+    <string name="app_name">Noter</string>
+
+    <!-- Liste -->
+    <string name="notes">Noter</string>
+    <string name="new_note">Ny note</string>
+    <string name="search_notes">Søg i noter</string>
+    <string name="clear_search">Ryd søgning</string>
+    <string name="settings">Indstillinger</string>
+    <string name="untitled">Uden titel</string>
+    <string name="empty_notes">Ingen noter endnu. Tryk på Ny note for at skrive den første.</string>
+    <string name="empty_search">Ingen noter matcher søgningen.</string>
+    <string name="group_today">I dag</string>
+    <string name="group_yesterday">I går</string>
+    <string name="group_last_7_days">Seneste 7 dage</string>
+    <string name="group_no_date">Uden dato</string>
+    <string name="unsent">Ikke sendt</string>
+
+    <!-- Synkronisering -->
+    <string name="sync_never">Ikke synkroniseret endnu</string>
+    <string name="sync_last">Synkroniseret %1$s</string>
+    <string name="syncing">Synkroniserer</string>
+    <string name="sync_offline">Kan ikke nå serveren. Dine ændringer gemmes igen, så snart forbindelsen er tilbage.</string>
+    <string name="sync_auth">Du er ikke logget ind. Log ind igen for at se og gemme dine noter.</string>
+    <string name="sync_server_error">Serveren svarede med fejl %1$d. Prøv igen senere, eller tjek adressen i indstillingerne.</string>
+    <string name="sync_other_error">Synkroniseringen stoppede: %1$s. Prøv igen senere.</string>
+    <string name="sync_not_configured">Appen er ikke forbundet til en server. Indtast adresse, bruger og adgangskode i indstillingerne.</string>
+    <string name="conflict">Noten blev ændret et andet sted. Din version er gemt som en ny note med \"(konflikt)\" i titlen.</string>
+    <string name="recreated">Noten var slettet et andet sted. Den er oprettet igen med dine ændringer.</string>
+    <string name="deleted_elsewhere">Noten blev slettet et andet sted.</string>
+    <string name="log_in">Log ind</string>
+    <string name="close">Luk</string>
+
+    <!-- Editor -->
+    <string name="back">Tilbage</string>
+    <string name="title">Titel</string>
+    <string name="tags_hint">Tilføj tags, adskilt med komma</string>
+    <string name="body_hint">Skriv her</string>
+    <string name="delete">Slet</string>
+    <string name="cancel">Annullér</string>
+    <string name="delete_confirm">Slet noten \"%1$s\"?</string>
+    <string name="delete_confirm_untitled">Slet noten uden titel?</string>
+    <string name="saving">Gemmer</string>
+    <string name="saved">Gemt</string>
+    <string name="not_saved">Ikke gemt</string>
+    <string name="modified_at">Ændret %1$s</string>
+
+    <!-- Indstillinger -->
+    <string name="server_url">Adresse til samlingen</string>
+    <string name="server_url_hint">https://radicale.example.dk/bruger/noter/</string>
+    <string name="user">Bruger</string>
+    <string name="password">Adgangskode</string>
+    <string name="password_kept">Adgangskoden er gemt. Lad feltet stå tomt for at beholde den.</string>
+    <string name="save">Gem</string>
+    <string name="find_collections">Find samlinger</string>
+    <string name="create_collection">Opret noter-samling</string>
+    <string name="collections_found">Vælg en samling</string>
+    <string name="no_collections">Serveren har ingen samling til noter. Tryk på Opret noter-samling for at lave en.</string>
+    <string name="settings_saved">Forbundet. Noterne synkroniseres nu.</string>
+    <string name="collection_created">Samlingen er oprettet.</string>
+    <string name="checking">Tjekker forbindelsen</string>
+    <string name="err_url_https">Adressen skal begynde med https://. Ret den, og prøv igen.</string>
+    <string name="err_url_invalid">Adressen kan ikke læses. Skriv den fulde adresse, fx https://radicale.example.dk/bruger/noter/.</string>
+    <string name="err_user_missing">Skriv dit brugernavn.</string>
+    <string name="err_password_missing">Skriv din adgangskode.</string>
+    <string name="err_login">Brugernavn eller adgangskode passer ikke. Ret dem, og prøv igen.</string>
+    <string name="err_network">Kan ikke nå serveren. Tjek adressen og din forbindelse, og prøv igen.</string>
+    <string name="err_not_found">Samlingen findes ikke på serveren. Tryk på Opret noter-samling, eller vælg en anden med Find samlinger.</string>
+    <string name="err_server">Serveren svarede med fejl %1$d. Tjek adressen, og prøv igen.</string>
+    <string name="sync_interval_note">Noterne synkroniseres, når appen åbnes, efter hver ændring og cirka hvert kvarter.</string>
+</resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Kun til vinduet før Compose tegner; selve temaet ligger i ui/Theme.kt -->
+    <style name="Theme.Noter" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
