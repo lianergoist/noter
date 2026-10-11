@@ -42,8 +42,9 @@ Kræver Android 7.0 (API 24) eller nyere og en CalDAV-server, der understøtter 
 Byggeriet bruger Gradle-wrapperen, AGP 9.4 og Kotlin 2.2. Åbn projektet i Android Studio, eller
 byg fra kommandolinjen med `local.properties`, der peger på Android SDK'et.
 
-Debug-bygget tillader `http://` til `10.0.2.2`, `localhost` og `127.0.0.1`, så det kan bruge en lokal
-testserver. Release-bygget kræver HTTPS.
+Debug-bygget har pakkenavnet `dk.rpix.noter.debug` og hedder "Noter debug", så det kan ligge på
+telefonen ved siden af release-bygget. Det tillader `http://` til `10.0.2.2`, `localhost` og
+`127.0.0.1`, så det kan bruge en lokal testserver. Release-bygget kræver HTTPS.
 
 ## Opbygning
 
@@ -103,7 +104,7 @@ TalkBack. Telefonen skal være låst op.
 ./gradlew assembleDebug assembleDebugAndroidTest
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-adb shell am instrument -w dk.rpix.noter.test/androidx.test.runner.AndroidJUnitRunner
+adb shell am instrument -w dk.rpix.noter.debug.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
 Undgå `./gradlew connectedAndroidTest` på en telefon, du bruger. Den afinstallerer appen bagefter,

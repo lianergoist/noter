@@ -35,6 +35,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Eget pakkenavn, så debug og release kan ligge på samme telefon
+            applicationIdSuffix = ".debug"
+        }
         release {
             if (keystore != null) signingConfig = signingConfigs.getByName("release")
             optimization {

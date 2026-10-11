@@ -1,0 +1,4 @@
+<resources>
+    <!-- Navn i launcheren for debug-bygget, så det kan skelnes fra release -->
+    <string name="app_name">Noter debug</string>
+</resources>
