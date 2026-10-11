@@ -114,20 +114,7 @@ fun NoteListScreen(onOpen: (String) -> Unit, onNew: () -> Unit, onSettings: () -
                 },
             )
         },
-        floatingActionButton = {
-            val newNote = stringResource(R.string.new_note)
-            ExtendedFloatingActionButton(
-                onClick = onNew,
-                // Etiketten når ikke frem til TalkBack af sig selv (knappen var navnløs), så sæt den eksplicit
-                modifier = Modifier.clearAndSetSemantics {
-                    contentDescription = newNote
-                    role = Role.Button
-                    onClick { onNew(); true }
-                },
-                icon = { Icon(painterResource(R.drawable.ic_add), contentDescription = null) },
-                text = { Text(newNote) },
-            )
-        },
+        floatingActionButton = { NewNoteButton(onNew) },
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
@@ -164,6 +151,23 @@ fun NoteListScreen(onOpen: (String) -> Unit, onNew: () -> Unit, onSettings: () -
             }
         }
     }
+}
+
+@Composable
+fun NewNoteButton(onClick: () -> Unit) {
+    val newNote = stringResource(R.string.new_note)
+    ExtendedFloatingActionButton(
+        onClick = onClick,
+        // Etiketten når ikke frem til TalkBack af sig selv (knappen var navnløs), så sæt den eksplicit.
+        // Se NewNoteButtonTest.
+        modifier = Modifier.clearAndSetSemantics {
+            contentDescription = newNote
+            role = Role.Button
+            onClick { onClick(); true }
+        },
+        icon = { Icon(painterResource(R.drawable.ic_add), contentDescription = null) },
+        text = { Text(newNote) },
+    )
 }
 
 @Composable

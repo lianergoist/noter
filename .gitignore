@@ -16,3 +16,4 @@ local.properties
 .venv
 .kotlin
 /.idea/deploymentTargetSelector.xml
+/.idea/deviceManager.xml
