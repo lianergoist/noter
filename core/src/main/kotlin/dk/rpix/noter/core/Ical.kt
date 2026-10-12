@@ -24,7 +24,7 @@ data class ContentLine(val name: String, val params: String, val value: String)
  * Læser og skriver uden at miste egenskaber, som andre klienter har sat.
  */
 object Ical {
-    const val PRODID = "-//Noter Android//DA"
+    const val PRODID = "-//DavNotes Android//EN"
     const val CRLF = "\r\n"
 
     private val UNESC = Regex("""\\(.)""", RegexOption.DOT_MATCHES_ALL)

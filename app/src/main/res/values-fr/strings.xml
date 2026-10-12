@@ -1,0 +1,82 @@
+<resources>
+
+    <!-- Liste -->
+    <string name="notes">Notes</string>
+    <string name="new_note">Nouvelle note</string>
+    <string name="search_notes">Rechercher dans les notes</string>
+    <string name="clear_search">Effacer la recherche</string>
+    <string name="settings">Paramètres</string>
+    <string name="untitled">Sans titre</string>
+    <string name="empty_notes">Aucune note pour l\'instant. Touchez Nouvelle note pour écrire la première.</string>
+    <string name="empty_search">Aucune note ne correspond à la recherche.</string>
+    <string name="group_today">Aujourd\'hui</string>
+    <string name="group_yesterday">Hier</string>
+    <string name="group_last_7_days">7 derniers jours</string>
+    <string name="group_no_date">Sans date</string>
+    <string name="unsent">Non envoyée</string>
+
+    <!-- Synkronisering -->
+    <string name="sync_never">Pas encore synchronisé</string>
+    <string name="sync_last">Synchronisé %1$s</string>
+    <string name="syncing">Synchronisation</string>
+    <string name="sync_offline">Impossible de joindre le serveur. Vos modifications seront envoyées dès le retour de la connexion.</string>
+    <string name="sync_auth">Vous n\'êtes pas connecté. Reconnectez-vous pour voir et enregistrer vos notes.</string>
+    <string name="sync_server_error">Le serveur a répondu avec l\'erreur %1$d. Réessayez plus tard ou vérifiez l\'adresse dans les paramètres.</string>
+    <string name="sync_other_error">La synchronisation s\'est arrêtée : %1$s. Réessayez plus tard.</string>
+    <string name="sync_not_configured">L\'application n\'est connectée à aucun serveur. Saisissez l\'adresse, le nom d\'utilisateur et le mot de passe dans les paramètres.</string>
+    <string name="conflict_label">(conflit)</string>
+    <string name="conflict">La note a été modifiée ailleurs. Votre version est enregistrée comme nouvelle note avec « (conflit) » dans le titre.</string>
+    <string name="recreated">La note a été supprimée ailleurs. Elle a été recréée avec vos modifications.</string>
+    <string name="deleted_elsewhere">La note a été supprimée ailleurs.</string>
+    <string name="log_in">Se connecter</string>
+    <string name="close">Fermer</string>
+
+    <!-- Editor -->
+    <string name="back">Retour</string>
+    <string name="title">Titre</string>
+    <string name="tags_hint">Ajouter des tags, séparés par des virgules</string>
+    <string name="body_hint">Écrivez ici</string>
+    <string name="delete">Supprimer</string>
+    <string name="cancel">Annuler</string>
+    <string name="delete_confirm">Supprimer la note « %1$s » ?</string>
+    <string name="delete_confirm_untitled">Supprimer la note sans titre ?</string>
+    <string name="saving">Enregistrement</string>
+    <string name="saved">Enregistrée</string>
+    <string name="not_saved">Non enregistrée</string>
+    <string name="modified_at">Modifiée %1$s</string>
+
+    <!-- Indstillinger -->
+    <string name="server_url">Adresse de la collection</string>
+    <string name="server_url_hint">https://radicale.example.fr/utilisateur/notes/</string>
+    <string name="user">Nom d\'utilisateur</string>
+    <string name="password">Mot de passe</string>
+    <string name="password_kept">Le mot de passe est enregistré. Laissez le champ vide pour le conserver.</string>
+    <string name="save">Enregistrer</string>
+    <string name="find_collections">Rechercher des collections</string>
+    <string name="create_collection">Créer une collection de notes</string>
+    <string name="collections_found">Choisissez une collection</string>
+    <string name="no_collections">Le serveur n\'a aucune collection de notes. Touchez Créer une collection de notes pour en créer une.</string>
+    <string name="settings_saved">Connecté. Les notes sont en cours de synchronisation.</string>
+    <string name="collection_created">La collection a été créée.</string>
+    <string name="checking">Vérification de la connexion</string>
+    <string name="err_url_https">L\'adresse doit commencer par https://. Corrigez-la et réessayez.</string>
+    <string name="err_url_invalid">L\'adresse est illisible. Saisissez l\'adresse complète, par exemple https://radicale.example.fr/utilisateur/notes/.</string>
+    <string name="err_user_missing">Saisissez votre nom d\'utilisateur.</string>
+    <string name="err_password_missing">Saisissez votre mot de passe.</string>
+    <string name="err_login">Le nom d\'utilisateur ou le mot de passe est incorrect. Corrigez-les et réessayez.</string>
+    <string name="err_network">Impossible de joindre le serveur. Vérifiez l\'adresse et votre connexion, puis réessayez.</string>
+    <string name="err_not_found">La collection n\'existe pas sur le serveur. Touchez Créer une collection de notes ou choisissez-en une autre avec Rechercher des collections.</string>
+    <string name="err_server">Le serveur a répondu avec l\'erreur %1$d. Vérifiez l\'adresse et réessayez.</string>
+    <string name="sync_interval_note">Les notes se synchronisent à l\'ouverture de l\'application, après chaque modification et environ toutes les 15 minutes.</string>
+
+    <!-- Om -->
+    <string name="about">À propos de DavNotes</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_author">Développé dans Claude par lianergoist. Publié sous licence MIT.</string>
+    <string name="about_license_mit">Afficher la licence MIT</string>
+    <string name="about_libraries">Bibliothèques</string>
+    <string name="about_apache_intro">Ces bibliothèques sont publiées sous Apache License 2.0 :</string>
+    <string name="about_license_apache">Afficher l\'Apache License 2.0</string>
+    <string name="about_psl">OkHttp contient la Public Suffix List de publicsuffix.org sous Mozilla Public License 2.0. La source est disponible sur https://publicsuffix.org/list/.</string>
+    <string name="about_thanks">Merci à Radicale, jtx Board et DAVx⁵.</string>
+</resources>

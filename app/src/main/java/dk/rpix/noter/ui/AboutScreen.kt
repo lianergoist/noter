@@ -23,7 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -36,8 +36,8 @@ private data class Library(val name: String, val owner: String)
 
 // Holdes ens med THIRD_PARTY_NOTICES.md
 private val apacheLibraries = listOf(
-    Library("AndroidX (Activity, Compose, Core, DataStore, Lifecycle, Room, SQLite, WorkManager m.fl.)", "The Android Open Source Project"),
-    Library("Material 3 til Compose", "The Android Open Source Project"),
+    Library("AndroidX (Activity, Compose, Core, DataStore, Lifecycle, Room, SQLite, WorkManager …)", "The Android Open Source Project"),
+    Library("Compose Material 3", "The Android Open Source Project"),
     Library("Guava ListenableFuture", "The Guava Authors"),
     Library("OkHttp", "Square, Inc."),
     Library("Okio", "Square, Inc."),
@@ -93,11 +93,11 @@ fun AboutScreen(onBack: () -> Unit) {
 /** Knap, der folder en licenstekst fra res/raw ud og ind. */
 @Composable
 private fun LicenseText(label: String, raw: Int) {
-    val context = LocalContext.current
+    val resources = LocalResources.current
     var open by rememberSaveable(raw) { mutableStateOf(false) }
     TextButton(onClick = { open = !open }) { Text(label) }
     if (open) {
-        val text = remember(raw) { context.resources.openRawResource(raw).bufferedReader().use { it.readText() } }
+        val text = remember(raw) { resources.openRawResource(raw).bufferedReader().use { it.readText() } }
         Text(
             text,
             modifier = Modifier.fillMaxWidth(),

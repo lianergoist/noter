@@ -50,6 +50,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    androidResources {
+        // Sprogvalg pr. app i systemindstillingerne (Android 13+); standardsproget står i res/resources.properties
+        generateLocaleConfig = true
+    }
     buildFeatures {
         compose = true
         buildConfig = true

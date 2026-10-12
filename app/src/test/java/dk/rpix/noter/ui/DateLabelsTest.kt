@@ -2,13 +2,32 @@ package dk.rpix.noter.ui
 
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import java.util.TimeZone
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Before
 import org.junit.Test
 
 class DateLabelsTest {
     private val cph = TimeZone.getTimeZone("Europe/Copenhagen")
+    private val da = Locale.forLanguageTag("da-DK")
+    private val en = Locale.forLanguageTag("en-US")
+    private val androidPattern = DateLabels.bestPattern
+
+    /** De mønstre, Android (ICU) giver for skeletterne på dansk og amerikansk engelsk. */
+    @Before fun fakePatterns() {
+        val patterns = mapOf(
+            "da" to mapOf("jm" to "HH.mm", "yMMMM" to "MMMM y", "MMMd" to "d. MMM", "EEE" to "EEE"),
+            "en" to mapOf("jm" to "h:mm a", "yMMMM" to "MMMM y", "MMMd" to "MMM d", "EEE" to "EEE"),
+        )
+        DateLabels.bestPattern = { locale, skeleton -> patterns.getValue(locale.language).getValue(skeleton) }
+    }
+
+    @After fun restorePatterns() {
+        DateLabels.bestPattern = androidPattern
+    }
 
     private fun local(y: Int, m: Int, d: Int, h: Int = 12, min: Int = 0): Date =
         Calendar.getInstance(cph).apply { clear(); set(y, m - 1, d, h, min) }.time
@@ -37,10 +56,14 @@ class DateLabelsTest {
         assertEquals(1, DateLabels.dayDiff(local(2026, 3, 28, 23), local(2026, 3, 29, 23), cph))
     }
 
-    @Test fun labelsAreDanish() {
+    @Test fun labelsFollowLanguage() {
         val now = local(2026, 10, 11, 18, 0)
-        assertEquals("14.05", DateLabels.shortTime(local(2026, 10, 11, 14, 5), now, cph))
-        assertEquals("oktober 2026", DateLabels.monthLabel(DateGroup.Month(2026, Calendar.OCTOBER), cph))
-        assertEquals("3. sep.", DateLabels.shortTime(local(2026, 9, 3), now, cph))
+        assertEquals("14.05", DateLabels.shortTime(local(2026, 10, 11, 14, 5), now, cph, da))
+        assertEquals("oktober 2026", DateLabels.monthLabel(DateGroup.Month(2026, Calendar.OCTOBER), cph, da))
+        assertEquals("3. sep.", DateLabels.shortTime(local(2026, 9, 3), now, cph, da))
+
+        assertEquals("2:05 PM", DateLabels.shortTime(local(2026, 10, 11, 14, 5), now, cph, en))
+        assertEquals("October 2026", DateLabels.monthLabel(DateGroup.Month(2026, Calendar.OCTOBER), cph, en))
+        assertEquals("Sep 3", DateLabels.shortTime(local(2026, 9, 3), now, cph, en))
     }
 }

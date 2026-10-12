@@ -4,7 +4,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
@@ -19,9 +19,9 @@ suspend fun SnackbarHostState.showMessage(text: String, close: String? = null) {
 /** Vis konfliktbeskeden, når en sync har lavet en konfliktkopi. */
 @Composable
 fun ConflictMessages(conflicts: Flow<Int>, snackbar: SnackbarHostState) {
-    val context = LocalContext.current
-    LaunchedEffect(conflicts) {
-        conflicts.collect { snackbar.showMessage(context.getString(R.string.conflict)) }
+    val resources = LocalResources.current
+    LaunchedEffect(conflicts, resources) {
+        conflicts.collect { snackbar.showMessage(resources.getString(R.string.conflict)) }
     }
 }
 

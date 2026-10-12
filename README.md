@@ -1,4 +1,4 @@
-# Noter
+# DavNotes
 
 Enkel noteapp til Android. Noterne gemmes som `VJOURNAL`-objekter i en CalDAV-samling på din egen
 [Radicale](https://radicale.org/)-server og synkroniseres begge veje. Appen virker uden net og sender
@@ -14,9 +14,11 @@ sat, bevares uændret, når du redigerer en note.
 - Fungerer offline. Ændringer sendes ved næste synkronisering.
 - Synkroniserer, når appen åbnes, efter hver ændring, ved træk-for-at-opdatere og cirka hvert kvarter.
 - Ingen note overskrives i blinde. Er en note ændret både her og et andet sted, gemmes din version
-  som en ny note med "(konflikt)" i titlen. Tekst flettes aldrig.
+  som en ny note med "(konflikt)" i titlen ("(conflict)" på engelsk osv.). Tekst flettes aldrig.
 - Finder dine samlinger på serveren og kan oprette en ny noter-samling.
 - Adgangskoden krypteres med en nøgle i Android Keystore. Kun HTTPS.
+- På engelsk, dansk, tysk, fransk og spansk. Følger telefonens sprog, og på Android 13+ kan sproget
+  vælges for appen alene i systemindstillingerne.
 
 Ikke med (bevidst): Markdown, vedhæftninger, flere konti og delte noter.
 
@@ -42,7 +44,7 @@ Kræver Android 7.0 (API 24) eller nyere og en CalDAV-server, der understøtter 
 Byggeriet bruger Gradle-wrapperen, AGP 9.4 og Kotlin 2.2. Åbn projektet i Android Studio, eller
 byg fra kommandolinjen med `local.properties`, der peger på Android SDK'et.
 
-Debug-bygget har pakkenavnet `dk.rpix.noter.debug` og hedder "Noter debug", så det kan ligge på
+Debug-bygget har pakkenavnet `dk.rpix.noter.debug` og hedder "DavNotes debug", så det kan ligge på
 telefonen ved siden af release-bygget. Det tillader `http://` til `10.0.2.2`, `localhost` og
 `127.0.0.1`, så det kan bruge en lokal testserver. Release-bygget kræver HTTPS.
 
@@ -137,7 +139,7 @@ Udviklet i Claude af lianergoist. Udgivet under MIT-licensen, se [`LICENSE`](LIC
 
 Appen bruger biblioteker under Apache License 2.0 (AndroidX, OkHttp, Okio, Kotlin og kotlinx) og
 Public Suffix List under MPL 2.0. Se [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) eller
-Indstillinger → Om Noter i appen.
+Settings → About DavNotes (Indstillinger → Om DavNotes) i appen.
 
 Tak til [Radicale](https://radicale.org/), [jtx Board](https://jtx.techbee.at/) og
-[DAVx⁵](https://www.davx5.com/), som Noter er bygget til at arbejde sammen med.
+[DAVx⁵](https://www.davx5.com/), som DavNotes er bygget til at arbejde sammen med.

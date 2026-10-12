@@ -193,7 +193,7 @@ class EditorViewModel(private val app: NoterApp, initialUid: String?) : ViewMode
                 row.raw != baseRaw && !row.dirty && !form.sameAs(row) -> {
                     // En sync har ændret noten, mens brugeren skrev: gem brugerens version som kopi
                     messages.tryEmit(R.string.conflict)
-                    store.add("${form.title} (konflikt)".trim(), form.body, form.tags)
+                    store.add("${form.title} ${app.getString(R.string.conflict_label)}".trim(), form.body, form.tags)
                 }
                 else -> store.edit(row.uid, form.title, form.body, form.tags) ?: row
             }
@@ -201,7 +201,7 @@ class EditorViewModel(private val app: NoterApp, initialUid: String?) : ViewMode
         if (saved.uid != current) {
             uid.value = saved.uid
             hasNote = true
-            if (title == form.title) title = saved.title // vis "(konflikt)" i titlen
+            if (title == form.title) title = saved.title // vis konfliktmærket i titlen
         }
         baseline = Form(saved.title, saved.body, saved.tags)
         baseRaw = saved.raw

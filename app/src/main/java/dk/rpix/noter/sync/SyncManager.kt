@@ -14,6 +14,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import dk.rpix.noter.BuildConfig
 import dk.rpix.noter.NoterApp
+import dk.rpix.noter.R
 import dk.rpix.noter.core.AuthError
 import dk.rpix.noter.core.DavClient
 import dk.rpix.noter.core.DavError
@@ -87,7 +88,7 @@ class SyncManager(
     private suspend fun runSync(): SyncOutcome {
         val account = settings.account() ?: return SyncOutcome.Failed(SyncError.NotConfigured)
         return try {
-            SyncOutcome.Ok(Syncer(store, davClient(account)).sync())
+            SyncOutcome.Ok(Syncer(store, davClient(account), context.getString(R.string.conflict_label)).sync())
         } catch (_: AuthError) {
             SyncOutcome.Failed(SyncError.Auth)
         } catch (_: NetworkError) {

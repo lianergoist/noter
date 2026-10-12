@@ -225,6 +225,17 @@ abstract class SyncScenarios {
         assertEquals("(konflikt)", b.visible().first { it.body == "fra B" }.title)
     }
 
+    @Test fun conflictLabelFollowsAppLanguage() {
+        twoNotesOnBoth()
+        val uid = b.titled("Indkøbsliste").uid
+        a.edit(uid, body = "fra A")
+        b.edit(uid, body = "fra B")
+        sync(a)
+        Syncer(b, server.client(), conflictLabel = "(conflict)").sync()
+        assertEquals("Indkøbsliste (conflict)", b.visible().first { it.body == "fra B" }.title)
+        assertConverged()
+    }
+
     @Test fun identicalEditsAreNoConflict() {
         twoNotesOnBoth()
         val uid = a.titled("Indkøbsliste").uid

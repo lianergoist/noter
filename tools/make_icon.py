@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Genererer Noter-ikonet: adaptive vektorer (res/drawable) + WebP til API 24-25 (res/mipmap-*).
+"""Genererer DavNotes-ikonet: adaptive vektorer (res/drawable) + WebP til API 24-25 (res/mipmap-*).
 Geometrien er i det adaptive ikons 108x108-koordinater; synlig zone er midten 72x72, sikker zone r=33.
 
 Brug (kræver Pillow):  python3 tools/make_icon.py [forhåndsvisning.png]

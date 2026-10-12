@@ -13,9 +13,14 @@ data class SyncStats(
 /**
  * Pull -> push med etag-baseret optimistisk låsning og konfliktkopi.
  * Port af `Syncer` i reference/notesync.py. Blokerende; højst én sync ad gangen pr. lager
- * (det sørger kalderen for).
+ * (det sørger kalderen for). [conflictLabel] sættes efter titlen på konfliktkopier og følger
+ * appens sprog; referencen bruger altid "(konflikt)".
  */
-class Syncer(private val store: NoteStore, private val client: DavApi) {
+class Syncer(
+    private val store: NoteStore,
+    private val client: DavApi,
+    private val conflictLabel: String = "(konflikt)",
+) {
     val stats = SyncStats()
 
     fun sync(): SyncStats {
@@ -67,7 +72,7 @@ class Syncer(private val store: NoteStore, private val client: DavApi) {
 
     /**
      * Tag serverens version ind. Er noten også ændret lokalt, gemmes den lokale
-     * version som en ny note med '(konflikt)' i titlen.
+     * version som en ny note med [conflictLabel] i titlen.
      */
     private fun adopt(href: String, etag: String, raw: String) {
         val p = try {
@@ -83,7 +88,7 @@ class Syncer(private val store: NoteStore, private val client: DavApi) {
             if (Triple(local.title, local.body, local.tags) != Triple(p.title, p.body, p.tags)) {
                 stats.conflicts++
                 val copyUid = UUID.randomUUID().toString()
-                val copyRaw = Ical.newIcs(copyUid, "${local.title} (konflikt)".trim(), local.body, local.tags)
+                val copyRaw = Ical.newIcs(copyUid, "${local.title} $conflictLabel".trim(), local.body, local.tags)
                 store.insert(copyUid, null, null, copyRaw, Ical.parseIcs(copyRaw), dirty = true)
             }
         }
@@ -98,7 +103,7 @@ class Syncer(private val store: NoteStore, private val client: DavApi) {
             for (n in pending) pushOne(n)
         }
         if (store.pending().isEmpty()) return
-        throw DavError(0, "lokale ændringer kunne ikke sendes efter 5 forsøg")
+        throw DavError(0, "local changes could not be sent after 5 attempts")
     }
 
     private fun pushOne(n: Note) {

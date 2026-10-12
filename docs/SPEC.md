@@ -1,4 +1,4 @@
-# Specifikation: Noter (Android)
+# Specifikation: DavNotes (Android)
 
 Alt her er afledt af referenceimplementeringen i `reference/` og er afprøvet mod en rigtig Radicale 3.8,
 mod jtx Board/DAVx5 og fra et kommandolinjeværktøj. Hvor teksten og referencekoden er uenige, er **koden** facit.
@@ -22,7 +22,7 @@ noter bruger den `href`, serveren har givet dem).
 ```
 BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Noter Android//DA
+PRODID:-//DavNotes Android//EN
 BEGIN:VJOURNAL
 UID:3f2c9e1a-7b0e-4c58-9d39-1f6a2c0f5a11
 DTSTAMP:20261010T170000Z
@@ -153,7 +153,9 @@ En sync = **pull, derefter push**. Højst én sync ad gangen (`Mutex` plus unikt
 1. Kan `raw` ikke parses som en note (ingen `VJOURNAL`): gem en række med `uid = "href:<href>"`, `ignored = 1`, så etagen er kendt og objektet ikke hentes igen. Færdig.
 2. `lokal = byHref(href) ?: byUid(uid)`.
 3. Hvis `lokal` er `dirty` og ikke `deleted`, og `(titel, tekst, tags)` er **forskellige** fra serverens: **konflikt**.
-   Opret en ny note (nyt UUID) med titlen `"<lokal titel> (konflikt)"` (trimmet), den lokale tekst og tags, `dirty = 1`, uden `href`.
+   Opret en ny note (nyt UUID) med titlen `"<lokal titel> <konfliktmærke>"` (trimmet), den lokale tekst og tags, `dirty = 1`, uden `href`.
+   Konfliktmærket følger appens sprog (`conflict_label`: "(conflict)", "(konflikt)", "(Konflikt)", "(conflit)", "(conflicto)");
+   `Syncer` har "(konflikt)" som standard ligesom referencen.
    Er indholdet ens, er der ingen konflikt (to enheder skrev det samme).
 4. Erstat `lokal` med serverens version: `putClean(...)` med `dirty = 0`. Serverversionen bliver altså stående i originalen.
 
@@ -192,7 +194,9 @@ For hver ventende række:
   Grupper: "I dag", "I går", "Seneste 7 dage", derefter måned og år, og til sidst "Uden dato".
   Listepunkt: titel (eller "Uden titel"), første ikke-tomme linje af teksten, tags og klokkeslæt/ugedag/dato.
   Lys/mørk følger systemet. Brug serif til noteindhold, hvis det passer til temaet; udseendet er ikke et krav.
-- **Tekster (dansk, som i webklienten):** "Noter", "Ny note", "Søg i noter", "Titel", "Tilføj tags, adskilt med komma", "Skriv her", "Slet",
+- **Sprog:** engelsk er standard; dansk, tysk, fransk og spansk er oversættelser. Datoer formateres i telefonens sprog.
+  Appen hedder "DavNotes" på alle sprog. Valg af sprog pr. app i systemindstillingerne (Android 13+).
+- **Tekster (dansk oversættelse, som i webklienten):** "Noter", "Ny note", "Søg i noter", "Titel", "Tilføj tags, adskilt med komma", "Skriv her", "Slet",
   "Gemmer", "Gemt", "Ikke gemt", "Ingen noter endnu. Tryk på Ny note for at skrive den første.", "Ingen noter matcher søgningen.",
   "Noten blev ændret et andet sted. Din version er gemt som en ny note med \"(konflikt)\" i titlen.",
   "Kan ikke nå serveren. Dine ændringer gemmes igen, så snart forbindelsen er tilbage.", "Du er ikke logget ind. Log ind igen for at se og gemme dine noter."
@@ -205,7 +209,7 @@ Kernen testes i `:core` med JUnit mod (a) en in-memory `NoteStore` og (b) en rig
 - redigering bevarer `CLASS`, `STATUS`, `X-...`, `CATEGORIES`, `PRODID`, parametre på `DESCRIPTION`, `ATTACH` med kolon i citeret parameter; uændret input giver uændret tekst
 - to enheder A/B: A opretter to noter og sender; B henter dem; ny sync gør ingenting; redigering og sletning når den anden
 - note skrevet af anden klient læses; redigering af den bevarer dens egenskaber på serveren
-- **konflikt:** begge redigerer offline → originalen får den enes version, den andens tekst ligger i en ny note med "(konflikt)", og begge ender ens efter sync
+- **konflikt:** begge redigerer offline → originalen får den enes version, den andens tekst ligger i en ny note med konfliktmærket, og begge ender ens efter sync
 - ens redigering begge steder er ingen konflikt
 - redigering vinder over sletning; sletning mod ændret serverversion genskaber noten
 - ugyldigt sync-token giver fuld resync, som også opdager slettede noter
