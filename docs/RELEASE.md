@@ -32,7 +32,8 @@ nogle dage, før den er ude.
 
 1. Lav version 1.1 som ovenfor (tag `v1.1` og `davnotes-1.1.apk` på GitHub).
 2. Fork https://gitlab.com/fdroid/fdroiddata (kræver GitLab-konto), og opret grenen `dk.rpix.noter`.
-3. Kopiér `docs/fdroid/dk.rpix.noter.yml` til `metadata/dk.rpix.noter.yml` i forken.
+3. Kopiér `docs/fdroid/dk.rpix.noter.yml` uændret til `metadata/dk.rpix.noter.yml` i forken
+   (filen er uden kommentarer, fordi `fdroid rewritemeta` i CI fjerner dem og så melder formatfejl).
    F-Droids reviewere foretrækker den fulde commit-hash i `commit:` frem for tagget.
 4. Commit med beskeden `New App: dk.rpix.noter`, push, og opret en merge request.
    CI-pipelines i forken kører `fdroid lint` og et testbyg; ret det, de klager over.
