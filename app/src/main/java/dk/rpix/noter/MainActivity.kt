@@ -14,6 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import dk.rpix.noter.ui.AboutScreen
 import dk.rpix.noter.ui.EditorScreen
 import dk.rpix.noter.ui.NoteListScreen
 import dk.rpix.noter.ui.NoterTheme
@@ -23,8 +24,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * Tre skærme: liste -> editor, og indstillinger. Navigationen er en simpel streng,
- * der overlever rotation: "list", "settings", "new:<n>" eller "note:<uid>".
+ * Skærme: liste -> editor, og indstillinger -> om. Navigationen er en simpel streng,
+ * der overlever rotation: "list", "settings", "about", "new:<n>" eller "note:<uid>".
  */
 class MainActivity : ComponentActivity() {
     private val screens: ScreenStores by viewModels()
@@ -38,13 +39,16 @@ class MainActivity : ComponentActivity() {
                 fun go(to: String) {
                     val from = route
                     route = to
-                    if (from != to) screens.leave(from)
+                    // Indstillingerne bevares under "om", så felter, der ikke er gemt, ikke går tabt
+                    if (from != to && !(from == "settings" && to == "about")) screens.leave(from)
+                    if (from == "about" && to == "list") screens.leave("settings")
                 }
-                BackHandler(enabled = route != "list") { go("list") }
+                BackHandler(enabled = route != "list") { go(if (route == "about") "settings" else "list") }
                 val owner = remember(route) { screens.owner(route) }
                 CompositionLocalProvider(LocalViewModelStoreOwner provides owner) {
                     when {
-                        route == "settings" -> SettingsScreen(onBack = { go("list") })
+                        route == "settings" -> SettingsScreen(onBack = { go("list") }, onAbout = { go("about") })
+                        route == "about" -> AboutScreen(onBack = { go("settings") })
                         route.startsWith("new:") || route.startsWith("note:") -> EditorScreen(
                             uid = if (route.startsWith("note:")) route.removePrefix("note:") else null,
                             onBack = { go("list") },

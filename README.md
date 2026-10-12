@@ -130,3 +130,14 @@ python3 tools/make_icon.py [forhåndsvisning.png]
 - Konfliktkopier er almindelige noter, som du selv rydder op i.
 - Thunderbird viser samlingen som en tom kalender, fordi den ikke kan vise `VJOURNAL`.
 - Hele samlingen hentes ved første synkronisering. Derefter hentes kun ændringer.
+
+## Licens
+
+Udviklet i Claude af lianergoist. Udgivet under MIT-licensen, se [`LICENSE`](LICENSE).
+
+Appen bruger biblioteker under Apache License 2.0 (AndroidX, OkHttp, Okio, Kotlin og kotlinx) og
+Public Suffix List under MPL 2.0. Se [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) eller
+Indstillinger → Om Noter i appen.
+
+Tak til [Radicale](https://radicale.org/), [jtx Board](https://jtx.techbee.at/) og
+[DAVx⁵](https://www.davx5.com/), som Noter er bygget til at arbejde sammen med.
