@@ -1,0 +1,1 @@
+DavNotes (antes Noter): el inglés es el idioma predeterminado, con traducciones al danés, alemán, francés y español. Las fechas siguen el idioma del teléfono. Nueva pantalla «Acerca de DavNotes» con las licencias.

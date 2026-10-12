@@ -1,0 +1,1 @@
+Noter i ren tekst, synkroniseret med din egen CalDAV-server, fx Radicale

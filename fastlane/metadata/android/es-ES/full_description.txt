@@ -1,0 +1,16 @@
+<p>DavNotes es una app de notas sencilla para Android. Tus notas se guardan como entradas VJOURNAL en una colección CalDAV de tu propio servidor y se sincronizan en ambos sentidos.</p>
+<p>Funciona sin conexión. Los cambios se guardan al momento en el teléfono y se envían al servidor en cuanto vuelve la conexión.</p>
+<p><b>Funciones</b></p>
+<ul>
+<li>Crear, editar, buscar y eliminar notas con título, texto y etiquetas. Solo texto plano.</li>
+<li>Guarda automáticamente mientras escribes y al salir de una nota.</li>
+<li>Sincroniza al abrir la app, después de cada cambio, al deslizar para actualizar y cada 15 minutos aproximadamente.</li>
+<li>Nunca sobrescribe una nota a ciegas. Si una nota se modificó aquí y en otro lugar, tu versión se guarda como una nota nueva con «(conflicto)» en el título. El texto nunca se fusiona.</li>
+<li>Comparte la colección con otros clientes, como jtx Board mediante DAVx⁵. Las propiedades que fijan otras apps se conservan al editar una nota.</li>
+<li>Encuentra tus colecciones en el servidor y puede crear una colección de notas nueva.</li>
+<li>La contraseña se cifra con una clave del Android Keystore. Solo HTTPS.</li>
+<li>En inglés, danés, alemán, francés y español.</li>
+</ul>
+<p><b>Requisitos</b></p>
+<p>Un servidor CalDAV compatible con sync-collection (RFC 6578). DavNotes se desarrolla y prueba con Radicale 3.</p>
+<p>Sin anuncios, sin rastreo y sin más cuentas que tu propio servidor.</p>

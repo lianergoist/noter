@@ -1,0 +1,1 @@
+Plain-text notes synced with your own CalDAV server, such as Radicale

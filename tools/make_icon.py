@@ -3,12 +3,14 @@
 Geometrien er i det adaptive ikons 108x108-koordinater; synlig zone er midten 72x72, sikker zone r=33.
 
 Brug (kræver Pillow):  python3 tools/make_icon.py [forhåndsvisning.png]
-Overskriver ikonfilerne i app/src/main/res. Med et filnavn gemmes også en forhåndsvisning
+Overskriver ikonfilerne i app/src/main/res og butiksikonet (512x512) til F-Droid i fastlane/. Med et filnavn gemmes også en forhåndsvisning
 (firkantet, rund, tematiseret og lille)."""
 import math, sys, os
 from PIL import Image, ImageDraw
 
-RES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "app", "src", "main", "res")
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+RES = os.path.join(ROOT, "app", "src", "main", "res")
+STORE_ICON = os.path.join(ROOT, "fastlane", "metadata", "android", "en-US", "images", "icon.png")
 PREVIEW = sys.argv[1] if len(sys.argv) > 1 else None
 
 BG = "#F3BE4D"       # varm rav, som temaets primærfarve i mørk tilstand
@@ -119,6 +121,8 @@ for dens, px in {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 
     folder = f"{RES}/mipmap-{dens}"
     legacy.resize((px, px), Image.LANCZOS).save(f"{folder}/ic_launcher.webp", "WEBP", lossless=True)
     legacy_round.resize((px, px), Image.LANCZOS).save(f"{folder}/ic_launcher_round.webp", "WEBP", lossless=True)
+os.makedirs(os.path.dirname(STORE_ICON), exist_ok=True)
+legacy.resize((512, 512), Image.LANCZOS).save(STORE_ICON, "PNG", optimize=True)
 
 if PREVIEW is None:
     sys.exit(0)

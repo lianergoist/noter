@@ -117,12 +117,18 @@ En lokal testserver kan nås fra telefonen med `adb reverse tcp:5232 tcp:5232` o
 
 ## App-ikonet
 
-Ikonet genereres af `tools/make_icon.py` (kræver Pillow). Scriptet skriver både de adaptive vektorer
-og WebP-billederne til Android 7.x ud fra samme geometri:
+Ikonet genereres af `tools/make_icon.py` (kræver Pillow). Scriptet skriver de adaptive vektorer,
+WebP-billederne til Android 7.x og butiksikonet til F-Droid ud fra samme geometri:
 
 ```
 python3 tools/make_icon.py [forhåndsvisning.png]
 ```
+
+## Udgivelse
+
+Appen udgives på GitHub og F-Droid med reproducerbart byg og samme signatur begge steder. Butikstekster,
+ikon og skærmbilleder ligger i `fastlane/metadata/android/`. Fremgangsmåden står i
+[`docs/RELEASE.md`](docs/RELEASE.md).
 
 ## Kendte begrænsninger
 

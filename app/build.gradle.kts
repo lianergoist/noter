@@ -14,8 +14,8 @@ android {
         applicationId = "dk.rpix.noter"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -49,6 +49,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+    // Ingen afhængighedsblok krypteret med Googles nøgle i APK'en (F-Droid afviser den)
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
     androidResources {
         // Sprogvalg pr. app i systemindstillingerne (Android 13+); standardsproget står i res/resources.properties

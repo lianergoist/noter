@@ -1,0 +1,1 @@
+Notas en texto plano sincronizadas con tu propio servidor CalDAV

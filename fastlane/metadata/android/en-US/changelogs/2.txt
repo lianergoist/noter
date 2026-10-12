@@ -1,0 +1,1 @@
+DavNotes (formerly Noter): English is the default language, with Danish, German, French and Spanish translations. Dates follow the phone's language. New About screen with licenses.

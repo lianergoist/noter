@@ -1,0 +1,1 @@
+Notizen in reinem Text, synchronisiert mit deinem eigenen CalDAV-Server
