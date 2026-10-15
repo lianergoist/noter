@@ -1,0 +1,1 @@
+Créer une collection de notes fonctionne maintenant quand l'adresse est la racine du serveur : la collection est créée sous votre utilisateur et l'adresse est remplie. Un serveur sans CalDAV donne un message clair au lieu de « erreur 0 ».

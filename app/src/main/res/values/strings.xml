@@ -69,6 +69,7 @@
     <string name="err_network">Can\'t reach the server. Check the address and your connection, and try again.</string>
     <string name="err_not_found">The collection doesn\'t exist on the server. Tap Create notes collection, or choose another one with Find collections.</string>
     <string name="err_server">The server returned error %1$d. Check the address and try again.</string>
+    <string name="err_not_caldav">The server doesn\'t look like a CalDAV server. Check the address, or choose a server with calendars.</string>
     <string name="sync_interval_note">Notes sync when you open the app, after every change and about every 15 minutes.</string>
 
     <!-- Om -->

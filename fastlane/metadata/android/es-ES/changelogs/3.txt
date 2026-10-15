@@ -1,0 +1,1 @@
+Crear colección de notas ahora funciona cuando la dirección es la raíz del servidor: la colección se crea bajo tu usuario y la dirección se rellena. Un servidor sin CalDAV muestra un mensaje claro en lugar de «error 0».

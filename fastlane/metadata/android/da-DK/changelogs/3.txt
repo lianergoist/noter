@@ -1,0 +1,1 @@
+Opret noter-samling virker nu, når adressen er serverens rod: samlingen oprettes under din bruger, og adressen udfyldes. En server uden CalDAV giver en forståelig fejl i stedet for "fejl 0".

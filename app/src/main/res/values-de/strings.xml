@@ -67,6 +67,7 @@
     <string name="err_network">Der Server ist nicht erreichbar. Prüfe die Adresse und deine Verbindung und versuche es erneut.</string>
     <string name="err_not_found">Die Sammlung gibt es auf dem Server nicht. Tippe auf Notizen-Sammlung anlegen, oder wähle mit Sammlungen suchen eine andere.</string>
     <string name="err_server">Der Server hat mit Fehler %1$d geantwortet. Prüfe die Adresse und versuche es erneut.</string>
+    <string name="err_not_caldav">Der Server sieht nicht nach einem CalDAV-Server aus. Prüfe die Adresse, oder nutze einen Server mit Kalendern.</string>
     <string name="sync_interval_note">Die Notizen werden beim Öffnen der App, nach jeder Änderung und etwa alle 15 Minuten synchronisiert.</string>
 
     <!-- Om -->

@@ -67,6 +67,7 @@
     <string name="err_network">Kan ikke nå serveren. Tjek adressen og din forbindelse, og prøv igen.</string>
     <string name="err_not_found">Samlingen findes ikke på serveren. Tryk på Opret noter-samling, eller vælg en anden med Find samlinger.</string>
     <string name="err_server">Serveren svarede med fejl %1$d. Tjek adressen, og prøv igen.</string>
+    <string name="err_not_caldav">Serveren ligner ikke en CalDAV-server. Tjek adressen, eller brug en server med kalendere.</string>
     <string name="sync_interval_note">Noterne synkroniseres, når appen åbnes, efter hver ændring og cirka hvert kvarter.</string>
 
     <!-- Om -->

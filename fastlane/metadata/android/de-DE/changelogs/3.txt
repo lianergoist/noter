@@ -1,0 +1,1 @@
+Notizen-Sammlung anlegen funktioniert jetzt, wenn die Adresse die Server-Wurzel ist: Die Sammlung wird unter deinem Benutzer angelegt und die Adresse eingetragen. Ein Server ohne CalDAV zeigt eine verständliche Meldung statt „Fehler 0“.

@@ -1,0 +1,1 @@
+Create notes collection now works when the address is the server root: the collection is created under your user and the address is filled in. A server without CalDAV gives a clear error instead of "error 0".

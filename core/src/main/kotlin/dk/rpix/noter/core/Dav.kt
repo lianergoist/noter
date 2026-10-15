@@ -30,6 +30,9 @@ open class DavError(val status: Int, message: String = "") :
 
 class AuthError(message: String = "forkert brugernavn eller adgangskode") : DavError(401, message)
 
+/** Serveren svarer, men ligner ikke en CalDAV-server (fx en almindelig WebDAV-server). */
+class NotCalDavError(message: String = "serveren ligner ikke en CalDAV-server") : DavError(0, message)
+
 /** Serveren afviser et gammelt sync-token (HTTP 403, 409 eller 410). */
 class SyncTokenInvalid : Exception("ugyldigt sync-token")
 
@@ -256,12 +259,16 @@ class DavClient(
     private fun snippet(b: ByteArray) = String(b, Charsets.UTF_8).take(200)
 
     // -- samling -----------------------------------------------------------
-    fun mkcalendar(displayname: String = "Noter") {
+    /** Fuld adresse til [path] på samme server, fx til at gemme en valgt eller ny samling. */
+    fun urlFor(path: String): String =
+        collectionUrl.newBuilder().encodedPath(Hrefs.encodePath(Hrefs.withSlash(path))).build().toString()
+
+    fun mkcalendar(displayname: String = "Noter", path: String = collectionPath) {
         val body = """<C:mkcalendar xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">""" +
             "<D:set><D:prop><D:displayname>${xmlEscape(displayname)}</D:displayname>" +
             """<C:supported-calendar-component-set><C:comp name="VJOURNAL"/>""" +
             "</C:supported-calendar-component-set></D:prop></D:set></C:mkcalendar>"
-        val r = xml("MKCALENDAR", collectionPath, body)
+        val r = xml("MKCALENDAR", path, body)
         if (r.status != 200 && r.status != 201) throw DavError(r.status, snippet(r.body))
     }
 
@@ -269,12 +276,12 @@ class DavClient(
      * Tjek login og at samlingen findes (PROPFIND Depth 0). false = 404.
      * Kaster [AuthError], [NetworkError] eller [DavError] som de andre kald.
      */
-    fun collectionExists(): Boolean {
-        val r = xml("PROPFIND", collectionPath, """<D:propfind xmlns:D="DAV:"><D:prop><D:resourcetype/></D:prop></D:propfind>""", "0")
+    fun collectionExists(path: String = collectionPath): Boolean {
+        val r = xml("PROPFIND", path, """<D:propfind xmlns:D="DAV:"><D:prop><D:resourcetype/></D:prop></D:propfind>""", "0")
         return when (r.status) {
             207 -> true
             404 -> false
-            else -> throw DavError(r.status, "PROPFIND $collectionPath")
+            else -> throw DavError(r.status, "PROPFIND $path")
         }
     }
 
@@ -283,14 +290,8 @@ class DavClient(
      * Port af `discover` i reference/dav.js.
      */
     fun discover(): List<CollectionInfo> {
-        var r = xml("PROPFIND", "/", """<D:propfind xmlns:D="DAV:"><D:prop><D:current-user-principal/></D:prop></D:propfind>""", "0")
-        if (r.status != 207) throw DavError(r.status, "PROPFIND /")
-        val cup = parseXml(r.body).getElementsByTagNameNS(DAV, "current-user-principal").item(0) as Element?
-        val href = (cup?.getElementsByTagNameNS(DAV, "href")?.item(0) as Element?)?.textContent
-            ?: throw DavError(0, "kunne ikke finde din bruger på serveren")
-        val principal = Hrefs.withSlash(Hrefs.normalize(href))
-
-        r = xml(
+        val principal = principal()
+        val r = xml(
             "PROPFIND", principal,
             """<D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav"><D:prop>""" +
                 "<D:displayname/><D:resourcetype/><C:supported-calendar-component-set/></D:prop></D:propfind>",
@@ -314,6 +315,46 @@ class DavClient(
         return out
             .filter { it.journal }
             .sortedWith(compareByDescending<CollectionInfo> { it.onlyJournal }.thenBy { it.name })
+    }
+
+    /**
+     * Brugerens principal-sti med / til sidst (PROPFIND / efter `current-user-principal`).
+     * Kaster [NotCalDavError], hvis serveren ikke oplyser nogen eller slet ikke kender PROPFIND.
+     */
+    fun principal(): String {
+        val r = xml("PROPFIND", "/", """<D:propfind xmlns:D="DAV:"><D:prop><D:current-user-principal/></D:prop></D:propfind>""", "0")
+        if (r.status == 405 || r.status == 501) throw NotCalDavError() // kan slet ikke WebDAV
+        if (r.status != 207) throw DavError(r.status, "PROPFIND /")
+        val cup = runCatching { parseXml(r.body) }.getOrNull()
+            ?.getElementsByTagNameNS(DAV, "current-user-principal")?.item(0) as Element?
+        val href = (cup?.getElementsByTagNameNS(DAV, "href")?.item(0) as Element?)?.textContent
+        if (href.isNullOrBlank()) throw NotCalDavError()
+        return Hrefs.withSlash(Hrefs.normalize(href))
+    }
+
+    /**
+     * Hvor en ny noter-samling skal oprettes. Peger adressen på serverens rod eller på brugerens
+     * principal (som når man har brugt "Find samlinger"), bliver det `<principal>noter/`
+     * (eller `noter-2/` osv., hvis navnet er optaget). Ellers adressen selv.
+     */
+    fun newCollectionPath(slug: String = "noter"): String {
+        val principal = when (collectionPath.count { it == '/' }) {
+            1 -> principal() // "/": uden principal ved vi ikke, hvor samlingen skal ligge
+            2 -> try {
+                principal()
+            } catch (e: AuthError) {
+                throw e
+            } catch (_: DavError) {
+                null
+            }
+            else -> null
+        }
+        if (principal == null || (collectionPath != "/" && collectionPath != principal)) return collectionPath
+        for (n in 1..20) {
+            val path = principal + (if (n == 1) slug else "$slug-$n") + "/"
+            if (!collectionExists(path)) return path
+        }
+        throw DavError(0, "kunne ikke finde et ledigt navn til samlingen")
     }
 
     fun getEtag(href: String): String {

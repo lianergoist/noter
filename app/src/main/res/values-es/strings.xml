@@ -67,6 +67,7 @@
     <string name="err_network">No se puede conectar con el servidor. Revisa la dirección y tu conexión e inténtalo de nuevo.</string>
     <string name="err_not_found">La colección no existe en el servidor. Toca Crear colección de notas o elige otra con Buscar colecciones.</string>
     <string name="err_server">El servidor respondió con el error %1$d. Revisa la dirección e inténtalo de nuevo.</string>
+    <string name="err_not_caldav">El servidor no parece un servidor CalDAV. Revisa la dirección o usa un servidor con calendarios.</string>
     <string name="sync_interval_note">Las notas se sincronizan al abrir la app, después de cada cambio y cada 15 minutos aproximadamente.</string>
 
     <!-- Om -->

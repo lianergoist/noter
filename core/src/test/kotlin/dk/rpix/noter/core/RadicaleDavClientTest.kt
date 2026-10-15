@@ -38,6 +38,20 @@ class RadicaleDavClientTest {
         assertTrue(mine.onlyJournal)
     }
 
+    @Test fun createFromServerRootGoesUnderPrincipal() {
+        val root = DavClient(client.urlFor("/"), System.getenv("NOTES_TEST_USER") ?: "anna",
+            System.getenv("NOTES_TEST_PASSWORD") ?: "hemmelig", allowInsecure = true)
+        val path = root.newCollectionPath()
+        assertTrue(path, path.startsWith(root.principal() + "noter"))
+        try {
+            root.mkcalendar("Noter (test)", path)
+            assertTrue(root.collectionExists(path))
+            assertTrue(root.discover().any { it.path == path && it.onlyJournal })
+        } finally {
+            runCatching { root.request("DELETE", path) }
+        }
+    }
+
     @Test fun hrefWithSpecialCharactersRoundTrips() {
         val href = client.collectionPath + "æ ø+å 😀.ics"
         val raw = Ical.newIcs("special-1", "Særlig sti")

@@ -47,6 +47,7 @@ import dk.rpix.noter.core.DavClient
 import dk.rpix.noter.core.DavError
 import dk.rpix.noter.core.Hrefs
 import dk.rpix.noter.core.NetworkError
+import dk.rpix.noter.core.NotCalDavError
 import dk.rpix.noter.data.Account
 import dk.rpix.noter.sync.SyncScheduler
 import dk.rpix.noter.sync.davClient
@@ -109,6 +110,8 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
                 notice = Notice(R.string.err_login)
             } catch (_: NetworkError) {
                 notice = Notice(R.string.err_network)
+            } catch (_: NotCalDavError) {
+                notice = Notice(R.string.err_not_caldav)
             } catch (e: DavError) {
                 notice = if (e.status == 404) Notice(R.string.err_not_found) else Notice(R.string.err_server, e.status)
             } catch (_: IllegalArgumentException) {
@@ -129,10 +132,16 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
         commit(account)
     }
 
-    /** MKCALENDAR med kun VJOURNAL, derefter som [save]. */
+    /**
+     * MKCALENDAR med kun VJOURNAL, derefter som [save]. Står adressen på serverens rod eller
+     * brugerens principal, oprettes samlingen under principal, og adressen sættes til den.
+     */
     fun createCollection() = run { client, account ->
-        withContext(Dispatchers.IO) { client.mkcalendar(app.getString(R.string.notes)) }
-        commit(account)
+        val path = withContext(Dispatchers.IO) {
+            client.newCollectionPath().also { client.mkcalendar(app.getString(R.string.notes), it) }
+        }
+        collections = null
+        commit(account.copy(url = client.urlFor(path)))
         notice = Notice(R.string.collection_created, error = false)
     }
 
