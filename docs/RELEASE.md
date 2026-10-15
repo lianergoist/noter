@@ -39,6 +39,16 @@ nogle dage, før den er ude.
    CI-pipelines i forken kører `fdroid lint` og et testbyg; ret det, de klager over.
 5. Svar på reviewernes spørgsmål i merge requesten.
 
+## Faldgruber i F-Droid-metadata
+
+- **Citationstegn om versionsnumre:** `fdroid rewritemeta` kræver dem, når nummeret ellers ville blive
+  læst som et tal, og afviser dem ellers. To dele: `versionName: '1.1'` og `CurrentVersion: '1.1'`.
+  Tre dele: `versionName: 1.1.1` og `CurrentVersion: 1.1.1`. Ret begge steder, både her og i forken.
+- **Kopiér filen fra GitHub, ikke fra terminalen**
+  (`https://raw.githubusercontent.com/lianergoist/noter/main/docs/fdroid/dk.rpix.noter.yml`),
+  så der ikke kommer en prompt eller en dobbelt kopi med. Filen skal slutte med ét linjeskift.
+- Ret filen i forken på grenen `dk.rpix.noter`, så den åbne merge request opdateres.
+
 ## Krav, projektet allerede opfylder
 
 - MIT-licens, offentlig kildekode, kun frie afhængigheder fra Google Maven og Maven Central.
