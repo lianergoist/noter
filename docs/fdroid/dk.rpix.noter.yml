@@ -13,7 +13,7 @@ Repo: https://github.com/lianergoist/noter.git
 Binaries: https://github.com/lianergoist/noter/releases/download/v%v/davnotes-%v.apk
 
 Builds:
-  - versionName: '1.1.1'
+  - versionName: 1.1.1
     versionCode: 3
     commit: dccfdc1dc39aabce2195cf39d19c8b47affd55df
     subdir: app
@@ -24,5 +24,5 @@ AllowedAPKSigningKeys: a48a93b3dcb252dbaa3ba8a9c678c3eccad7bbff36937c8a64d595eb5
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: '1.1.1'
+CurrentVersion: 1.1.1
 CurrentVersionCode: 3
