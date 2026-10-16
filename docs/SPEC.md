@@ -230,6 +230,7 @@ object Markdown {
     fun toggleNumbers(text: String, selStart: Int, selEnd: Int): MdEdit
     fun indent(text: String, selStart: Int, selEnd: Int): MdEdit
     fun outdent(text: String, selStart: Int, selEnd: Int): MdEdit
+    fun continueList(text: String, cursor: Int): MdEdit?
 }
 ```
 
@@ -275,7 +276,12 @@ En række knapper over tastaturet, kun når tekstfeltet har fokus: **Fed**, **Ku
   i en markering eller indrykning, der fjernes eller udskiftes, havner den lige efter det nye præfiks. Er markeringen ikke tom, dækker resultatet de berørte linjer
   helt (første linjes start til sidste linjes slut).
 
-Automatisk fortsættelse af lister ved Enter er ikke med i v1.2.
+**Fortsæt liste ved Enter** (`continueList(text, cursor)`): Editoren kalder den, når en ændring er præcis ét indsat
+`\n` (ikke ved indsæt af tekst). Er linjen før markøren et listepunkt, får den nye linje samme indrykning og markering;
+nummererede punkter får næste nummer (`3. ` → `4. `, `9) ` → `10) `). Enter midt i et punkt deler det. Er punktet tomt,
+og er den nye linje også tom, fjernes punktet, og listen slutter ("Enter to gange"). Et tomt indrykket punkt afslutter
+listen helt i stedet for at rykke ud. Efterfølgende numre omnummereres ikke. Overskrifter og indrykket tekst uden
+listemarkering fortsættes ikke.
 
 ## 7. Android-specifikt
 
@@ -314,7 +320,8 @@ Kernen testes i `:core` med JUnit mod (a) en in-memory `NoteStore` og (b) en rig
 - forkert adgangskode giver `AuthError`
 - en `VEVENT` i samlingen ignoreres
 - Markdown (`MarkdownTest`): overskrifter, lister, indrykning, fed/kursiv inkl. indlejring, falske positiver
-  (`snake_case`, `2 * 3`, ufærdige markeringer), escapes, `plain` og værktøjslinjens funktioner med markør/markering
+  (`snake_case`, `2 * 3`, ufærdige markeringer), escapes, `plain`, værktøjslinjens funktioner med markør/markering
+  og fortsættelse/afslutning af lister ved Enter
 - til sidst har A og B de samme noter og ingen ventende ændringer
 
 **Lokal testserver** (som `selftest.py` gør): 

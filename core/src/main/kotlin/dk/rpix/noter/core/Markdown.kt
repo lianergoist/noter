@@ -351,4 +351,29 @@ object Markdown {
             if (n == 0) null else Change(l.start, n, "")
         }
     }
+
+    /**
+     * Enter i en liste. [cursor] står lige efter det linjeskift, brugeren har indsat. Var linjen før et listepunkt,
+     * får den nye linje samme indrykning og markering (næste nummer). Var punktet tomt, og er den nye linje også tom,
+     * fjernes punktet i stedet, og listen slutter. Ellers null (intet at gøre).
+     */
+    fun continueList(text: String, cursor: Int): MdEdit? {
+        if (cursor == 0 || text[cursor - 1] != '\n') return null
+        val prev = lineAt(text, text.lastIndexOf('\n', cursor - 2) + 1)
+        if (prev.prefix != Prefix.BULLET && prev.prefix != Prefix.NUMBERED) return null
+        var nextEnd = text.indexOf('\n', cursor)
+        if (nextEnd < 0) nextEnd = text.length
+        if (text.substring(prev.markerEnd, prev.end).isBlank() && text.substring(cursor, nextEnd).isBlank()) {
+            return MdEdit(text.removeRange(prev.start, cursor), prev.start, prev.start)
+        }
+        val marker = if (prev.prefix == Prefix.BULLET) {
+            "${text[prev.indentEnd]} "
+        } else {
+            val number = text.substring(prev.indentEnd, prev.markerEnd - 2).toInt()
+            "${number + 1}${text[prev.markerEnd - 2]} "
+        }
+        val prefix = text.substring(prev.start, prev.indentEnd) + marker
+        val p = cursor + prefix.length
+        return MdEdit(text.substring(0, cursor) + prefix + text.substring(cursor), p, p)
+    }
 }

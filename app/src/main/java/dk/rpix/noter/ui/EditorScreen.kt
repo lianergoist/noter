@@ -54,6 +54,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dk.rpix.noter.NoterApp
 import dk.rpix.noter.R
+import dk.rpix.noter.core.Markdown
 import dk.rpix.noter.core.MdEdit
 import dk.rpix.noter.core.Note
 import java.util.Date
@@ -163,7 +164,22 @@ class EditorViewModel(private val app: NoterApp, initialUid: String?) : ViewMode
     fun onTags(v: String) = changed { tagsText = v }
     fun onBody(v: TextFieldValue) {
         // Kun markør eller markering flyttet: intet at gemme
-        if (v.text == bodyValue.text) bodyValue = v else changed { bodyValue = v }
+        if (v.text == bodyValue.text) {
+            bodyValue = v
+            return
+        }
+        val next = continuedList(v) ?: v
+        changed { bodyValue = next }
+    }
+
+    /** Var ændringen ét Enter, så fortsæt eller afslut listen (se Markdown.continueList). */
+    private fun continuedList(v: TextFieldValue): TextFieldValue? {
+        val old = bodyValue.text
+        val c = v.selection.start
+        if (!v.selection.collapsed || v.text.length != old.length + 1 || c == 0 || v.text[c - 1] != '\n') return null
+        if (v.text.removeRange(c - 1, c) != old) return null
+        val r = Markdown.continueList(v.text, c) ?: return null
+        return TextFieldValue(r.text, TextRange(r.selStart, r.selEnd))
     }
 
     /** En knap på værktøjslinjen. */

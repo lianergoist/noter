@@ -277,4 +277,50 @@ class MarkdownTest {
         assertEquals("markør i fjernet indrykning", "|a", apply(Markdown::outdent, "  |  a"))
         assertEquals("[- a\nb]", apply(Markdown::outdent, "[    - a\n    b]"))
     }
+
+    // ---- Fortsæt liste ved Enter ----
+
+    // Markøren (|) står lige efter det linjeskift, brugeren har indsat. "null" = ingen ændring.
+    private fun cont(input: String): String {
+        val cursor = input.indexOf('|')
+        val r = Markdown.continueList(input.removeRange(cursor, cursor + 1), cursor) ?: return "null"
+        assertEquals("tom markering", r.selStart, r.selEnd)
+        return StringBuilder(r.text).insert(r.selStart, '|').toString()
+    }
+
+    @Test fun continueList() {
+        assertEquals("- a\n- |", cont("- a\n|"))
+        assertEquals("* a\n* |", cont("* a\n|"))
+        assertEquals("+ a\n+ |", cont("+ a\n|"))
+        assertEquals("indrykning bevares", "    - a\n    - |", cont("    - a\n|"))
+        assertEquals("\t- a\n\t- |", cont("\t- a\n|"))
+        assertEquals("1. a\n2. |", cont("1. a\n|"))
+        assertEquals("9) a\n10) |", cont("9) a\n|"))
+        assertEquals("   1. a\n   2. |", cont("   1. a\n|"))
+        assertEquals("formatering i punktet", "- **a**\n- |", cont("- **a**\n|"))
+        assertEquals("andre linjer urørt", "x\n- a\n- |\ny", cont("x\n- a\n|\ny"))
+    }
+
+    @Test fun enterInsideListItemSplitsIt() {
+        assertEquals("- ab\n- |cd", cont("- ab\n|cd"))
+        assertEquals("1. ab\n2. |cd", cont("1. ab\n|cd"))
+        assertEquals("lige efter markeringen i et punkt med tekst", "- \n- |abc", cont("- \n|abc"))
+    }
+
+    @Test fun enterOnEmptyItemEndsList() {
+        assertEquals("- a\n|", cont("- a\n- \n|"))
+        assertEquals("|", cont("- \n|"))
+        assertEquals("indrykket punkt", "|", cont("    - \n|"))
+        assertEquals("1. a\n|", cont("1. a\n2. \n|"))
+        assertEquals("kun blanktegn", "|", cont("-  \n|"))
+        assertEquals("efterfølgende linjer urørt", "- a\n|\nb", cont("- a\n- \n|\nb"))
+    }
+
+    @Test fun enterOutsideListDoesNothing() {
+        for (input in listOf("a\n|", "# a\n|", "-a\n|", "1.5 kg\n|", "\n|", "|", "- a|", "    tekst\n|")) {
+            assertEquals(input, "null", cont(input))
+        }
+        assertEquals("før markeringen", "null", cont("\n|- a"))
+        assertEquals("inde i markeringen", "null", cont("-\n| a"))
+    }
 }
