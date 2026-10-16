@@ -1,6 +1,7 @@
 package dk.rpix.noter.ui
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -30,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -37,7 +39,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -50,6 +54,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dk.rpix.noter.NoterApp
 import dk.rpix.noter.R
+import dk.rpix.noter.core.MdEdit
 import dk.rpix.noter.core.Note
 import java.util.Date
 import kotlinx.coroutines.Dispatchers
@@ -91,8 +96,9 @@ class EditorViewModel(private val app: NoterApp, initialUid: String?) : ViewMode
         private set
     var tagsText by mutableStateOf("")
         private set
-    var body by mutableStateOf("")
+    var bodyValue by mutableStateOf(TextFieldValue(""))
         private set
+    val body get() = bodyValue.text
     var status by mutableStateOf(SaveStatus.NONE)
         private set
     var modified by mutableStateOf("")
@@ -146,7 +152,7 @@ class EditorViewModel(private val app: NoterApp, initialUid: String?) : ViewMode
 
     private fun show(n: Note) {
         title = n.title
-        body = n.body
+        bodyValue = TextFieldValue(n.body, TextRange(minOf(bodyValue.selection.end, n.body.length)))
         tagsText = n.tags.joinToString(", ")
         modified = n.modified
         baseline = Form.of(n)
@@ -155,7 +161,17 @@ class EditorViewModel(private val app: NoterApp, initialUid: String?) : ViewMode
 
     fun onTitle(v: String) = changed { title = v }
     fun onTags(v: String) = changed { tagsText = v }
-    fun onBody(v: String) = changed { body = v }
+    fun onBody(v: TextFieldValue) {
+        // Kun markør eller markering flyttet: intet at gemme
+        if (v.text == bodyValue.text) bodyValue = v else changed { bodyValue = v }
+    }
+
+    /** En knap på værktøjslinjen. */
+    fun format(op: (String, Int, Int) -> MdEdit) {
+        val sel = bodyValue.selection
+        val r = op(body, sel.min, sel.max)
+        onBody(TextFieldValue(r.text, TextRange(r.selStart, r.selEnd)))
+    }
 
     private fun changed(set: () -> Unit) {
         set()
@@ -235,6 +251,7 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
     val vm: EditorViewModel = viewModel(factory = viewModelFactory { initializer { EditorViewModel(app, uid) } })
     val snackbar = remember { SnackbarHostState() }
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
+    var bodyFocused by remember { mutableStateOf(false) }
     val closed by vm.closed.collectAsStateWithLifecycle()
 
     LaunchedEffect(closed) { if (closed) onBack() }
@@ -280,6 +297,7 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
                 },
             )
         },
+        bottomBar = { if (bodyFocused) FormatBar(vm::format) },
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
         if (!vm.loaded) return@Scaffold
@@ -291,7 +309,8 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
         )
         val serif = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Serif)
         Column(
-            Modifier.padding(padding).fillMaxSize().imePadding().verticalScroll(rememberScrollState()),
+            Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize().imePadding()
+                .verticalScroll(rememberScrollState()),
         ) {
             TextField(
                 value = vm.title,
@@ -313,11 +332,16 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
                 singleLine = true,
             )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+            val markdown = MarkdownTransformation(
+                marker = MaterialTheme.colorScheme.outline,
+                bullet = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             TextField(
-                value = vm.body,
+                value = vm.bodyValue,
                 onValueChange = vm::onBody,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().onFocusChanged { bodyFocused = it.isFocused },
                 textStyle = serif,
+                visualTransformation = markdown,
                 placeholder = { Text(stringResource(R.string.body_hint), style = serif) },
                 colors = plain,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),

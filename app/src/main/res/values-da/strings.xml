@@ -80,4 +80,13 @@
     <string name="about_license_apache">Vis Apache License 2.0</string>
     <string name="about_psl">OkHttp indeholder Public Suffix List fra publicsuffix.org under Mozilla Public License 2.0. Kilden findes på https://publicsuffix.org/list/.</string>
     <string name="about_thanks">Tak til Radicale, jtx Board og DAVx⁵.</string>
+
+    <!-- Formatering -->
+    <string name="format_bold">Fed</string>
+    <string name="format_italic">Kursiv</string>
+    <string name="format_heading">Overskrift</string>
+    <string name="format_bullets">Punktliste</string>
+    <string name="format_numbers">Nummereret liste</string>
+    <string name="format_outdent">Ryk ud</string>
+    <string name="format_indent">Ryk ind</string>
 </resources>

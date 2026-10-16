@@ -50,6 +50,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dk.rpix.noter.NoterApp
 import dk.rpix.noter.R
+import dk.rpix.noter.core.Markdown
 import dk.rpix.noter.core.Note
 import dk.rpix.noter.core.search
 import dk.rpix.noter.data.SyncError
@@ -285,7 +286,7 @@ private fun NoteRow(n: Note, t: Date?, now: Date, onOpen: (String) -> Unit) {
                 )
             }
         }
-        val first = n.body.lineSequence().map { it.trim() }.firstOrNull { it.isNotEmpty() }
+        val first = n.body.lineSequence().map { Markdown.plain(it).trim() }.firstOrNull { it.isNotEmpty() }
         if (first != null) {
             Text(
                 first,
