@@ -9,9 +9,10 @@ Må:
 - vise, søge i, oprette, redigere og slette noter (titel, tekst, tags)
 - fungere uden net og sende ændringer senere
 - sameksistere med andre klienter på samme samling (jtx Board via DAVx5, webklient, `notesync.py`)
+- vise let formatering (overskrifter, fed, kursiv, lister, indrykning) i noteteksten, skrevet som Markdown (afsnit 6, fra v1.2)
 
 Må ikke / senere:
-- Markdown-visning, vedhæftninger, flere konti, delte noter, push-notifikationer
+- fuld Markdown (links, billeder, kode, tabeller, citater), forhåndsvisning i særskilt tilstand, vedhæftninger, flere konti, delte noter, push-notifikationer
 - Idéer til senere: del-tekst-til-ny-note (`ACTION_SEND`), widget, hurtig-note
 
 ## 2. Dataformat (VJOURNAL)
@@ -180,7 +181,103 @@ For hver ventende række:
 - Slet: `deleteNote` (se afsnit 3).
 - Efter hver lokal ændring planlægges en engangs-sync (med nettilslutning som krav).
 
-## 6. Android-specifikt
+## 6. Formatering (Markdown, fra v1.2)
+
+Noteteksten (`DESCRIPTION`) kan indeholde en lille delmængde af Markdown. Det er **kun visning**: teksten gemmes,
+sammenlignes, synkroniseres og søges præcis som før, tegn for tegn. iCal-laget, `update_ics`, konfliktreglen og
+sync-motoren ændres ikke. Andre klienter (webklient, jtx Board, `notesync.py`) ser markeringerne som almindelig tekst.
+Titlen formateres ikke. Formatering er altid slået til; der er ingen indstilling.
+
+Parseren ligger i `:core` (`Markdown.kt`, ren Kotlin, ingen afhængigheder) og testes i `MarkdownTest.kt`.
+Ingen tredjepartsbiblioteker (Markwon, compose-markdown o.l.).
+
+### Delmængden
+
+Alt gælder **linje for linje**. Linjeskift er `\n`. Inline-formatering krydser aldrig et linjeskift.
+
+| Konstruktion | Skrives | Regel |
+|---|---|---|
+| Overskrift | `# `, `## ` ... `###### ` i linjens start | 1–6 `#` efterfulgt af mellemrum eller linjeslut. Ingen indrykning foran. `#tag` og `####### x` er ikke overskrifter. |
+| Punktliste | `- `, `* ` eller `+ ` | Efter eventuel indrykning. Mellemrum efter tegnet er påkrævet (`-x` og `---` er tekst). |
+| Nummereret liste | `1. ` eller `1) ` | 1–9 cifre, `.` eller `)`, mellemrum. `1.5 kg` er tekst. |
+| Indrykning | mellemrum/tab i linjens start | Niveau = `(kolonner + 2) / 4` (heltal), hvor tab = 4 kolonner. Altså 2–5 mellemrum = niveau 1, 6–9 = niveau 2. |
+| Fed | `**tekst**` | |
+| Kursiv | `*tekst*` eller `_tekst_` | `_` kun ved ordgrænser (`snake_case_navn` er tekst); `*` også inde i ord (`a*b*c`). |
+| Fed og kursiv | `***tekst***` | Kursiv yderst, fed inderst (som CommonMark). |
+| Escape | `\*`, `\_`, `\#`, `\\` ... | Backslash foran ASCII-tegnsætning gør tegnet bogstaveligt. Foran andet (`C:\sti`) er backslash bare tekst. |
+
+Regler for `*`/`_` (forenklet CommonMark): en åbnende markering må ikke følges af blanktegn, en lukkende må ikke have
+blanktegn foran, og indholdet må ikke være tomt. `2 * 3 * 4`, `** x**` og `****` er derfor tekst, og det samme er
+en markering uden partner (`**ufærdig`). Fed og kursiv kan indlejres (`**fed *kursiv* fed**`) og bruges i overskrifter
+og listepunkter.
+
+Alt andet (links, kode, citater, tabeller, vandrette streger, overskrifter med `===`) er almindelig tekst.
+
+### API (`:core`)
+
+```kotlin
+enum class MdKind { HEADING, BULLET, NUMBERED, INDENT, BOLD, ITALIC, MARKER }
+data class MdSpan(val kind: MdKind, val start: Int, val end: Int, val level: Int = 0)
+data class MdEdit(val text: String, val selStart: Int, val selEnd: Int)
+
+object Markdown {
+    fun spans(text: String): List<MdSpan>
+    fun plain(text: String): String
+    fun toggleBold(text: String, selStart: Int, selEnd: Int): MdEdit
+    fun toggleItalic(text: String, selStart: Int, selEnd: Int): MdEdit
+    fun cycleHeading(text: String, selStart: Int, selEnd: Int): MdEdit
+    fun toggleBullets(text: String, selStart: Int, selEnd: Int): MdEdit
+    fun toggleNumbers(text: String, selStart: Int, selEnd: Int): MdEdit
+    fun indent(text: String, selStart: Int, selEnd: Int): MdEdit
+    fun outdent(text: String, selStart: Int, selEnd: Int): MdEdit
+}
+```
+
+Positioner er UTF-16-indeks (`String`-indeks, som Compose bruger), `start` inklusiv, `end` eksklusiv.
+Redigeringsfunktionerne forventer `selStart <= selEnd` (UI'et sender `min`/`max` af `TextRange`).
+Rækkefølgen af spans er ikke fastlagt.
+
+`spans`:
+- `HEADING` dækker hele linjen (uden `\n`), `level` = antal `#`.
+- `BULLET`/`NUMBERED` dækker hele linjen inkl. indrykning, `level` = indrykningsniveau.
+- `INDENT` dækker en indrykket linje, der ikke er et listepunkt (kun niveau ≥ 1), `level` = niveau.
+- `BOLD`/`ITALIC` dækker alt mellem den åbnende og den lukkende markering (inkl. indlejrede markeringer).
+- `MARKER` dækker syntakstegn, som UI'et viser dæmpet: `#`-præfikset med mellemrum, listemarkeringen med
+  mellemrum (`- `, `12. `), `*`/`_`-markeringer og escape-backslash. Tilstødende `MARKER`-spans slås sammen.
+
+`plain` (til listens forhåndsvisning): fjerner `#`-præfiks, `*`/`_`-markeringer og escape-backslash, skriver
+`- `/`* `/`+ ` som `• ` og lader nummerering og indrykning stå.
+
+### Værktøjslinje (redigeringsfunktionerne)
+
+En række knapper over tastaturet, kun når tekstfeltet har fokus: **Fed**, **Kursiv**, **Overskrift**, **Punktliste**,
+**Nummereret liste**, **Ryk ud**, **Ryk ind**. Ikoner som egne vektor-drawables (Material Symbols, Apache 2.0), ikke
+`material-icons-extended`. Hver knap har en `contentDescription` på alle fem sprog. Editoren skifter fra `String` til
+`TextFieldValue` for at kende markeringen; stylingen sker med en `VisualTransformation` med identitets-offsetmapping
+(markeringerne bliver stående, men dæmpes).
+
+- `toggleBold`/`toggleItalic`: Markeret tekst omkranses af `**`/`*`. Blanktegn i kanten af markeringen lægges uden for
+  (`" fed "` → `" **fed** "`). Er teksten allerede omkranset (markeringerne lige uden for eller som en del af
+  markeringen), fjernes de i stedet. Kursiv tæller kun som omkranset, hvis `*`-løbet har længde 1 eller 3, så
+  `**fed**` + kursiv giver `***fed***`. Uden markering indsættes `****`/`**` med markøren i midten; står markøren midt
+  i et tomt par, fjernes parret. Strækker markeringen sig over flere linjer, omkranses hver ikke-tom linje for sig.
+  Den markerede tekst forbliver markeret (uden markeringstegnene).
+- `cycleHeading`: Linjerne under markeringen går ingen → `# ` → `## ` → `### ` → ingen. Næste trin bestemmes af den
+  første ikke-tomme linje og gælder for alle linjerne. En listemarkering erstattes.
+- `toggleBullets`/`toggleNumbers`: Er alle ikke-tomme linjer under markeringen allerede den slags liste, fjernes
+  markeringen. Ellers får de den (den anden listetype eller en overskrift erstattes). Indrykning bevares.
+  Nummerering starter ved 1 og tælles op pr. indrykningsniveau; et dybere niveau starter forfra efter et mindre
+  indrykket punkt.
+- `indent`/`outdent`: Ryk ind indsætter 4 mellemrum foran hver ikke-tom linje. Ryk ud fjerner ét tab eller op til
+  4 mellemrum.
+- Linjefunktionerne springer tomme linjer over, når markeringen dækker flere linjer (på en enkelt tom linje
+  virker de, så man kan starte en liste). Er markeringen tom, følger markøren det tegn, den stod ved; står den
+  i en markering eller indrykning, der fjernes eller udskiftes, havner den lige efter det nye præfiks. Er markeringen ikke tom, dækker resultatet de berørte linjer
+  helt (første linjes start til sidste linjes slut).
+
+Automatisk fortsættelse af lister ved Enter er ikke med i v1.2.
+
+## 7. Android-specifikt
 
 - **Sync-triggere:** unik periodisk `WorkManager`-opgave (minimum 15 min), en engangsopgave efter lokale ændringer
   (`NetworkType.CONNECTED`, med backoff), samt når appen kommer i forgrunden, og træk-for-at-opdatere.
@@ -201,7 +298,7 @@ For hver ventende række:
   "Noten blev ændret et andet sted. Din version er gemt som en ny note med \"(konflikt)\" i titlen.",
   "Kan ikke nå serveren. Dine ændringer gemmes igen, så snart forbindelsen er tilbage.", "Du er ikke logget ind. Log ind igen for at se og gemme dine noter."
 
-## 7. Test
+## 8. Test
 
 Kernen testes i `:core` med JUnit mod (a) en in-memory `NoteStore` og (b) en rigtig Radicale. Port scenarierne fra `reference/selftest.py`:
 
@@ -216,6 +313,8 @@ Kernen testes i `:core` med JUnit mod (a) en in-memory `NoteStore` og (b) en rig
 - offline giver `NetworkError`, og ændringerne ligger tilbage til næste sync
 - forkert adgangskode giver `AuthError`
 - en `VEVENT` i samlingen ignoreres
+- Markdown (`MarkdownTest`): overskrifter, lister, indrykning, fed/kursiv inkl. indlejring, falske positiver
+  (`snake_case`, `2 * 3`, ufærdige markeringer), escapes, `plain` og værktøjslinjens funktioner med markør/markering
 - til sidst har A og B de samme noter og ingen ventende ændringer
 
 **Lokal testserver** (som `selftest.py` gør): 
@@ -239,10 +338,13 @@ EOF
 Samlingen oprettes med `MKCALENDAR /anna/noter/` (brug klientens egen `mkcalendar`). Fra en Android-emulator er værten `http://10.0.2.2:5232/`.
 Integrationstests mod Radicale springes over, hvis miljøvariablen `NOTES_TEST_URL` ikke er sat, så `./gradlew test` også virker uden server.
 
-## 8. Kendte begrænsninger og åbne valg
+## 9. Kendte begrænsninger og åbne valg
 
 - `SEQUENCE` øges ikke (jtx Board gør). Afgør senere, om det skal ændres.
 - Tags splittes på komma i editoren; et tag kan derfor ikke selv indeholde komma, når man skriver det (formatet kan godt).
 - Konfliktkopier er almindelige noter, som brugeren selv rydder op i.
 - Thunderbird viser samlingen som en tom kalender, fordi den ikke kan vise `VJOURNAL`. Det er forventet og kan ikke skjules fra serveren.
 - Hele samlingen hentes ved første sync; derefter kun ændringer via `sync-collection`.
+- Markdown: indrykning på 4 mellemrum foran almindelig tekst er en kodeblok i CommonMark, så andre Markdown-visere
+  kan vise den anderledes. Inline-formatering på tværs af linjer understøttes ikke (det gør CommonMark).
+  Søgning sker i den rå tekst, så `**` tæller med.

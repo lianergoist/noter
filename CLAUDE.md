@@ -15,7 +15,7 @@ Læs hele specifikationen, før du skriver kode: @docs/SPEC.md
 
 ## Faste beslutninger (ændr dem ikke uden at spørge)
 
-- Kun `VJOURNAL`. Ingen Markdown, ingen vedhæftninger, én konto, ren tekst.
+- Kun `VJOURNAL`. Ingen vedhæftninger, én konto. Teksten er ren tekst med let Markdown som ren visning (SPEC afsnit 6); data og sync er uberørt.
 - Serveren er sandheden. Appen skal virke offline og sende ændringerne, når der er net.
 - Rå `.ics` gemmes ved siden af de udtrukne felter. Ved redigering ændres kun `SUMMARY`, `DESCRIPTION`,
   `CATEGORIES`, `DTSTAMP` og `LAST-MODIFIED`. Alt andet fra andre klienter (jtx Board, DAVx5) skal bevares uændret.
