@@ -9,7 +9,12 @@ sat, bevares uændret, når du redigerer en note.
 
 ## Funktioner
 
-- Opret, redigér, søg i og slet noter med titel, tekst og tags. Kun ren tekst.
+- Opret, redigér, søg i og slet noter med titel, tekst og tags.
+- Let formatering skrevet som Markdown: overskrifter, fed, kursiv, lister og indrykning, med en
+  værktøjslinje over tastaturet. Lister fortsætter ved Enter. Noterne forbliver ren tekst, som andre
+  klienter kan læse.
+- Links i teksten kan åbnes i browseren.
+- Åbn tekst- og Markdown-filer som nye noter, også via "Åbn med" og "Del", og gem en note som fil.
 - Gemmer automatisk, mens du skriver, og når du forlader en note.
 - Fungerer offline. Ændringer sendes ved næste synkronisering.
 - Synkroniserer, når appen åbnes, efter hver ændring, ved træk-for-at-opdatere og cirka hvert kvarter.
@@ -20,7 +25,7 @@ sat, bevares uændret, når du redigerer en note.
 - På engelsk, dansk, tysk, fransk og spansk. Følger telefonens sprog, og på Android 13+ kan sproget
   vælges for appen alene i systemindstillingerne.
 
-Ikke med (bevidst): Markdown, vedhæftninger, flere konti og delte noter.
+Ikke med (bevidst): fuld Markdown (fx tabeller, billeder og `[tekst](url)`), vedhæftninger, flere konti og delte noter.
 
 ## Kom i gang
 

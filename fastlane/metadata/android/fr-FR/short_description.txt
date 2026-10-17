@@ -1,1 +1,1 @@
-Notes en texte brut, synchronisées avec votre propre serveur CalDAV
+Notes simples, synchronisées avec votre propre serveur CalDAV

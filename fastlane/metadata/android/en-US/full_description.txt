@@ -2,7 +2,10 @@
 <p>It works offline. Changes are saved on the phone right away and sent to the server as soon as you are online again.</p>
 <p><b>Features</b></p>
 <ul>
-<li>Create, edit, search and delete notes with a title, text and tags. Plain text only.</li>
+<li>Create, edit, search and delete notes with a title, text and tags.</li>
+<li>Light formatting written as Markdown: headings, bold, italic, lists and indentation, with a toolbar above the keyboard. Notes stay plain text that other apps can read.</li>
+<li>Links in the text can be opened in the browser.</li>
+<li>Open text and Markdown files as new notes, also via "Open with" and "Share", and save a note as a file.</li>
 <li>Saves automatically while you type and when you leave a note.</li>
 <li>Syncs when you open the app, after every change, with pull to refresh and about every 15 minutes.</li>
 <li>Never overwrites a note blindly. If a note was changed both here and somewhere else, your version is saved as a new note with "(conflict)" in the title. Text is never merged.</li>

@@ -2,7 +2,10 @@
 <p>Funciona sin conexión. Los cambios se guardan al momento en el teléfono y se envían al servidor en cuanto vuelve la conexión.</p>
 <p><b>Funciones</b></p>
 <ul>
-<li>Crear, editar, buscar y eliminar notas con título, texto y etiquetas. Solo texto plano.</li>
+<li>Crear, editar, buscar y eliminar notas con título, texto y etiquetas.</li>
+<li>Formato ligero en Markdown: encabezados, negrita, cursiva, listas y sangría, con una barra de herramientas sobre el teclado. Las notas siguen siendo texto plano que otras apps pueden leer.</li>
+<li>Los enlaces del texto se abren en el navegador.</li>
+<li>Abrir archivos de texto y Markdown como notas nuevas, también con «Abrir con» y «Compartir», y guardar una nota como archivo.</li>
 <li>Guarda automáticamente mientras escribes y al salir de una nota.</li>
 <li>Sincroniza al abrir la app, después de cada cambio, al deslizar para actualizar y cada 15 minutos aproximadamente.</li>
 <li>Nunca sobrescribe una nota a ciegas. Si una nota se modificó aquí y en otro lugar, tu versión se guarda como una nota nueva con «(conflicto)» en el título. El texto nunca se fusiona.</li>
