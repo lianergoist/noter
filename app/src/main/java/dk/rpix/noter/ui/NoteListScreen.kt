@@ -1,5 +1,7 @@
 package dk.rpix.noter.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,6 +31,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -53,6 +56,7 @@ import dk.rpix.noter.R
 import dk.rpix.noter.core.Markdown
 import dk.rpix.noter.core.Note
 import dk.rpix.noter.core.search
+import dk.rpix.noter.data.FileImport
 import dk.rpix.noter.data.SyncError
 import dk.rpix.noter.data.SyncState
 import java.util.Date
@@ -103,12 +107,23 @@ fun NoteListScreen(onOpen: (String) -> Unit, onNew: () -> Unit, onSettings: () -
     val query by vm.query.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     ConflictMessages(vm.conflicts, snackbar)
+    val scope = rememberCoroutineScope()
+    // .md har ofte typen application/octet-stream; om det er tekst, afgøres ved indlæsningen
+    val openFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) scope.launch {
+            val note = FileImport.fromUri(app, uri)
+            if (note != null) onOpen(note.uid) else snackbar.showMessage(app.getString(R.string.file_open_failed))
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.notes)) },
                 actions = {
+                    IconButton(onClick = { openFile.launch(arrayOf("text/*", "application/octet-stream")) }) {
+                        Icon(painterResource(R.drawable.ic_file_open), contentDescription = stringResource(R.string.open_file))
+                    }
                     IconButton(onClick = onSettings) {
                         Icon(painterResource(R.drawable.ic_settings), contentDescription = stringResource(R.string.settings))
                     }

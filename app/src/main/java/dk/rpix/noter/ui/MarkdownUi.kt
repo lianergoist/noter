@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -37,7 +39,7 @@ import dk.rpix.noter.core.Markdown
  * Viser Markdown i editoren uden at ændre teksten: markeringerne bliver stående, men dæmpes,
  * og punkttegn vises som •. Teksten har samme længde før og efter, så offset-mappingen er identitet.
  */
-data class MarkdownTransformation(val marker: Color, val bullet: Color) : VisualTransformation {
+data class MarkdownTransformation(val marker: Color, val bullet: Color, val link: Color) : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
         val s = text.text
         val spans = Markdown.spans(s)
@@ -52,6 +54,7 @@ data class MarkdownTransformation(val marker: Color, val bullet: Color) : Visual
                 MdKind.HEADING -> SpanStyle(fontWeight = FontWeight.Bold, fontSize = headingSize(sp.level))
                 MdKind.BOLD -> SpanStyle(fontWeight = FontWeight.Bold)
                 MdKind.ITALIC -> SpanStyle(fontStyle = FontStyle.Italic)
+                MdKind.LINK -> SpanStyle(color = link, textDecoration = TextDecoration.Underline)
                 MdKind.BULLET -> {
                     var i = sp.start
                     while (chars[i] == ' ' || chars[i] == '\t') i++
@@ -89,9 +92,9 @@ private val actions = listOf(
     FormatAction(R.drawable.ic_format_indent_increase, R.string.format_indent, Markdown::indent),
 )
 
-/** Værktøjslinjen over tastaturet. */
+/** Værktøjslinjen over tastaturet. "Åbn link" vises først, når markøren står i en URL ([url]). */
 @Composable
-fun FormatBar(onFormat: ((String, Int, Int) -> MdEdit) -> Unit) {
+fun FormatBar(url: String?, onOpenUrl: (String) -> Unit, onFormat: ((String, Int, Int) -> MdEdit) -> Unit) {
     Surface(tonalElevation = 3.dp) {
         Row(
             Modifier
@@ -99,6 +102,15 @@ fun FormatBar(onFormat: ((String, Int, Int) -> MdEdit) -> Unit) {
                 .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars))
                 .horizontalScroll(rememberScrollState()),
         ) {
+            if (url != null) {
+                IconButton(onClick = { onOpenUrl(url) }) {
+                    Icon(
+                        painterResource(R.drawable.ic_open_in_new),
+                        contentDescription = stringResource(R.string.open_link),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
             for (a in actions) {
                 IconButton(onClick = { onFormat(a.op) }) {
                     Icon(painterResource(a.icon), contentDescription = stringResource(a.label))

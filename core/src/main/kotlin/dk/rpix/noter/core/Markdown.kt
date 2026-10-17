@@ -1,7 +1,7 @@
 package dk.rpix.noter.core
 
 /** Slags formatering. Se afsnit 6 i docs/SPEC.md. */
-enum class MdKind { HEADING, BULLET, NUMBERED, INDENT, BOLD, ITALIC, MARKER }
+enum class MdKind { HEADING, BULLET, NUMBERED, INDENT, BOLD, ITALIC, MARKER, LINK }
 
 /** Et stykke formatering i teksten: UTF-16-indeks, [start] inklusiv, [end] eksklusiv. */
 data class MdSpan(val kind: MdKind, val start: Int, val end: Int, val level: Int = 0)
@@ -97,14 +97,46 @@ object Markdown {
 
     private fun isPunct(c: Char) = !c.isLetterOrDigit() && !c.isWhitespace()
 
+    private val URL = Regex("""\b(?:https?://|www\.)[^\s<>]+""", RegexOption.IGNORE_CASE)
+    private const val URL_TRAILING = ".,;:!?'\"*_"
+
+    /** URL'er i [from, to) som [start, slut]. Tegnsætning til sidst og en ulige ')' eller ']' hører ikke med. */
+    private fun urls(text: String, from: Int, to: Int): List<IntArray> {
+        val out = mutableListOf<IntArray>()
+        for (m in URL.findAll(text.substring(from, to))) {
+            val start = from + m.range.first
+            var end = from + m.range.last + 1
+            while (end > start) {
+                val c = text[end - 1]
+                val unbalanced = (c == ')' && text.count(start, end, ')') > text.count(start, end, '(')) ||
+                    (c == ']' && text.count(start, end, ']') > text.count(start, end, '['))
+                if (c in URL_TRAILING || unbalanced) end-- else break
+            }
+            val prefix = if (text.startsWith("www.", start, ignoreCase = true)) 4 else text.indexOf("//", start) + 2 - start
+            if (end - start > prefix) out += intArrayOf(start, end)
+        }
+        return out
+    }
+
+    private fun String.count(from: Int, to: Int, c: Char) = (from until to).count { this[it] == c }
+
     /** En række ens '*' eller '_'. Som opener bruges tegn fra højre ende, som closer fra venstre. */
     private class Run(val ch: Char, var start: Int, var len: Int, val orig: Int, val open: Boolean, val close: Boolean)
 
     /** Fed og kursiv i [from, to) efter en forenklet udgave af CommonMarks delimiter-algoritme. */
     private fun inline(text: String, from: Int, to: Int, out: MutableList<MdSpan>, markers: MutableList<IntArray>) {
         val runs = mutableListOf<Run>()
+        // URL'er er uigennemsigtige: ingen fed, kursiv eller escape inden i dem
+        val links = urls(text, from, to)
+        for (l in links) out += MdSpan(MdKind.LINK, l[0], l[1])
+        var li = 0
         var p = from
         while (p < to) {
+            if (li < links.size && p >= links[li][0]) {
+                p = maxOf(p, links[li][1])
+                li++
+                continue
+            }
             val c = text[p]
             if (c == '\\' && p + 1 < to && text[p + 1] in PUNCT) {
                 markers += intArrayOf(p, p + 1)
@@ -375,5 +407,15 @@ object Markdown {
         val prefix = text.substring(prev.start, prev.indentEnd) + marker
         val p = cursor + prefix.length
         return MdEdit(text.substring(0, cursor) + prefix + text.substring(cursor), p, p)
+    }
+
+    /** Den URL, markøren eller markeringen står i (også lige før eller efter den), eller null. www. får https://. */
+    fun urlAt(text: String, selStart: Int, selEnd: Int): String? {
+        val lineStart = text.lastIndexOf('\n', selStart - 1) + 1
+        var lineEnd = text.indexOf('\n', selStart)
+        if (lineEnd < 0) lineEnd = text.length
+        val hit = urls(text, lineStart, lineEnd).firstOrNull { it[0] <= selStart && selEnd <= it[1] } ?: return null
+        val url = text.substring(hit[0], hit[1])
+        return if (url.startsWith("www.", ignoreCase = true)) "https://$url" else url
     }
 }

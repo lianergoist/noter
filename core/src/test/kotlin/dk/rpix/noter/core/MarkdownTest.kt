@@ -5,9 +5,11 @@ import dk.rpix.noter.core.MdKind.BULLET
 import dk.rpix.noter.core.MdKind.HEADING
 import dk.rpix.noter.core.MdKind.INDENT
 import dk.rpix.noter.core.MdKind.ITALIC
+import dk.rpix.noter.core.MdKind.LINK
 import dk.rpix.noter.core.MdKind.MARKER
 import dk.rpix.noter.core.MdKind.NUMBERED
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -322,5 +324,47 @@ class MarkdownTest {
         }
         assertEquals("før markeringen", "null", cont("\n|- a"))
         assertEquals("inde i markeringen", "null", cont("-\n| a"))
+    }
+
+    // ---- Links ----
+
+    @Test fun links() {
+        assertEquals("https://dr.dk", covered("Se https://dr.dk.", LINK))
+        assertEquals(setOf(MdSpan(LINK, 3, 16)), spansOf("Se https://dr.dk.", LINK))
+        assertEquals("http://a.dk/x?y=1&z=2#top", covered("http://a.dk/x?y=1&z=2#top", LINK))
+        assertEquals("www.dr.dk/tv", covered("Gå til www.dr.dk/tv!", LINK))
+        assertEquals("versaler", "HTTPS://DR.DK", covered("HTTPS://DR.DK", LINK))
+        assertEquals("parentes i URL bevares", "https://a.dk/x_(y)", covered("(https://a.dk/x_(y))", LINK))
+        assertEquals("tegnsætning til sidst", "https://a.dk", covered("\"https://a.dk\",", LINK))
+        assertEquals("to links", "https://a.dkhttps://b.dk", covered("https://a.dk og https://b.dk", LINK))
+        assertEquals("i et listepunkt", "https://a.dk", covered("- https://a.dk", LINK))
+        assertEquals("æøå i stien", "https://a.dk/æble", covered("https://a.dk/æble", LINK))
+    }
+
+    @Test fun notLinks() {
+        for (text in listOf("https://", "www.", "xhttps://a.dk", "ftp://a.dk", "mailto:a@b.dk", "javascript:alert(1)", "dr.dk")) {
+            assertEquals(text, "", covered(text, LINK))
+        }
+    }
+
+    @Test fun noFormattingInsideLinks() {
+        assertEquals("", covered("https://a.dk/_x_/y", ITALIC))
+        assertEquals("", covered("https://a.dk/_x_/y", MARKER))
+        assertEquals("", covered("https://a.dk/*x*", ITALIC))
+        assertEquals("https://a.dk", covered("**https://a.dk**", BOLD))
+        assertEquals("https://a.dk", covered("**https://a.dk**", LINK))
+        assertEquals("_x_ efter linket", "x", covered("https://a.dk _x_", ITALIC))
+    }
+
+    @Test fun urlAt() {
+        val t = "Se https://dr.dk nu"
+        assertEquals("https://dr.dk", Markdown.urlAt(t, 8, 8))
+        assertEquals("i starten", "https://dr.dk", Markdown.urlAt(t, 3, 3))
+        assertEquals("lige efter", "https://dr.dk", Markdown.urlAt(t, 16, 16))
+        assertEquals("markering inden i", "https://dr.dk", Markdown.urlAt(t, 11, 16))
+        assertNull("uden for", Markdown.urlAt(t, 1, 1))
+        assertNull("markering ud over linket", Markdown.urlAt(t, 1, 10))
+        assertEquals("www får https://", "https://www.dr.dk", Markdown.urlAt("www.dr.dk", 0, 0))
+        assertNull(Markdown.urlAt("", 0, 0))
     }
 }

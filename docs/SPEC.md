@@ -10,10 +10,12 @@ Må:
 - fungere uden net og sende ændringer senere
 - sameksistere med andre klienter på samme samling (jtx Board via DAVx5, webklient, `notesync.py`)
 - vise let formatering (overskrifter, fed, kursiv, lister, indrykning) i noteteksten, skrevet som Markdown (afsnit 6, fra v1.2)
+- vise URL'er i teksten som links og åbne dem i browseren (afsnit 6, fra v1.2)
+- åbne tekst- og Markdown-filer og delt tekst som nye noter og gemme en note som fil (afsnit 7, fra v1.2)
 
 Må ikke / senere:
-- fuld Markdown (links, billeder, kode, tabeller, citater), forhåndsvisning i særskilt tilstand, vedhæftninger, flere konti, delte noter, push-notifikationer
-- Idéer til senere: del-tekst-til-ny-note (`ACTION_SEND`), widget, hurtig-note
+- fuld Markdown (`[tekst](url)`, billeder, kode, tabeller, citater), redigering af filer direkte (en fil er aldrig en note), forhåndsvisning i særskilt tilstand, vedhæftninger, flere konti, delte noter, push-notifikationer
+- Idéer til senere: widget, hurtig-note
 
 ## 2. Dataformat (VJOURNAL)
 
@@ -204,6 +206,7 @@ Alt gælder **linje for linje**. Linjeskift er `\n`. Inline-formatering krydser 
 | Fed | `**tekst**` | |
 | Kursiv | `*tekst*` eller `_tekst_` | `_` kun ved ordgrænser (`snake_case_navn` er tekst); `*` også inde i ord (`a*b*c`). |
 | Fed og kursiv | `***tekst***` | Kursiv yderst, fed inderst (som CommonMark). |
+| Link | `https://…`, `http://…`, `www.…` | Ved ordgrænse, frem til blanktegn eller `<`/`>`. Tegnsætning til sidst (`.,;:!?'"*_`) og en ulige `)`/`]` hører ikke med. Inden i et link er der ingen fed, kursiv eller escape. Andre skemaer (`ftp:`, `mailto:`, `javascript:`) er tekst. |
 | Escape | `\*`, `\_`, `\#`, `\\` ... | Backslash foran ASCII-tegnsætning gør tegnet bogstaveligt. Foran andet (`C:\sti`) er backslash bare tekst. |
 
 Regler for `*`/`_` (forenklet CommonMark): en åbnende markering må ikke følges af blanktegn, en lukkende må ikke have
@@ -211,12 +214,12 @@ blanktegn foran, og indholdet må ikke være tomt. `2 * 3 * 4`, `** x**` og `***
 en markering uden partner (`**ufærdig`). Fed og kursiv kan indlejres (`**fed *kursiv* fed**`) og bruges i overskrifter
 og listepunkter.
 
-Alt andet (links, kode, citater, tabeller, vandrette streger, overskrifter med `===`) er almindelig tekst.
+Alt andet (`[tekst](url)`, kode, citater, tabeller, vandrette streger, overskrifter med `===`) er almindelig tekst.
 
 ### API (`:core`)
 
 ```kotlin
-enum class MdKind { HEADING, BULLET, NUMBERED, INDENT, BOLD, ITALIC, MARKER }
+enum class MdKind { HEADING, BULLET, NUMBERED, INDENT, BOLD, ITALIC, MARKER, LINK }
 data class MdSpan(val kind: MdKind, val start: Int, val end: Int, val level: Int = 0)
 data class MdEdit(val text: String, val selStart: Int, val selEnd: Int)
 
@@ -231,6 +234,7 @@ object Markdown {
     fun indent(text: String, selStart: Int, selEnd: Int): MdEdit
     fun outdent(text: String, selStart: Int, selEnd: Int): MdEdit
     fun continueList(text: String, cursor: Int): MdEdit?
+    fun urlAt(text: String, selStart: Int, selEnd: Int): String?
 }
 ```
 
@@ -243,6 +247,7 @@ Rækkefølgen af spans er ikke fastlagt.
 - `BULLET`/`NUMBERED` dækker hele linjen inkl. indrykning, `level` = indrykningsniveau.
 - `INDENT` dækker en indrykket linje, der ikke er et listepunkt (kun niveau ≥ 1), `level` = niveau.
 - `BOLD`/`ITALIC` dækker alt mellem den åbnende og den lukkende markering (inkl. indlejrede markeringer).
+- `LINK` dækker URL'en; UI'et understreger og farver den.
 - `MARKER` dækker syntakstegn, som UI'et viser dæmpet: `#`-præfikset med mellemrum, listemarkeringen med
   mellemrum (`- `, `12. `), `*`/`_`-markeringer og escape-backslash. Tilstødende `MARKER`-spans slås sammen.
 
@@ -276,6 +281,11 @@ En række knapper over tastaturet, kun når tekstfeltet har fokus: **Fed**, **Ku
   i en markering eller indrykning, der fjernes eller udskiftes, havner den lige efter det nye præfiks. Er markeringen ikke tom, dækker resultatet de berørte linjer
   helt (første linjes start til sidste linjes slut).
 
+**Åbn link:** Står markøren i en URL (også lige før eller efter den), eller ligger markeringen inden i en, viser
+værktøjslinjen en ekstra knap først, **Åbn link** (`urlAt`). Den åbner URL'en med `ACTION_VIEW` i standardbrowseren;
+`www.…` får `https://` foran. Et tryk i teksten sætter altid markøren og åbner aldrig et link. Der er ingen websøgning
+på markeret tekst, som ikke er en URL.
+
 **Fortsæt liste ved Enter** (`continueList(text, cursor)`): Editoren kalder den, når en ændring er præcis ét indsat
 `\n` (ikke ved indsæt af tekst). Er linjen før markøren et listepunkt, får den nye linje samme indrykning og markering;
 nummererede punkter får næste nummer (`3. ` → `4. `, `9) ` → `10) `). Enter midt i et punkt deler det. Er punktet tomt,
@@ -297,6 +307,21 @@ listemarkering fortsættes ikke.
   Grupper: "I dag", "I går", "Seneste 7 dage", derefter måned og år, og til sidst "Uden dato".
   Listepunkt: titel (eller "Uden titel"), første ikke-tomme linje af teksten, tags og klokkeslæt/ugedag/dato.
   Lys/mørk følger systemet. Brug serif til noteindhold, hvis det passer til temaet; udseendet er ikke et krav.
+- **Filer** (`NoteFile` i `:core`, `FileImport` i `:app`). En fil er aldrig en note: åbning opretter en ny note, der
+  synkroniseres som alle andre, og at gemme skriver en kopi. Ingen tilladelser; alt går gennem Androids filvælger.
+  - *Åbn fil* (knap i listen, `ACTION_OPEN_DOCUMENT` med `text/*` og `application/octet-stream`, fordi `.md` ofte
+    har den sidste type) og *Åbn med / Del* fra andre apps (`intent-filter` for `ACTION_VIEW` og `ACTION_SEND` med
+    `text/plain`, `text/markdown`, `text/x-markdown`). Den nye note åbnes i editoren.
+  - Indlæsning: højst 1 MB. UTF-8 (BOM fjernes), UTF-16 med BOM, ellers windows-1252. Nul-bytes = ikke tekst.
+    Linjeskift normaliseres til `\n`, og tomme linjer til sidst fjernes.
+  - Titel: er første linje `# Titel` (niveau 1), bliver den titlen, og tomme linjer efter den fjernes; ellers bruges
+    filnavnet uden endelse. Ved delt tekst bliver `EXTRA_SUBJECT` titlen, hvis det findes. Tags kommer ikke med.
+    En fil, der hverken giver titel eller tekst, opretter ingen note.
+  - *Gem som Markdown-fil* (`# Titel`, tom linje, teksten; kan åbnes igen til samme titel og tekst) og *Gem som
+    tekstfil* (kun teksten) i editorens menu (`ACTION_CREATE_DOCUMENT`). Filnavnet foreslås ud fra titlen uden
+    `/\:*?"<>|` og kontroltegn, højst 80 tegn, ellers "Note".
+  - Fejl vises roligt: "Kan ikke åbne filen. Den er for stor, tom eller ikke en tekstfil." / "Kan ikke gemme filen.
+    Prøv et andet sted."
 - **Sprog:** engelsk er standard; dansk, tysk, fransk og spansk er oversættelser. Datoer formateres i telefonens sprog.
   Appen hedder "DavNotes" på alle sprog. Valg af sprog pr. app i systemindstillingerne (Android 13+).
 - **Tekster (dansk oversættelse, som i webklienten):** "Noter", "Ny note", "Søg i noter", "Titel", "Tilføj tags, adskilt med komma", "Skriv her", "Slet",
@@ -321,7 +346,9 @@ Kernen testes i `:core` med JUnit mod (a) en in-memory `NoteStore` og (b) en rig
 - en `VEVENT` i samlingen ignoreres
 - Markdown (`MarkdownTest`): overskrifter, lister, indrykning, fed/kursiv inkl. indlejring, falske positiver
   (`snake_case`, `2 * 3`, ufærdige markeringer), escapes, `plain`, værktøjslinjens funktioner med markør/markering
-  og fortsættelse/afslutning af lister ved Enter
+  og fortsættelse/afslutning af lister ved Enter; links og `urlAt`
+- filer (`NoteFileTest`): tegnsæt, binære filer, titel fra `# Titel` eller filnavn, linjeskift, rundtur af
+  `toMarkdown`, filnavne
 - til sidst har A og B de samme noter og ingen ventende ændringer
 
 **Lokal testserver** (som `selftest.py` gør): 
@@ -355,3 +382,5 @@ Integrationstests mod Radicale springes over, hvis miljøvariablen `NOTES_TEST_U
 - Markdown: indrykning på 4 mellemrum foran almindelig tekst er en kodeblok i CommonMark, så andre Markdown-visere
   kan vise den anderledes. Inline-formatering på tværs af linjer understøttes ikke (det gør CommonMark).
   Søgning sker i den rå tekst, så `**` tæller med.
+- Filer: åbner man den samme fil to gange, bliver det til to noter. Nogle filhåndteringer melder `.md` som
+  `application/octet-stream`, og så tilbydes DavNotes ikke under "Åbn med" (men filen kan åbnes fra appen).

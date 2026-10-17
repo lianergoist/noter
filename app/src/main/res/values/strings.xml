@@ -91,4 +91,16 @@
     <string name="format_numbers">Numbered list</string>
     <string name="format_outdent">Decrease indent</string>
     <string name="format_indent">Increase indent</string>
+
+    <!-- Filer og links -->
+    <string name="open_file">Open file</string>
+    <string name="save_as_markdown">Save as Markdown file</string>
+    <string name="save_as_text">Save as text file</string>
+    <string name="more_options">More options</string>
+    <string name="open_link">Open link</string>
+    <string name="file_saved">File saved</string>
+    <string name="file_open_failed">Can\'t open the file. It\'s too large, empty or not a text file.</string>
+    <string name="file_save_failed">Can\'t save the file. Try another location.</string>
+    <string name="no_browser">No app can open the link.</string>
+    <string name="untitled_file">Note</string>
 </resources>
