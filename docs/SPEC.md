@@ -9,12 +9,12 @@ Må:
 - vise, søge i, oprette, redigere og slette noter (titel, tekst, tags)
 - fungere uden net og sende ændringer senere
 - sameksistere med andre klienter på samme samling (jtx Board via DAVx5, webklient, `notesync.py`)
-- vise let formatering (overskrifter, fed, kursiv, lister, indrykning) i noteteksten, skrevet som Markdown (afsnit 6, fra v1.2)
+- vise let formatering (overskrifter, fed, kursiv, lister, afkrydsningslister, citater, kode, indrykning) i noteteksten, skrevet som Markdown (afsnit 6, fra v1.2)
 - vise URL'er i teksten som links og åbne dem i browseren (afsnit 6, fra v1.2)
 - åbne tekst- og Markdown-filer og delt tekst som nye noter og dele en note som Markdown-fil (afsnit 7, fra v1.2)
 
 Må ikke / senere:
-- fuld Markdown (`[tekst](url)`, billeder, kode, tabeller, citater), redigering af filer direkte (en fil er aldrig en note), forhåndsvisning i særskilt tilstand, vedhæftninger, flere konti, delte noter, push-notifikationer
+- fuld Markdown (`[tekst](url)`, billeder, kodeblokke, tabeller, indlejrede citater), redigering af filer direkte (en fil er aldrig en note), forhåndsvisning i særskilt tilstand, vedhæftninger, flere konti, delte noter, push-notifikationer
 - Idéer til senere: widget, hurtig-note
 
 ## 2. Dataformat (VJOURNAL)
@@ -202,11 +202,14 @@ Alt gælder **linje for linje**. Linjeskift er `\n`. Inline-formatering krydser 
 | Overskrift | `# `, `## ` ... `###### ` i linjens start | 1–6 `#` efterfulgt af mellemrum eller linjeslut. Ingen indrykning foran. `#tag` og `####### x` er ikke overskrifter. |
 | Punktliste | `- `, `* ` eller `+ ` | Efter eventuel indrykning. Mellemrum efter tegnet er påkrævet (`-x` og `---` er tekst). |
 | Nummereret liste | `1. ` eller `1) ` | 1–9 cifre, `.` eller `)`, mellemrum. `1.5 kg` er tekst. |
+| Afkrydsning | `- [ ] ` / `- [x] ` | Punktliste (`-`, `*`, `+`) med `[ ]`, `[x]` eller `[X]` efterfulgt af mellemrum eller linjeslut. `- [] a`, `- [ ]a` og `1. [ ] a` er ikke afkrydsning. |
+| Citat | `> ` | Efter eventuel indrykning, `>` efterfulgt af mellemrum eller linjeslut (`>a` er tekst). Indholdet får kun inline-formatering; `> - a` er et citat med teksten `- a`, ikke en liste. |
 | Indrykning | mellemrum/tab i linjens start | Niveau = `(kolonner + 2) / 4` (heltal), hvor tab = 4 kolonner. Altså 2–5 mellemrum = niveau 1, 6–9 = niveau 2. |
 | Fed | `**tekst**` | |
 | Kursiv | `*tekst*` eller `_tekst_` | `_` kun ved ordgrænser (`snake_case_navn` er tekst); `*` også inde i ord (`a*b*c`). |
 | Fed og kursiv | `***tekst***` | Kursiv yderst, fed inderst (som CommonMark). |
 | Link | `https://…`, `http://…`, `www.…` | Ved ordgrænse, frem til blanktegn eller `<`/`>`. Tegnsætning til sidst (`.,;:!?'"*_`) og en ulige `)`/`]` hører ikke med. Inden i et link er der ingen fed, kursiv eller escape. Andre skemaer (`ftp:`, `mailto:`, `javascript:`) er tekst. |
+| Kode | `` `tekst` `` | Et løb af n backticks lukkes af det næste løb af præcis n på samme linje (` ``a`b`` ` er koden `a`b`). Inden i kode er der ingen fed, kursiv, link eller escape. Uden partner er backticks tekst. |
 | Escape | `\*`, `\_`, `\#`, `\\` ... | Backslash foran ASCII-tegnsætning gør tegnet bogstaveligt. Foran andet (`C:\sti`) er backslash bare tekst. |
 
 Regler for `*`/`_` (forenklet CommonMark): en åbnende markering må ikke følges af blanktegn, en lukkende må ikke have
@@ -214,12 +217,12 @@ blanktegn foran, og indholdet må ikke være tomt. `2 * 3 * 4`, `** x**` og `***
 en markering uden partner (`**ufærdig`). Fed og kursiv kan indlejres (`**fed *kursiv* fed**`) og bruges i overskrifter
 og listepunkter.
 
-Alt andet (`[tekst](url)`, kode, citater, tabeller, vandrette streger, overskrifter med `===`) er almindelig tekst.
+Alt andet (`[tekst](url)`, kodeblokke med ` ``` `, indlejrede citater, tabeller, vandrette streger, overskrifter med `===`) er almindelig tekst.
 
 ### API (`:core`)
 
 ```kotlin
-enum class MdKind { HEADING, BULLET, NUMBERED, INDENT, BOLD, ITALIC, MARKER, LINK }
+enum class MdKind { HEADING, BULLET, NUMBERED, INDENT, BOLD, ITALIC, MARKER, LINK, QUOTE, TASK, CHECKBOX, DONE, CODE }
 data class MdSpan(val kind: MdKind, val start: Int, val end: Int, val level: Int = 0)
 data class MdEdit(val text: String, val selStart: Int, val selEnd: Int)
 
@@ -231,6 +234,9 @@ object Markdown {
     fun cycleHeading(text: String, selStart: Int, selEnd: Int): MdEdit
     fun toggleBullets(text: String, selStart: Int, selEnd: Int): MdEdit
     fun toggleNumbers(text: String, selStart: Int, selEnd: Int): MdEdit
+    fun toggleTask(text: String, selStart: Int, selEnd: Int): MdEdit
+    fun toggleQuote(text: String, selStart: Int, selEnd: Int): MdEdit
+    fun toggleCode(text: String, selStart: Int, selEnd: Int): MdEdit
     fun indent(text: String, selStart: Int, selEnd: Int): MdEdit
     fun outdent(text: String, selStart: Int, selEnd: Int): MdEdit
     fun continueList(text: String, cursor: Int): MdEdit?
@@ -245,19 +251,27 @@ Rækkefølgen af spans er ikke fastlagt.
 `spans`:
 - `HEADING` dækker hele linjen (uden `\n`), `level` = antal `#`.
 - `BULLET`/`NUMBERED` dækker hele linjen inkl. indrykning, `level` = indrykningsniveau.
+- `TASK` dækker et afkrydsningspunkt som `BULLET` (og der er ingen `BULLET` for linjen). `CHECKBOX` dækker `[ ]`/`[x]`,
+  `level` = 1, hvis det er afkrydset. `DONE` dækker teksten efter et afkrydset felt (UI'et gennemstreger og dæmper den).
+  UI'et viser `- [ ]` som `☐` og `- [x]` som `☑` på stregens plads; de øvrige tegn bliver nulbredde-mellemrum.
+- `QUOTE` dækker hele citatlinjen inkl. indrykning, `level` = indrykningsniveau. UI'et gør `>` usynligt og tegner en
+  gul lodret streg (5 dp) på dets plads ud fra tekstlayoutet (derfor `BasicTextField` med `TextFieldDefaults.DecorationBox`,
+  ikke `ParagraphStyle`, som giver forkerte markørpositioner). Teksten efter `> ` står derved let indrykket.
+- `CODE` dækker teksten mellem backticks; UI'et viser den i fast bredde på grå baggrund (0,9 em).
 - `INDENT` dækker en indrykket linje, der ikke er et listepunkt (kun niveau ≥ 1), `level` = niveau.
 - `BOLD`/`ITALIC` dækker alt mellem den åbnende og den lukkende markering (inkl. indlejrede markeringer).
 - `LINK` dækker URL'en; UI'et understreger og farver den og viser den lidt mindre (0,9 em).
 - `MARKER` dækker syntakstegn, som UI'et viser dæmpet: `#`-præfikset med mellemrum, listemarkeringen med
-  mellemrum (`- `, `12. `), `*`/`_`-markeringer og escape-backslash. Tilstødende `MARKER`-spans slås sammen.
+  mellemrum (`- `, `12. `, `> `; for afkrydsning kun `- `), `*`/`_`-markeringer, backticks og escape-backslash. Tilstødende `MARKER`-spans slås sammen.
 
-`plain` (til listens forhåndsvisning): fjerner `#`-præfiks, `*`/`_`-markeringer og escape-backslash, skriver
-`- `/`* `/`+ ` som `• ` og lader nummerering og indrykning stå.
+`plain` (til listens forhåndsvisning): fjerner `#`-præfiks, `> `, `*`/`_`-markeringer, backticks og escape-backslash,
+skriver `- `/`* `/`+ ` som `• `, `- [ ] ` som `☐ ` og `- [x] ` som `☑ ` og lader nummerering og indrykning stå.
 
 ### Værktøjslinje (redigeringsfunktionerne)
 
 En række knapper over tastaturet, kun når tekstfeltet har fokus: **Fed**, **Kursiv**, **Overskrift**, **Punktliste**,
-**Nummereret liste**, **Ryk ud**, **Ryk ind**. Ikoner som egne vektor-drawables (Material Symbols, Apache 2.0), ikke
+**Nummereret liste**, **Afkrydsningsliste**, **Citat**, **Kode**, **Ryk ud**, **Ryk ind**. Knapperne er 40 dp med
+20 dp-ikoner, så alle ti er synlige på en almindelig telefon. Ikoner som egne vektor-drawables (Material Symbols, Apache 2.0), ikke
 `material-icons-extended`. Hver knap har en `contentDescription` på alle fem sprog. Editoren skifter fra `String` til
 `TextFieldValue` for at kende markeringen; stylingen sker med en `VisualTransformation` med identitets-offsetmapping
 (markeringerne bliver stående, men dæmpes).
@@ -268,12 +282,19 @@ En række knapper over tastaturet, kun når tekstfeltet har fokus: **Fed**, **Ku
   `**fed**` + kursiv giver `***fed***`. Uden markering indsættes `****`/`**` med markøren i midten; står markøren midt
   i et tomt par, fjernes parret. Strækker markeringen sig over flere linjer, omkranses hver ikke-tom linje for sig.
   Den markerede tekst forbliver markeret (uden markeringstegnene).
+- `toggleCode`: som kursiv, men med `` ` `` (omkranset kun ved et løb af præcis én backtick).
 - `cycleHeading`: Linjerne under markeringen går ingen → `# ` → `## ` → `### ` → ingen. Næste trin bestemmes af den
   første ikke-tomme linje og gælder for alle linjerne. En listemarkering erstattes.
 - `toggleBullets`/`toggleNumbers`: Er alle ikke-tomme linjer under markeringen allerede den slags liste, fjernes
   markeringen. Ellers får de den (den anden listetype eller en overskrift erstattes). Indrykning bevares.
   Nummerering starter ved 1 og tælles op pr. indrykningsniveau; et dybere niveau starter forfra efter et mindre
   indrykket punkt.
+- `toggleTask`: Linjer, der ikke er afkrydsningspunkter, bliver det (`- [ ] `; en anden listemarkering eller
+  overskrift erstattes, eksisterende punkter beholder deres kryds). Er alle allerede punkter, krydses de alle af,
+  eller krydsene fjernes, hvis alle var afkrydset. Et tryk i teksten krydser aldrig af. Punktliste-knappen gør et
+  afkrydsningspunkt til et almindeligt punkt.
+- `toggleQuote`: Som punktliste: er alle linjer citater, fjernes `> `; ellers indsættes `> ` efter indrykningen.
+  En listemarkering bliver stående (som tekst i citatet).
 - `indent`/`outdent`: Ryk ind indsætter 4 mellemrum foran hver ikke-tom linje. Ryk ud fjerner ét tab eller op til
   4 mellemrum.
 - Linjefunktionerne springer tomme linjer over, når markeringen dækker flere linjer (på en enkelt tom linje
@@ -287,8 +308,8 @@ værktøjslinjen en ekstra knap fast yderst til højre, **Åbn link** (`urlAt`);
 på markeret tekst, som ikke er en URL.
 
 **Fortsæt liste ved Enter** (`continueList(text, cursor)`): Editoren kalder den, når en ændring er præcis ét indsat
-`\n` (ikke ved indsæt af tekst). Er linjen før markøren et listepunkt, får den nye linje samme indrykning og markering;
-nummererede punkter får næste nummer (`3. ` → `4. `, `9) ` → `10) `). Enter midt i et punkt deler det. Er punktet tomt,
+`\n` (ikke ved indsæt af tekst). Er linjen før markøren et listepunkt eller et citat, får den nye linje samme indrykning og markering;
+nummererede punkter får næste nummer (`3. ` → `4. `, `9) ` → `10) `), og afkrydsningspunkter starter uafkrydset. Enter midt i et punkt deler det. Er punktet tomt,
 og er den nye linje også tom, fjernes punktet, og listen slutter ("Enter to gange"). Et tomt indrykket punkt afslutter
 listen helt i stedet for at rykke ud. Efterfølgende numre omnummereres ikke. Overskrifter og indrykket tekst uden
 listemarkering fortsættes ikke.
@@ -349,7 +370,7 @@ Kernen testes i `:core` med JUnit mod (a) en in-memory `NoteStore` og (b) en rig
 - offline giver `NetworkError`, og ændringerne ligger tilbage til næste sync
 - forkert adgangskode giver `AuthError`
 - en `VEVENT` i samlingen ignoreres
-- Markdown (`MarkdownTest`): overskrifter, lister, indrykning, fed/kursiv inkl. indlejring, falske positiver
+- Markdown (`MarkdownTest`): overskrifter, lister, afkrydsning, citater, kode, indrykning, fed/kursiv inkl. indlejring, falske positiver
   (`snake_case`, `2 * 3`, ufærdige markeringer), escapes, `plain`, værktøjslinjens funktioner med markør/markering
   og fortsættelse/afslutning af lister ved Enter; links og `urlAt`
 - filer (`NoteFileTest`): tegnsæt, binære filer, titel fra `# Titel` eller filnavn, linjeskift, rundtur af

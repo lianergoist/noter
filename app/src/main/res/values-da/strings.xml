@@ -87,6 +87,9 @@
     <string name="format_heading">Overskrift</string>
     <string name="format_bullets">Punktliste</string>
     <string name="format_numbers">Nummereret liste</string>
+    <string name="format_task">Afkrydsningsliste</string>
+    <string name="format_quote">Citat</string>
+    <string name="format_code">Kode</string>
     <string name="format_outdent">Ryk ud</string>
     <string name="format_indent">Ryk ind</string>
 

@@ -2,12 +2,17 @@ package dk.rpix.noter.core
 
 import dk.rpix.noter.core.MdKind.BOLD
 import dk.rpix.noter.core.MdKind.BULLET
+import dk.rpix.noter.core.MdKind.CHECKBOX
+import dk.rpix.noter.core.MdKind.CODE
+import dk.rpix.noter.core.MdKind.DONE
 import dk.rpix.noter.core.MdKind.HEADING
 import dk.rpix.noter.core.MdKind.INDENT
 import dk.rpix.noter.core.MdKind.ITALIC
 import dk.rpix.noter.core.MdKind.LINK
 import dk.rpix.noter.core.MdKind.MARKER
 import dk.rpix.noter.core.MdKind.NUMBERED
+import dk.rpix.noter.core.MdKind.QUOTE
+import dk.rpix.noter.core.MdKind.TASK
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -366,5 +371,140 @@ class MarkdownTest {
         assertNull("markering ud over linket", Markdown.urlAt(t, 1, 10))
         assertEquals("www får https://", "https://www.dr.dk", Markdown.urlAt("www.dr.dk", 0, 0))
         assertNull(Markdown.urlAt("", 0, 0))
+    }
+
+    // ---- Citater ----
+
+    @Test fun quotes() {
+        assertEquals(setOf(MdSpan(QUOTE, 0, 7)), spansOf("> Hjut!", QUOTE))
+        assertEquals("> ", covered("> Hjut!", MARKER))
+        assertEquals("tom citatlinje", setOf(MdSpan(QUOTE, 0, 1)), spansOf(">", QUOTE))
+        assertEquals("indrykket", setOf(MdSpan(QUOTE, 0, 7, 1)), spansOf("    > a", QUOTE))
+        assertEquals("flere linjer", 2, spansOf("> a\n> b", QUOTE).size)
+        assertEquals("formatering i citatet", "b", covered("> a **b**", BOLD))
+        for (text in listOf(">a", "a > b", "->", "# > a")) {
+            assertEquals(text, "", covered(text, QUOTE))
+        }
+    }
+
+    @Test fun toggleQuote() {
+        val op = Markdown::toggleQuote
+        assertEquals("> a|", apply(op, "a|"))
+        assertEquals("a|", apply(op, "> a|"))
+        assertEquals("[> a\n\n> b]", apply(op, "[a\n\nb]"))
+        assertEquals("[a\nb]", apply(op, "[> a\n> b]"))
+        assertEquals("blandet bliver citat", "[> a\n> b]", apply(op, "[> a\nb]"))
+        assertEquals("indrykning bevares", "    > a|", apply(op, "    a|"))
+        assertEquals("listemarkering bliver stående", "> - a|", apply(op, "- a|"))
+        assertEquals("markør i fjernet markering", "|a", apply(op, ">| a"))
+        assertEquals("tom linje", "> |", apply(op, "|"))
+    }
+
+    @Test fun continueQuote() {
+        assertEquals("> a\n> |", cont("> a\n|"))
+        assertEquals("    > a\n    > |", cont("    > a\n|"))
+        assertEquals("> ab\n> |cd", cont("> ab\n|cd"))
+        assertEquals("tomt citat afslutter", "> a\n|", cont("> a\n> \n|"))
+        assertEquals("|", cont(">\n|"))
+    }
+
+    // ---- Kode ----
+
+    @Test fun code() {
+        assertEquals(setOf(MdSpan(CODE, 1, 5)), spansOf("`hvor`", CODE))
+        assertEquals("``", covered("`hvor`", MARKER))
+        assertEquals("a b", covered("x `a b` y", CODE))
+        assertEquals("to stykker", "ab", covered("`a` og `b`", CODE))
+        assertEquals("dobbelte backticks", "a`b", covered("``a`b``", CODE))
+        assertEquals("i et listepunkt", "x", covered("- `x`", CODE))
+    }
+
+    @Test fun noFormattingInsideCode() {
+        assertEquals("", covered("`**a**`", BOLD))
+        assertEquals("", covered("`_a_`", ITALIC))
+        assertEquals("", covered("`https://a.dk`", LINK))
+        assertEquals("backslash er tekst i kode", "``", covered("`a\\*b`", MARKER))
+        assertEquals("fed uden om kode", "`a`", covered("**`a`**", BOLD))
+    }
+
+    @Test fun notCode() {
+        for (text in listOf("`", "``", "`a", "a`", "``a`", "`a\nb`", "\\`a`")) {
+            assertEquals(text, "", covered(text, CODE))
+        }
+    }
+
+    @Test fun toggleCode() {
+        val op = Markdown::toggleCode
+        assertEquals("a `[b]` c", apply(op, "a [b] c"))
+        assertEquals("a [b] c", apply(op, "a `[b]` c"))
+        assertEquals("markeringerne med i markeringen", "a [b] c", apply(op, "a [`b`] c"))
+        assertEquals("blanktegn udenfor", " `[b]` ", apply(op, "[ b ]"))
+        assertEquals("tomt par", "a`|`", apply(op, "a|"))
+        assertEquals("fjern tomt par", "a|", apply(op, "a`|`"))
+    }
+
+    // ---- Afkrydsningslister ----
+
+    @Test fun tasks() {
+        val t = "- [ ] Mælk"
+        assertEquals(setOf(MdSpan(TASK, 0, 10)), spansOf(t, TASK))
+        assertEquals(setOf(MdSpan(CHECKBOX, 2, 5, 0)), spansOf(t, CHECKBOX))
+        assertEquals("- ", covered(t, MARKER))
+        assertEquals("", covered(t, DONE))
+        assertEquals("ikke også en punktliste", "", covered(t, BULLET))
+        val done = "- [x] Brød"
+        assertEquals(setOf(MdSpan(CHECKBOX, 2, 5, 1)), spansOf(done, CHECKBOX))
+        assertEquals("Brød", covered(done, DONE))
+        assertEquals("stort X", setOf(MdSpan(CHECKBOX, 2, 5, 1)), spansOf("* [X] a", CHECKBOX))
+        assertEquals("indrykket", setOf(MdSpan(TASK, 0, 9, 1)), spansOf("    - [ ]", TASK))
+        assertEquals("formatering i punktet", "b", covered("- [ ] a *b*", ITALIC))
+        for (text in listOf("- [] a", "- [ ]a", "-[ ] a", "[ ] a", "- [y] a", "1. [ ] a")) {
+            assertEquals(text, "", covered(text, TASK))
+        }
+        assertEquals("[] er en almindelig punktliste", 1, spansOf("- [] a", BULLET).size)
+    }
+
+    // Som apply, men markeringen skrives « ... », fordi teksterne indeholder [ ]
+    private fun applySel(op: (String, Int, Int) -> MdEdit, input: String): String {
+        val s = input.indexOf('«')
+        val e = input.indexOf('»') - 1
+        val r = op(input.replace("«", "").replace("»", ""), s, e)
+        return StringBuilder(r.text).insert(r.selEnd, '»').insert(r.selStart, '«').toString()
+    }
+
+    @Test fun toggleTask() {
+        val op = Markdown::toggleTask
+        assertEquals("- [ ] a|", apply(op, "a|"))
+        assertEquals("afkryds", "- [x] a|", apply(op, "- [ ] a|"))
+        assertEquals("fjern kryds", "- [ ] a|", apply(op, "- [x] a|"))
+        assertEquals("- [ ] a|", apply(op, "- [X] a|"))
+        assertEquals("punktliste erstattes", "- [ ] a|", apply(op, "- a|"))
+        assertEquals("nummereret erstattes", "- [ ] a|", apply(op, "1. a|"))
+        assertEquals("indrykning bevares", "    - [ ] a|", apply(op, "    a|"))
+        assertEquals("tom linje", "- [ ] |", apply(op, "|"))
+        assertEquals("«- [ ] a\n\n- [ ] b»", applySel(op, "«a\n\nb»"))
+        assertEquals("ét uafkrydset: kryds alle", "«- [x] a\n- [x] b»", applySel(op, "«- [x] a\n- [ ] b»"))
+        assertEquals("alle afkrydset: fjern krydsene", "«- [ ] a\n- [ ] b»", applySel(op, "«- [x] a\n- [x] b»"))
+        assertEquals("blandet bliver liste, kryds bevares", "«- [x] a\n- [ ] b»", applySel(op, "«- [x] a\nb»"))
+    }
+
+    @Test fun bulletsOnTasks() {
+        assertEquals("afkrydsning bliver punktliste", "- a|", apply(Markdown::toggleBullets, "- [x] a|"))
+        assertEquals("1. a|", apply(Markdown::toggleNumbers, "- [ ] a|"))
+    }
+
+    @Test fun continueTask() {
+        assertEquals("- [ ] a\n- [ ] |", cont("- [ ] a\n|"))
+        assertEquals("nyt punkt er uafkrydset", "- [x] a\n- [ ] |", cont("- [x] a\n|"))
+        assertEquals("    * [ ] a\n    * [ ] |", cont("    * [ ] a\n|"))
+        assertEquals("tomt punkt afslutter", "- [ ] a\n|", cont("- [ ] a\n- [ ] \n|"))
+        assertEquals("|", cont("- [x]\n|"))
+    }
+
+    @Test fun plainNewKinds() {
+        assertEquals("Hjut", Markdown.plain("> Hjut"))
+        assertEquals("hvor", Markdown.plain("`hvor`"))
+        assertEquals("☐ a\n☑ b", Markdown.plain("- [ ] a\n- [x] b"))
+        assertEquals("    ☐ a", Markdown.plain("    - [ ] a"))
     }
 }

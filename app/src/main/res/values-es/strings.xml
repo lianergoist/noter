@@ -87,6 +87,9 @@
     <string name="format_heading">Encabezado</string>
     <string name="format_bullets">Lista con viñetas</string>
     <string name="format_numbers">Lista numerada</string>
+    <string name="format_task">Lista de verificación</string>
+    <string name="format_quote">Cita</string>
+    <string name="format_code">Código</string>
     <string name="format_outdent">Reducir sangría</string>
     <string name="format_indent">Aumentar sangría</string>
 

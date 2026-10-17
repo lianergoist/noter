@@ -87,6 +87,9 @@
     <string name="format_heading">Überschrift</string>
     <string name="format_bullets">Aufzählung</string>
     <string name="format_numbers">Nummerierte Liste</string>
+    <string name="format_task">Checkliste</string>
+    <string name="format_quote">Zitat</string>
+    <string name="format_code">Code</string>
     <string name="format_outdent">Einzug verkleinern</string>
     <string name="format_indent">Einzug vergrößern</string>
 

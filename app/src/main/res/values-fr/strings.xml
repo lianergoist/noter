@@ -87,6 +87,9 @@
     <string name="format_heading">Titre</string>
     <string name="format_bullets">Liste à puces</string>
     <string name="format_numbers">Liste numérotée</string>
+    <string name="format_task">Liste de cases à cocher</string>
+    <string name="format_quote">Citation</string>
+    <string name="format_code">Code</string>
     <string name="format_outdent">Diminuer le retrait</string>
     <string name="format_indent">Augmenter le retrait</string>
 

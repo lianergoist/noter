@@ -388,16 +388,19 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
                 marker = MaterialTheme.colorScheme.outline,
                 bullet = MaterialTheme.colorScheme.onSurfaceVariant,
                 link = MaterialTheme.colorScheme.primary,
+                quote = MaterialTheme.colorScheme.onSurfaceVariant,
+                codeBackground = MaterialTheme.colorScheme.surfaceContainerHighest,
+                checked = MaterialTheme.colorScheme.primary,
             )
-            TextField(
+            MarkdownBodyField(
                 value = vm.bodyValue,
                 onValueChange = vm::onBody,
                 modifier = Modifier.fillMaxWidth().onFocusChanged { bodyFocused = it.isFocused },
                 textStyle = serif,
-                visualTransformation = markdown,
+                transformation = markdown,
+                quoteBar = Color(0xFFFFC107), // gul (Material Amber 500), synlig i lyst og mørkt tema
                 placeholder = { Text(stringResource(R.string.body_hint), style = serif) },
                 colors = plain,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
             )
             DateLabels.parseStamp(vm.modified)?.let { t: Date ->
                 Text(

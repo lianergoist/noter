@@ -89,6 +89,9 @@
     <string name="format_heading">Heading</string>
     <string name="format_bullets">Bulleted list</string>
     <string name="format_numbers">Numbered list</string>
+    <string name="format_task">Checklist</string>
+    <string name="format_quote">Quote</string>
+    <string name="format_code">Code</string>
     <string name="format_outdent">Decrease indent</string>
     <string name="format_indent">Increase indent</string>
 

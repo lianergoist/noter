@@ -1,7 +1,7 @@
 package dk.rpix.noter.core
 
 /** Slags formatering. Se afsnit 6 i docs/SPEC.md. */
-enum class MdKind { HEADING, BULLET, NUMBERED, INDENT, BOLD, ITALIC, MARKER, LINK }
+enum class MdKind { HEADING, BULLET, NUMBERED, INDENT, BOLD, ITALIC, MARKER, LINK, QUOTE, TASK, CHECKBOX, DONE, CODE }
 
 /** Et stykke formatering i teksten: UTF-16-indeks, [start] inklusiv, [end] eksklusiv. */
 data class MdSpan(val kind: MdKind, val start: Int, val end: Int, val level: Int = 0)
@@ -17,13 +17,16 @@ object Markdown {
     private const val PUNCT = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
     private const val INDENT_STEP = "    "
 
-    private enum class Prefix { NONE, HEADING, BULLET, NUMBERED }
+    private enum class Prefix { NONE, HEADING, BULLET, NUMBERED, QUOTE, TASK }
 
     /** Én linje: [indentEnd] er første ikke-blanke tegn, [markerEnd] hvor indholdet efter præfikset starter. */
     private class Line(
         val start: Int, val end: Int, val indentEnd: Int, val level: Int,
-        val prefix: Prefix, val markerEnd: Int, val headingLevel: Int = 0,
-    )
+        val prefix: Prefix, val markerEnd: Int, val headingLevel: Int = 0, val checked: Boolean = false,
+    ) {
+        /** Afkrydsningsfeltets '[' (kun TASK): efter "- ". */
+        val box get() = indentEnd + 2
+    }
 
     /** En ændring af teksten: erstat [del] tegn fra [pos] med [ins]. */
     private class Change(val pos: Int, val del: Int, val ins: String)
@@ -46,7 +49,18 @@ object Markdown {
                 return Line(start, end, i, 0, Prefix.HEADING, minOf(start + n + 1, end), n)
             }
         }
+        // Citat: '>' efter eventuel indrykning, så mellemrum eller linjeslut
+        if (i < end && text[i] == '>' && (i + 1 == end || text[i + 1] == ' ')) {
+            return Line(start, end, i, level, Prefix.QUOTE, minOf(i + 2, end))
+        }
         if (i + 1 < end && text[i] in "-*+" && text[i + 1] == ' ') {
+            // Afkrydsning: "- [ ] ", "- [x] " (også ved linjeslut)
+            val b = i + 2
+            if (b + 2 < end && text[b] == '[' && text[b + 1] in " xX" && text[b + 2] == ']' &&
+                (b + 3 == end || text[b + 3] == ' ')
+            ) {
+                return Line(start, end, i, level, Prefix.TASK, minOf(b + 4, end), checked = text[b + 1] != ' ')
+            }
             return Line(start, end, i, level, Prefix.BULLET, i + 2)
         }
         var d = i
@@ -76,9 +90,20 @@ object Markdown {
                 Prefix.HEADING -> out += MdSpan(MdKind.HEADING, l.start, l.end, l.headingLevel)
                 Prefix.BULLET -> out += MdSpan(MdKind.BULLET, l.start, l.end, l.level)
                 Prefix.NUMBERED -> out += MdSpan(MdKind.NUMBERED, l.start, l.end, l.level)
+                Prefix.QUOTE -> out += MdSpan(MdKind.QUOTE, l.start, l.end, l.level)
+                Prefix.TASK -> {
+                    out += MdSpan(MdKind.TASK, l.start, l.end, l.level)
+                    out += MdSpan(MdKind.CHECKBOX, l.box, l.box + 3, if (l.checked) 1 else 0)
+                    if (l.checked && l.markerEnd < l.end) out += MdSpan(MdKind.DONE, l.markerEnd, l.end)
+                }
                 Prefix.NONE -> if (l.level >= 1 && l.indentEnd < l.end) out += MdSpan(MdKind.INDENT, l.start, l.end, l.level)
             }
-            if (l.prefix != Prefix.NONE) markers += intArrayOf(l.indentEnd, l.markerEnd)
+            when (l.prefix) {
+                Prefix.NONE -> {}
+                // Afkrydsningsfeltet vises for sig, kun "- " dæmpes
+                Prefix.TASK -> markers += intArrayOf(l.indentEnd, l.box)
+                else -> markers += intArrayOf(l.indentEnd, l.markerEnd)
+            }
             inline(text, l.markerEnd, l.end, out, markers)
         }
         // Tilstødende markeringer slås sammen
@@ -120,20 +145,69 @@ object Markdown {
 
     private fun String.count(from: Int, to: Int, c: Char) = (from until to).count { this[it] == c }
 
+    private inline fun String.indexOfFirst(from: Int, pred: (Char) -> Boolean): Int {
+        for (i in from until length) if (pred(this[i])) return i
+        return length
+    }
+
     /** En række ens '*' eller '_'. Som opener bruges tegn fra højre ende, som closer fra venstre. */
     private class Run(val ch: Char, var start: Int, var len: Int, val orig: Int, val open: Boolean, val close: Boolean)
+
+    /**
+     * Kode i [from, to) som [start, slut] inkl. backticks: et løb af n backticks lukkes af det næste løb af
+     * præcis n. Escape gælder uden for kode, så \` er en bogstavelig backtick.
+     */
+    private fun codeSpans(text: String, from: Int, to: Int): List<IntArray> {
+        val out = mutableListOf<IntArray>()
+        var p = from
+        while (p < to) {
+            val c = text[p]
+            if (c == '\\' && p + 1 < to && text[p + 1] in PUNCT) {
+                p += 2
+                continue
+            }
+            if (c != '`') { p++; continue }
+            var q = p
+            while (q < to && text[q] == '`') q++
+            val n = q - p
+            var r = q
+            var close = -1
+            while (r < to) {
+                if (text[r] != '`') { r++; continue }
+                var rq = r
+                while (rq < to && text[rq] == '`') rq++
+                if (rq - r == n) { close = r; break }
+                r = rq
+            }
+            if (close > q) {
+                out += intArrayOf(p, close + n)
+                p = close + n
+            } else {
+                p = q
+            }
+        }
+        return out
+    }
 
     /** Fed og kursiv i [from, to) efter en forenklet udgave af CommonMarks delimiter-algoritme. */
     private fun inline(text: String, from: Int, to: Int, out: MutableList<MdSpan>, markers: MutableList<IntArray>) {
         val runs = mutableListOf<Run>()
-        // URL'er er uigennemsigtige: ingen fed, kursiv eller escape inden i dem
-        val links = urls(text, from, to)
+        // Kode og URL'er er uigennemsigtige: ingen fed, kursiv eller escape inden i dem
+        val code = codeSpans(text, from, to)
+        for (c in code) {
+            val n = text.indexOfFirst(c[0]) { it != '`' } - c[0]
+            out += MdSpan(MdKind.CODE, c[0] + n, c[1] - n)
+            markers += intArrayOf(c[0], c[0] + n)
+            markers += intArrayOf(c[1] - n, c[1])
+        }
+        val links = urls(text, from, to).filter { l -> code.none { l[0] < it[1] && it[0] < l[1] } }
         for (l in links) out += MdSpan(MdKind.LINK, l[0], l[1])
+        val opaque = (code + links).sortedBy { it[0] }
         var li = 0
         var p = from
         while (p < to) {
-            if (li < links.size && p >= links[li][0]) {
-                p = maxOf(p, links[li][1])
+            if (li < opaque.size && p >= opaque[li][0]) {
+                p = maxOf(p, opaque[li][1])
                 li++
                 continue
             }
@@ -201,6 +275,7 @@ object Markdown {
         when (l.prefix) {
             Prefix.BULLET -> sb.append("• ")
             Prefix.NUMBERED -> sb.append(text, l.indentEnd, l.markerEnd)
+            Prefix.TASK -> sb.append(if (l.checked) "☑ " else "☐ ")
             else -> {}
         }
         for (i in l.markerEnd until l.end) {
@@ -238,25 +313,35 @@ object Markdown {
         return p + d
     }
 
-    private fun starsBefore(text: String, p: Int): Int {
+    private fun runBefore(text: String, p: Int, ch: Char): Int {
         var i = p
-        while (i > 0 && text[i - 1] == '*') i--
+        while (i > 0 && text[i - 1] == ch) i--
         return p - i
     }
 
-    private fun starsAfter(text: String, p: Int): Int {
+    private fun runAfter(text: String, p: Int, ch: Char): Int {
         var i = p
-        while (i < text.length && text[i] == '*') i++
+        while (i < text.length && text[i] == ch) i++
         return i - p
     }
 
-    /** Er et '*'-løb af længden [run] en markering for fed ([n] = 2) eller kursiv ([n] = 1)? */
-    private fun present(run: Int, n: Int) = if (n == 2) run >= 2 else run == 1 || run == 3
+    /**
+     * Er et løb af længden [run] en markering for fed ([n] = 2) eller kursiv ([n] = 1) med '*',
+     * eller for kode med '`' (præcis én)?
+     */
+    private fun present(ch: Char, run: Int, n: Int) = when {
+        ch == '`' -> run == 1
+        n == 2 -> run >= 2
+        else -> run == 1 || run == 3
+    }
 
-    private fun toggleInline(text: String, s: Int, e: Int, n: Int): MdEdit {
-        val mark = "*".repeat(n)
+    private fun toggleInline(text: String, s: Int, e: Int, ch: Char, n: Int): MdEdit {
+        val mark = ch.toString().repeat(n)
+        val present = { run: Int -> present(ch, run, n) }
+        val before = { p: Int -> runBefore(text, p, ch) }
+        val after = { p: Int -> runAfter(text, p, ch) }
         if (s == e) {
-            if (present(minOf(starsBefore(text, s), starsAfter(text, s)), n)) {
+            if (present(minOf(before(s), after(s)))) {
                 return MdEdit(text.removeRange(s, s + n).removeRange(s - n, s), s - n, s - n)
             }
             return MdEdit(text.substring(0, s) + mark + mark + text.substring(s), s + n, s + n)
@@ -278,11 +363,11 @@ object Markdown {
         if (segs.isEmpty()) return MdEdit(text, s, e)
         // 1 = markeringerne er med i markeringen, 2 = de står lige udenfor, 0 = ingen
         val states = segs.map { (a, b) ->
-            val l = starsAfter(text, a)
-            val r = starsBefore(text, b)
+            val l = after(a)
+            val r = before(b)
             when {
-                l + r < b - a && present(minOf(l, r), n) -> 1
-                present(minOf(starsBefore(text, a), starsAfter(text, b)), n) -> 2
+                l + r < b - a && present(minOf(l, r)) -> 1
+                present(minOf(before(a), after(b))) -> 2
                 else -> 0
             }
         }
@@ -302,9 +387,11 @@ object Markdown {
         return MdEdit(applyChanges(text, changes), mapPos(changes, contentStart), mapPos(changes, contentEnd, stickLeft = true))
     }
 
-    fun toggleBold(text: String, selStart: Int, selEnd: Int): MdEdit = toggleInline(text, selStart, selEnd, 2)
+    fun toggleBold(text: String, selStart: Int, selEnd: Int): MdEdit = toggleInline(text, selStart, selEnd, '*', 2)
 
-    fun toggleItalic(text: String, selStart: Int, selEnd: Int): MdEdit = toggleInline(text, selStart, selEnd, 1)
+    fun toggleItalic(text: String, selStart: Int, selEnd: Int): MdEdit = toggleInline(text, selStart, selEnd, '*', 1)
+
+    fun toggleCode(text: String, selStart: Int, selEnd: Int): MdEdit = toggleInline(text, selStart, selEnd, '`', 1)
 
     /**
      * Fælles for linjefunktionerne: [change] får linjerne under markeringen (tomme linjer udeladt, når der er
@@ -368,6 +455,28 @@ object Markdown {
         }
     }
 
+    fun toggleQuote(text: String, selStart: Int, selEnd: Int): MdEdit = editLines(text, selStart, selEnd) { lines ->
+        if (lines.all { it.prefix == Prefix.QUOTE }) {
+            lines.map { Change(it.indentEnd, it.markerEnd - it.indentEnd, "") }
+        } else {
+            // Citatet lægges uden om linjen; en listemarkering bliver stående som tekst
+            lines.filter { it.prefix != Prefix.QUOTE }.map { Change(it.indentEnd, 0, "> ") }
+        }
+    }
+
+    /**
+     * Linjer, der ikke er afkrydsningspunkter, bliver det ("- [ ] "). Er alle allerede punkter, krydses de af,
+     * eller krydset fjernes, hvis alle var afkrydset.
+     */
+    fun toggleTask(text: String, selStart: Int, selEnd: Int): MdEdit = editLines(text, selStart, selEnd) { lines ->
+        if (lines.all { it.prefix == Prefix.TASK }) {
+            val mark = if (lines.all { it.checked }) " " else "x"
+            lines.map { Change(it.box + 1, 1, mark) }
+        } else {
+            lines.filter { it.prefix != Prefix.TASK }.map { Change(it.indentEnd, it.markerEnd - it.indentEnd, "- [ ] ") }
+        }
+    }
+
     fun indent(text: String, selStart: Int, selEnd: Int): MdEdit = editLines(text, selStart, selEnd) { lines ->
         lines.map { Change(it.start, 0, INDENT_STEP) }
     }
@@ -385,24 +494,27 @@ object Markdown {
     }
 
     /**
-     * Enter i en liste. [cursor] står lige efter det linjeskift, brugeren har indsat. Var linjen før et listepunkt,
-     * får den nye linje samme indrykning og markering (næste nummer). Var punktet tomt, og er den nye linje også tom,
+     * Enter i en liste eller et citat. [cursor] står lige efter det linjeskift, brugeren har indsat. Var linjen før
+     * et listepunkt eller et citat, får den nye linje samme indrykning og markering (næste nummer, uafkrydset). Var punktet tomt, og er den nye linje også tom,
      * fjernes punktet i stedet, og listen slutter. Ellers null (intet at gøre).
      */
     fun continueList(text: String, cursor: Int): MdEdit? {
         if (cursor == 0 || text[cursor - 1] != '\n') return null
         val prev = lineAt(text, text.lastIndexOf('\n', cursor - 2) + 1)
-        if (prev.prefix != Prefix.BULLET && prev.prefix != Prefix.NUMBERED) return null
+        if (prev.prefix !in setOf(Prefix.BULLET, Prefix.NUMBERED, Prefix.TASK, Prefix.QUOTE)) return null
         var nextEnd = text.indexOf('\n', cursor)
         if (nextEnd < 0) nextEnd = text.length
         if (text.substring(prev.markerEnd, prev.end).isBlank() && text.substring(cursor, nextEnd).isBlank()) {
             return MdEdit(text.removeRange(prev.start, cursor), prev.start, prev.start)
         }
-        val marker = if (prev.prefix == Prefix.BULLET) {
-            "${text[prev.indentEnd]} "
-        } else {
-            val number = text.substring(prev.indentEnd, prev.markerEnd - 2).toInt()
-            "${number + 1}${text[prev.markerEnd - 2]} "
+        val marker = when (prev.prefix) {
+            Prefix.BULLET -> "${text[prev.indentEnd]} "
+            Prefix.TASK -> "${text[prev.indentEnd]} [ ] "
+            Prefix.QUOTE -> "> "
+            else -> {
+                val number = text.substring(prev.indentEnd, prev.markerEnd - 2).toInt()
+                "${number + 1}${text[prev.markerEnd - 2]} "
+            }
         }
         val prefix = text.substring(prev.start, prev.indentEnd) + marker
         val p = cursor + prefix.length

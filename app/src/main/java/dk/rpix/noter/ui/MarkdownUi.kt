@@ -3,6 +3,27 @@ package dk.rpix.noter.ui
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,9 +58,18 @@ import dk.rpix.noter.core.Markdown
 
 /**
  * Viser Markdown i editoren uden at ændre teksten: markeringerne bliver stående, men dæmpes,
- * og punkttegn vises som •. Teksten har samme længde før og efter, så offset-mappingen er identitet.
+ * punkttegn vises som • og afkrydsningsfelter som ☐/☑. Teksten har samme længde før og efter
+ * (overskydende tegn bliver nulbredde-mellemrum), så offset-mappingen er identitet.
+ * Citatets '>' gøres usynligt; stregen tegnes af [MarkdownBodyField].
  */
-data class MarkdownTransformation(val marker: Color, val bullet: Color, val link: Color) : VisualTransformation {
+data class MarkdownTransformation(
+    val marker: Color,
+    val bullet: Color,
+    val link: Color,
+    val quote: Color,
+    val codeBackground: Color,
+    val checked: Color,
+) : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
         val s = text.text
         val spans = Markdown.spans(s)
@@ -55,6 +85,22 @@ data class MarkdownTransformation(val marker: Color, val bullet: Color, val link
                 MdKind.BOLD -> SpanStyle(fontWeight = FontWeight.Bold)
                 MdKind.ITALIC -> SpanStyle(fontStyle = FontStyle.Italic)
                 MdKind.LINK -> SpanStyle(color = link, textDecoration = TextDecoration.Underline, fontSize = 0.9.em)
+                MdKind.CODE -> SpanStyle(fontFamily = FontFamily.Monospace, background = codeBackground, fontSize = 0.9.em)
+                MdKind.DONE -> SpanStyle(color = marker, textDecoration = TextDecoration.LineThrough)
+                MdKind.QUOTE -> {
+                    var i = sp.start
+                    while (chars[i] == ' ' || chars[i] == '\t') i++
+                    styles += AnnotatedString.Range(SpanStyle(color = Color.Transparent), i, i + 1)
+                    SpanStyle(color = quote)
+                }
+                MdKind.CHECKBOX -> {
+                    // "- [ ]" vises som "☐" på stregens plads; resten bliver nulbredde
+                    val dash = sp.start - 2
+                    chars[dash] = if (sp.level == 1) '☑' else '☐'
+                    for (i in dash + 1 until sp.end) chars[i] = '\u200B'
+                    styles += AnnotatedString.Range(SpanStyle(color = if (sp.level == 1) checked else bullet), dash, dash + 1)
+                    null
+                }
                 MdKind.BULLET -> {
                     var i = sp.start
                     while (chars[i] == ' ' || chars[i] == '\t') i++
@@ -88,6 +134,9 @@ private val actions = listOf(
     FormatAction(R.drawable.ic_format_heading, R.string.format_heading, Markdown::cycleHeading),
     FormatAction(R.drawable.ic_format_list_bulleted, R.string.format_bullets, Markdown::toggleBullets),
     FormatAction(R.drawable.ic_format_list_numbered, R.string.format_numbers, Markdown::toggleNumbers),
+    FormatAction(R.drawable.ic_checklist, R.string.format_task, Markdown::toggleTask),
+    FormatAction(R.drawable.ic_format_quote, R.string.format_quote, Markdown::toggleQuote),
+    FormatAction(R.drawable.ic_code, R.string.format_code, Markdown::toggleCode),
     FormatAction(R.drawable.ic_format_indent_decrease, R.string.format_outdent, Markdown::outdent),
     FormatAction(R.drawable.ic_format_indent_increase, R.string.format_indent, Markdown::indent),
 )
@@ -105,21 +154,83 @@ fun FormatBar(url: String?, onOpenUrl: (String) -> Unit, onFormat: ((String, Int
                 .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars)),
         ) {
             Row(Modifier.weight(1f).horizontalScroll(rememberScrollState())) {
+                // Lidt mindre knapper end standard, så alle ti er synlige på en almindelig telefon
                 for (a in actions) {
-                    IconButton(onClick = { onFormat(a.op) }) {
-                        Icon(painterResource(a.icon), contentDescription = stringResource(a.label))
+                    IconButton(onClick = { onFormat(a.op) }, modifier = Modifier.size(40.dp)) {
+                        Icon(painterResource(a.icon), contentDescription = stringResource(a.label), Modifier.size(20.dp))
                     }
                 }
             }
             if (url != null) {
-                IconButton(onClick = { onOpenUrl(url) }) {
+                IconButton(onClick = { onOpenUrl(url) }, modifier = Modifier.size(40.dp)) {
                     Icon(
                         painterResource(R.drawable.ic_open_in_new),
                         contentDescription = stringResource(R.string.open_link),
+                        modifier = Modifier.size(20.dp),
                         tint = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
         }
     }
+}
+
+/**
+ * Notens tekstfelt: som Material 3's TextField, men med adgang til tekstlayoutet, så citater kan få
+ * en farvet streg i venstre side (på '>'-tegnets plads).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MarkdownBodyField(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    textStyle: TextStyle,
+    transformation: MarkdownTransformation,
+    quoteBar: Color,
+    colors: TextFieldColors,
+    placeholder: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val interaction = remember { MutableInteractionSource() }
+    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    val quotes = remember(value.text) { Markdown.spans(value.text).filter { it.kind == MdKind.QUOTE } }
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        textStyle = textStyle.merge(TextStyle(color = MaterialTheme.colorScheme.onSurface)),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        visualTransformation = transformation,
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+        interactionSource = interaction,
+        onTextLayout = { layout = it },
+        decorationBox = { inner ->
+            TextFieldDefaults.DecorationBox(
+                value = value.text,
+                innerTextField = {
+                    Box(
+                        Modifier.drawBehind {
+                            val l = layout ?: return@drawBehind
+                            if (l.layoutInput.text.length != value.text.length) return@drawBehind
+                            val w = 5.dp.toPx()
+                            for (q in quotes) {
+                                var i = q.start
+                                while (value.text[i] == ' ' || value.text[i] == '\t') i++
+                                val box = l.getBoundingBox(i)
+                                val top = l.getLineTop(l.getLineForOffset(q.start))
+                                val bottom = l.getLineBottom(l.getLineForOffset(q.end))
+                                drawRect(quoteBar, Offset(box.left + (box.width - w) / 2, top), Size(w, bottom - top))
+                            }
+                        },
+                    ) { inner() }
+                },
+                enabled = true,
+                singleLine = false,
+                visualTransformation = transformation,
+                interactionSource = interaction,
+                placeholder = placeholder,
+                colors = colors,
+            )
+        },
+    )
 }
