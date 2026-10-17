@@ -309,8 +309,9 @@ listemarkering fortsættes ikke.
   Lys/mørk følger systemet. Brug serif til noteindhold, hvis det passer til temaet; udseendet er ikke et krav.
 - **Filer** (`NoteFile` i `:core`, `FileImport` i `:app`). En fil er aldrig en note: åbning opretter en ny note, der
   synkroniseres som alle andre, og at gemme skriver en kopi. Ingen tilladelser; alt går gennem Androids filvælger.
-  - *Åbn fil* (knap i listen, `ACTION_OPEN_DOCUMENT` med `text/*` og `application/octet-stream`, fordi `.md` ofte
-    har den sidste type) og *Åbn med / Del* fra andre apps (`intent-filter` for `ACTION_VIEW` og `ACTION_SEND` med
+  - *Åbn fil* (knap i listen, `ACTION_GET_CONTENT` med `*/*` og `EXTRA_MIME_TYPES` = `text/*` og
+    `application/octet-stream`, fordi `.md` ofte har den sidste type; `GET_CONTENT` og ikke `OPEN_DOCUMENT`, så
+    filvælgeren også viser andre apps, fx filhåndteringer, og filen læses kun én gang) og *Åbn med / Del* fra andre apps (`intent-filter` for `ACTION_VIEW` og `ACTION_SEND` med
     `text/plain`, `text/markdown`, `text/x-markdown`). Den nye note åbnes i editoren.
   - Indlæsning: højst 1 MB. UTF-8 (BOM fjernes), UTF-16 med BOM, ellers windows-1252. Nul-bytes = ikke tekst.
     Linjeskift normaliseres til `\n`, og tomme linjer til sidst fjernes.

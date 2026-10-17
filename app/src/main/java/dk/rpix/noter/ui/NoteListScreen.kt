@@ -1,5 +1,6 @@
 package dk.rpix.noter.ui
 
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -97,6 +98,16 @@ class NoteListViewModel(private val app: NoterApp) : ViewModel() {
 
 fun noterApp(context: android.content.Context) = context.applicationContext as NoterApp
 
+/**
+ * Åbn fil med ACTION_GET_CONTENT (ikke OPEN_DOCUMENT), så filvælgeren også viser andre apps under
+ * "Gennemse filer i andre apps". Filen læses én gang, så der er ikke brug for varig adgang.
+ * .md har ofte typen application/octet-stream; om det er tekst, afgøres ved indlæsningen.
+ */
+private class OpenTextFile : ActivityResultContracts.GetContent() {
+    override fun createIntent(context: android.content.Context, input: String): Intent =
+        super.createIntent(context, input).putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("text/*", "application/octet-stream"))
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteListScreen(onOpen: (String) -> Unit, onNew: () -> Unit, onSettings: () -> Unit) {
@@ -108,8 +119,7 @@ fun NoteListScreen(onOpen: (String) -> Unit, onNew: () -> Unit, onSettings: () -
     val snackbar = remember { SnackbarHostState() }
     ConflictMessages(vm.conflicts, snackbar)
     val scope = rememberCoroutineScope()
-    // .md har ofte typen application/octet-stream; om det er tekst, afgøres ved indlæsningen
-    val openFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+    val openFile = rememberLauncherForActivityResult(OpenTextFile()) { uri ->
         if (uri != null) scope.launch {
             val note = FileImport.fromUri(app, uri)
             if (note != null) onOpen(note.uid) else snackbar.showMessage(app.getString(R.string.file_open_failed))
@@ -121,7 +131,7 @@ fun NoteListScreen(onOpen: (String) -> Unit, onNew: () -> Unit, onSettings: () -
             TopAppBar(
                 title = { Text(stringResource(R.string.notes)) },
                 actions = {
-                    IconButton(onClick = { openFile.launch(arrayOf("text/*", "application/octet-stream")) }) {
+                    IconButton(onClick = { openFile.launch("*/*") }) {
                         Icon(painterResource(R.drawable.ic_file_open), contentDescription = stringResource(R.string.open_file))
                     }
                     IconButton(onClick = onSettings) {
