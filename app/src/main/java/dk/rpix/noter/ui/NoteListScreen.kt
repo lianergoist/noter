@@ -101,7 +101,9 @@ fun noterApp(context: android.content.Context) = context.applicationContext as N
 /**
  * Åbn fil med ACTION_GET_CONTENT (ikke OPEN_DOCUMENT), så filvælgeren også viser andre apps under
  * "Gennemse filer i andre apps". Filen læses én gang, så der er ikke brug for varig adgang.
- * .md har ofte typen application/octet-stream; om det er tekst, afgøres ved indlæsningen.
+ * Typen er text/*, så kun apps, der kan levere tekst, vises (med */* kom også billedapps med).
+ * Androids filvælger bruger EXTRA_MIME_TYPES: .md har ofte typen application/octet-stream,
+ * og om det er tekst, afgøres ved indlæsningen.
  */
 private class OpenTextFile : ActivityResultContracts.GetContent() {
     override fun createIntent(context: android.content.Context, input: String): Intent =
@@ -131,7 +133,7 @@ fun NoteListScreen(onOpen: (String) -> Unit, onNew: () -> Unit, onSettings: () -
             TopAppBar(
                 title = { Text(stringResource(R.string.notes)) },
                 actions = {
-                    IconButton(onClick = { openFile.launch("*/*") }) {
+                    IconButton(onClick = { openFile.launch("text/*") }) {
                         Icon(painterResource(R.drawable.ic_file_open), contentDescription = stringResource(R.string.open_file))
                     }
                     IconButton(onClick = onSettings) {
