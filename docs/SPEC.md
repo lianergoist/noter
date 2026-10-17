@@ -282,7 +282,7 @@ En række knapper over tastaturet, kun når tekstfeltet har fokus: **Fed**, **Ku
   helt (første linjes start til sidste linjes slut).
 
 **Åbn link:** Står markøren i en URL (også lige før eller efter den), eller ligger markeringen inden i en, viser
-værktøjslinjen en ekstra knap først, **Åbn link** (`urlAt`). Den åbner URL'en med `ACTION_VIEW` i standardbrowseren;
+værktøjslinjen en ekstra knap fast yderst til højre, **Åbn link** (`urlAt`); formateringsknapperne til venstre kan rulles. Den åbner URL'en med `ACTION_VIEW` i standardbrowseren;
 `www.…` får `https://` foran. Et tryk i teksten sætter altid markøren og åbner aldrig et link. Der er ingen websøgning
 på markeret tekst, som ikke er en URL.
 

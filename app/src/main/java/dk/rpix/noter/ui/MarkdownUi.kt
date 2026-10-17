@@ -92,16 +92,25 @@ private val actions = listOf(
     FormatAction(R.drawable.ic_format_indent_increase, R.string.format_indent, Markdown::indent),
 )
 
-/** Værktøjslinjen over tastaturet. "Åbn link" vises først, når markøren står i en URL ([url]). */
+/**
+ * Værktøjslinjen over tastaturet. Formateringsknapperne kan rulles; "Åbn link" står fast yderst til højre,
+ * når markøren står i en URL ([url]).
+ */
 @Composable
 fun FormatBar(url: String?, onOpenUrl: (String) -> Unit, onFormat: ((String, Int, Int) -> MdEdit) -> Unit) {
     Surface(tonalElevation = 3.dp) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars))
-                .horizontalScroll(rememberScrollState()),
+                .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars)),
         ) {
+            Row(Modifier.weight(1f).horizontalScroll(rememberScrollState())) {
+                for (a in actions) {
+                    IconButton(onClick = { onFormat(a.op) }) {
+                        Icon(painterResource(a.icon), contentDescription = stringResource(a.label))
+                    }
+                }
+            }
             if (url != null) {
                 IconButton(onClick = { onOpenUrl(url) }) {
                     Icon(
@@ -109,11 +118,6 @@ fun FormatBar(url: String?, onOpenUrl: (String) -> Unit, onFormat: ((String, Int
                         contentDescription = stringResource(R.string.open_link),
                         tint = MaterialTheme.colorScheme.primary,
                     )
-                }
-            }
-            for (a in actions) {
-                IconButton(onClick = { onFormat(a.op) }) {
-                    Icon(painterResource(a.icon), contentDescription = stringResource(a.label))
                 }
             }
         }
