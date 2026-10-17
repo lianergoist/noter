@@ -33,10 +33,12 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -147,28 +149,31 @@ private val actions = listOf(
  */
 @Composable
 fun FormatBar(url: String?, onOpenUrl: (String) -> Unit, onFormat: ((String, Int, Int) -> MdEdit) -> Unit) {
+    // Smallere knapper end Material 3's mindste berøringsflade (48 dp), men samme højde, så alle ti kan ses
+    val button = Modifier.size(width = 34.dp, height = 48.dp)
     Surface(tonalElevation = 3.dp) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars)),
-        ) {
-            Row(Modifier.weight(1f).horizontalScroll(rememberScrollState())) {
-                // Lidt mindre knapper end standard, så alle ti er synlige på en almindelig telefon
-                for (a in actions) {
-                    IconButton(onClick = { onFormat(a.op) }, modifier = Modifier.size(40.dp)) {
-                        Icon(painterResource(a.icon), contentDescription = stringResource(a.label), Modifier.size(20.dp))
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars)),
+            ) {
+                Row(Modifier.weight(1f).horizontalScroll(rememberScrollState())) {
+                    for (a in actions) {
+                        IconButton(onClick = { onFormat(a.op) }, modifier = button) {
+                            Icon(painterResource(a.icon), contentDescription = stringResource(a.label), Modifier.size(20.dp))
+                        }
                     }
                 }
-            }
-            if (url != null) {
-                IconButton(onClick = { onOpenUrl(url) }, modifier = Modifier.size(40.dp)) {
-                    Icon(
-                        painterResource(R.drawable.ic_open_in_new),
-                        contentDescription = stringResource(R.string.open_link),
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
+                if (url != null) {
+                    IconButton(onClick = { onOpenUrl(url) }, modifier = button) {
+                        Icon(
+                            painterResource(R.drawable.ic_open_in_new),
+                            contentDescription = stringResource(R.string.open_link),
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                 }
             }
         }

@@ -270,8 +270,9 @@ skriver `- `/`* `/`+ ` som `• `, `- [ ] ` som `☐ ` og `- [x] ` som `☑ ` og
 ### Værktøjslinje (redigeringsfunktionerne)
 
 En række knapper over tastaturet, kun når tekstfeltet har fokus: **Fed**, **Kursiv**, **Overskrift**, **Punktliste**,
-**Nummereret liste**, **Afkrydsningsliste**, **Citat**, **Kode**, **Ryk ud**, **Ryk ind**. Knapperne er 40 dp med
-20 dp-ikoner, så alle ti er synlige på en almindelig telefon. Ikoner som egne vektor-drawables (Material Symbols, Apache 2.0), ikke
+**Nummereret liste**, **Afkrydsningsliste**, **Citat**, **Kode**, **Ryk ud**, **Ryk ind**. Knapperne er 34 dp brede og
+48 dp høje med 20 dp-ikoner (Material 3's mindste berøringsflade slås fra på linjen), så alle ti er synlige på en
+almindelig telefon. Ikoner som egne vektor-drawables (Material Symbols, Apache 2.0), ikke
 `material-icons-extended`. Hver knap har en `contentDescription` på alle fem sprog. Editoren skifter fra `String` til
 `TextFieldValue` for at kende markeringen; stylingen sker med en `VisualTransformation` med identitets-offsetmapping
 (markeringerne bliver stående, men dæmpes).
