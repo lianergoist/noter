@@ -28,6 +28,40 @@ Brugere kan derfor skifte frit mellem GitHub og F-Droid. Det kræver, at de to b
 F-Droid opdager nye tags af sig selv (`UpdateCheckMode: Tags`) og bygger den nye version. Der går typisk
 nogle dage, før den er ude.
 
+## Skærmbilleder
+
+`fastlane/metadata/android/{da-DK,en-US}/images/phoneScreenshots/`, 1080 × 2400: 1 listen, 2 Tur til Lissabon
+i editoren med tastatur og værktøjslinje (markøren i linket, så "Åbn link" vises), 3 søgning ("hjem"/"home"),
+4 listen i mørkt tema, 5 indstillingerne.
+
+1. Start testserveren fra afsnittet "Test" i `docs/SPEC.md`, og læg demodata ind:
+   `python3 -B tools/demo_notes.py http://127.0.0.1:5232 <bruger> <adgangskode>`
+   (samlingerne `noter-da` og `noter-en`; datoerne regnes fra i dag).
+2. Emulator (1080 × 2400, fx AVD'en `davnotes_shots`) med debug-bygget: samling
+   `http://10.0.2.2:5232/<bruger>/noter-da/`. Appens sprog: `adb shell cmd locale set-app-locales
+   dk.rpix.noter.debug --locales da-DK`.
+3. Rolig statuslinje (demotilstand):
+
+   ```
+   adb shell settings put global sysui_demo_allowed 1
+   adb shell am broadcast -a com.android.systemui.demo -e command enter
+   adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1115
+   adb shell am broadcast -a com.android.systemui.demo -e command battery -e level 100 -e plugged false
+   adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4 -e fully true -e mobile hide
+   adb shell am broadcast -a com.android.systemui.demo -e command notifications -e visible false
+   ```
+
+   Sæt uret til samme tid som "Synkroniseret" i appen (hver sync opdaterer den).
+   Mørkt tema: `adb shell cmd uimode night yes`. Skærmbillede: `adb exec-out screencap -p > 1.png`.
+4. Markørens greb i editoren forsvinder, når man taster: skriv et tegn og slet det igen.
+5. Engelsk: stop serveren, byt mapperne `noter-da` og `noter-en` i `collections/collection-root/<bruger>/`,
+   start serveren igen, og sæt appens sprog til `en-US`. Appen laver en fuld sync og viser de engelske noter.
+6. Bagefter: `cmd uimode night no`, demotilstand `-e command exit`.
+
+En langsom emulator kan vise "System UI isn't responding". Kan dialogen ikke lukkes med et tryk:
+`adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS` (evt. midlertidigt
+`adb shell settings put global hide_error_dialogs 1`, og `0` bagefter).
+
 ## Første indsendelse til F-Droid
 
 1. Lav version 1.1 som ovenfor (tag `v1.1` og `davnotes-1.1.apk` på GitHub).
