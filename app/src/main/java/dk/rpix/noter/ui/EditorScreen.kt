@@ -3,8 +3,6 @@ package dk.rpix.noter.ui
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,8 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -65,7 +61,6 @@ import dk.rpix.noter.R
 import dk.rpix.noter.core.Markdown
 import dk.rpix.noter.core.MdEdit
 import dk.rpix.noter.core.Note
-import dk.rpix.noter.core.NoteFile
 import dk.rpix.noter.data.FileImport
 import java.util.Date
 import kotlinx.coroutines.Dispatchers
@@ -278,21 +273,21 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
     val snackbar = remember { SnackbarHostState() }
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     var bodyFocused by remember { mutableStateOf(false) }
-    var menuOpen by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val fallbackName = stringResource(R.string.untitled_file)
 
-    // Gem som fil: indholdet tages, når filvælgeren åbnes
-    var pendingFile by remember { mutableStateOf("") }
-    val onPicked: (Uri?) -> Unit = { uri ->
-        if (uri != null) scope.launch {
-            val ok = FileImport.write(app, uri, pendingFile)
-            snackbar.showMessage(app.getString(if (ok) R.string.file_saved else R.string.file_save_failed))
+    // Del som .md-fil til en anden app
+    fun share() {
+        scope.launch {
+            val intent = FileImport.share(app, vm.title, vm.body, fallbackName)
+            try {
+                context.startActivity(intent ?: throw ActivityNotFoundException())
+            } catch (e: ActivityNotFoundException) {
+                snackbar.showMessage(app.getString(R.string.share_failed))
+            }
         }
     }
-    val saveMarkdown = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/markdown"), onPicked)
-    val saveText = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain"), onPicked)
-    val fallbackName = stringResource(R.string.untitled_file)
 
     fun openUrl(url: String) {
         try {
@@ -343,26 +338,8 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
                             Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete))
                         }
                     }
-                    IconButton(onClick = { menuOpen = true }) {
-                        Icon(painterResource(R.drawable.ic_more_vert), contentDescription = stringResource(R.string.more_options))
-                    }
-                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.save_as_markdown)) },
-                            onClick = {
-                                menuOpen = false
-                                pendingFile = NoteFile.toMarkdown(vm.title, vm.body)
-                                saveMarkdown.launch(NoteFile.fileName(vm.title, "md", fallbackName))
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.save_as_text)) },
-                            onClick = {
-                                menuOpen = false
-                                pendingFile = NoteFile.toText(vm.body)
-                                saveText.launch(NoteFile.fileName(vm.title, "txt", fallbackName))
-                            },
-                        )
+                    IconButton(onClick = ::share) {
+                        Icon(painterResource(R.drawable.ic_share), contentDescription = stringResource(R.string.share))
                     }
                 },
             )

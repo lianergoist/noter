@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Filer, der deles fra editoren (FileImport.share) -->
+<paths>
+    <cache-path name="shared" path="shared/" />
+</paths>

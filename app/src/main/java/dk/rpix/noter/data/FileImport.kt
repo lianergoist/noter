@@ -1,17 +1,23 @@
 package dk.rpix.noter.data
 
+import android.content.ClipData
+import android.content.ComponentName
+import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
+import androidx.core.content.FileProvider
+import dk.rpix.noter.MainActivity
 import dk.rpix.noter.NoterApp
 import dk.rpix.noter.core.Note
 import dk.rpix.noter.core.NoteFile
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/** Åbn filer og delt tekst som nye noter, og gem noter som filer (afsnit 7 i docs/SPEC.md). */
+/** Åbn filer og delt tekst som nye noter, og del noter som filer (afsnit 7 i docs/SPEC.md). */
 object FileImport {
     /** Læs en fil og opret en note. null: kan ikke læses, er for stor, tom eller ikke tekst. */
     suspend fun fromUri(app: NoterApp, uri: Uri): Note? = withContext(Dispatchers.IO) {
@@ -37,18 +43,37 @@ object FileImport {
         create(app, if (subject.isNullOrBlank()) parsed else NoteFile.Content(subject.trim(), parsed.body))
     }
 
-    /** Skriv [text] til en fil, brugeren har valgt. false, hvis det ikke lykkedes. */
-    suspend fun write(app: NoterApp, uri: Uri, text: String): Boolean = withContext(Dispatchers.IO) {
-        try {
-            app.contentResolver.openOutputStream(uri, "wt")?.use { it.write(text.toByteArray(Charsets.UTF_8)) } != null
-        } catch (e: IOException) {
-            false
-        } catch (e: SecurityException) {
-            false
-        } catch (e: IllegalArgumentException) {
-            false
+    /**
+     * Skriv noten som Markdown-fil i cachen og byg en Del-intent til den (via FileProvider).
+     * Tidligere delte filer slettes først. null, hvis filen ikke kunne skrives.
+     */
+    suspend fun share(app: NoterApp, title: String, body: String, fallbackName: String): Intent? =
+        withContext(Dispatchers.IO) {
+            try {
+                val dir = File(app.cacheDir, "shared")
+                dir.deleteRecursively()
+                dir.mkdirs()
+                val file = File(dir, NoteFile.fileName(title, "md", fallbackName))
+                file.writeText(NoteFile.toMarkdown(title, body), Charsets.UTF_8)
+                val uri = FileProvider.getUriForFile(app, "${app.packageName}.files", file)
+                val send = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/markdown"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    if (title.isNotBlank()) putExtra(Intent.EXTRA_SUBJECT, title.trim())
+                    clipData = ClipData.newRawUri(file.name, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                // DavNotes selv tilbydes ikke (det ville bare lave en kopi af noten)
+                Intent.createChooser(send, null).putExtra(
+                    Intent.EXTRA_EXCLUDE_COMPONENTS,
+                    arrayOf(ComponentName(app, MainActivity::class.java)),
+                )
+            } catch (e: IOException) {
+                null
+            } catch (e: IllegalArgumentException) {
+                null
+            }
         }
-    }
 
     private fun create(app: NoterApp, c: NoteFile.Content): Note? {
         if (c.title.isBlank() && c.body.isBlank()) return null // en tom note oprettes ikke

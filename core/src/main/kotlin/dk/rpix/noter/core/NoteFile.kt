@@ -61,9 +61,6 @@ object NoteFile {
         }
     }
 
-    /** Tekstfil: kun teksten; titlen bliver filnavnet. */
-    fun toText(body: String): String = if (body.isEmpty()) "" else "$body\n"
-
     /** Forslag til filnavn: titlen uden tegn, som filsystemer afviser, højst 80 tegn. */
     fun fileName(title: String, extension: String, fallback: String): String {
         var name = ILLEGAL.replace(title, " ").replace(Regex("""\s+"""), " ").trim().trimStart('.').trim()

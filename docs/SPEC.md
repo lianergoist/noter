@@ -11,7 +11,7 @@ Må:
 - sameksistere med andre klienter på samme samling (jtx Board via DAVx5, webklient, `notesync.py`)
 - vise let formatering (overskrifter, fed, kursiv, lister, indrykning) i noteteksten, skrevet som Markdown (afsnit 6, fra v1.2)
 - vise URL'er i teksten som links og åbne dem i browseren (afsnit 6, fra v1.2)
-- åbne tekst- og Markdown-filer og delt tekst som nye noter og gemme en note som fil (afsnit 7, fra v1.2)
+- åbne tekst- og Markdown-filer og delt tekst som nye noter og dele en note som Markdown-fil (afsnit 7, fra v1.2)
 
 Må ikke / senere:
 - fuld Markdown (`[tekst](url)`, billeder, kode, tabeller, citater), redigering af filer direkte (en fil er aldrig en note), forhåndsvisning i særskilt tilstand, vedhæftninger, flere konti, delte noter, push-notifikationer
@@ -308,7 +308,7 @@ listemarkering fortsættes ikke.
   Listepunkt: titel (eller "Uden titel"), første ikke-tomme linje af teksten, tags og klokkeslæt/ugedag/dato.
   Lys/mørk følger systemet. Brug serif til noteindhold, hvis det passer til temaet; udseendet er ikke et krav.
 - **Filer** (`NoteFile` i `:core`, `FileImport` i `:app`). En fil er aldrig en note: åbning opretter en ny note, der
-  synkroniseres som alle andre, og at gemme skriver en kopi. Ingen tilladelser; alt går gennem Androids filvælger.
+  synkroniseres som alle andre, og at dele sender en kopi. Ingen tilladelser; alt går gennem Androids filvælger og delemenu.
   - *Åbn fil* (knap i listen, `ACTION_GET_CONTENT` med typen `text/*` (så billedapps ikke tilbydes) og `EXTRA_MIME_TYPES` = `text/*` og
     `application/octet-stream`, fordi `.md` ofte har den sidste type; `GET_CONTENT` og ikke `OPEN_DOCUMENT`, så
     filvælgeren også viser andre apps, fx filhåndteringer, og filen læses kun én gang) og *Åbn med / Del* fra andre apps (`intent-filter` for `ACTION_VIEW` og `ACTION_SEND` med
@@ -318,11 +318,15 @@ listemarkering fortsættes ikke.
   - Titel: er første linje `# Titel` (niveau 1), bliver den titlen, og tomme linjer efter den fjernes; ellers bruges
     filnavnet uden endelse. Ved delt tekst bliver `EXTRA_SUBJECT` titlen, hvis det findes. Tags kommer ikke med.
     En fil, der hverken giver titel eller tekst, opretter ingen note.
-  - *Gem som Markdown-fil* (`# Titel`, tom linje, teksten; kan åbnes igen til samme titel og tekst) og *Gem som
-    tekstfil* (kun teksten) i editorens menu (`ACTION_CREATE_DOCUMENT`). Filnavnet foreslås ud fra titlen uden
-    `/\:*?"<>|` og kontroltegn, højst 80 tegn, ellers "Note".
-  - Fejl vises roligt: "Kan ikke åbne filen. Den er for stor, tom eller ikke en tekstfil." / "Kan ikke gemme filen.
-    Prøv et andet sted."
+  - *Del* (ikon i editorens topbjælke): noten skrives som Markdown-fil (`# Titel`, tom linje, teksten; kan åbnes
+    igen til samme titel og tekst) i `cacheDir/shared/` og sendes med `ACTION_SEND` (`text/markdown`, `EXTRA_STREAM`
+    via `FileProvider`, titlen som `EXTRA_SUBJECT`) gennem systemets delemenu, så enhver app, der tager imod filer,
+    kan gemme eller sende den (filhåndteringer, Drive, Nextcloud, mail). DavNotes selv udelades af menuen. Tidligere
+    delte filer slettes, før en ny skrives. Filnavnet er titlen uden `/\:*?"<>|` og kontroltegn, højst 80 tegn,
+    ellers "Note", med endelsen `.md`. Der er ingen *Gem som* med `ACTION_CREATE_DOCUMENT` (systemets gem-dialog viser
+    kun lagerudbydere, ikke fx Material Files).
+  - Fejl vises roligt: "Kan ikke åbne filen. Den er for stor, tom eller ikke en tekstfil." / "Kan ikke dele noten.
+    Prøv igen."
 - **Sprog:** engelsk er standard; dansk, tysk, fransk og spansk er oversættelser. Datoer formateres i telefonens sprog.
   Appen hedder "DavNotes" på alle sprog. Valg af sprog pr. app i systemindstillingerne (Android 13+).
 - **Tekster (dansk oversættelse, som i webklienten):** "Noter", "Ny note", "Søg i noter", "Titel", "Tilføj tags, adskilt med komma", "Skriv her", "Slet",

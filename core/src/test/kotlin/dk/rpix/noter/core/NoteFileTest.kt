@@ -62,11 +62,6 @@ class NoteFileTest {
         }
     }
 
-    @Test fun toText() {
-        assertEquals("Mælk\nBrød\n", NoteFile.toText("Mælk\nBrød"))
-        assertEquals("", NoteFile.toText(""))
-    }
-
     @Test fun fileName() {
         assertEquals("Indkøb.md", NoteFile.fileName("Indkøb", "md", "Note"))
         assertEquals("ulovlige tegn", "a b c d.txt", NoteFile.fileName("a/b\\c: d?*\"<>|", "txt", "Note"))
