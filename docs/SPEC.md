@@ -247,7 +247,7 @@ Rækkefølgen af spans er ikke fastlagt.
 - `BULLET`/`NUMBERED` dækker hele linjen inkl. indrykning, `level` = indrykningsniveau.
 - `INDENT` dækker en indrykket linje, der ikke er et listepunkt (kun niveau ≥ 1), `level` = niveau.
 - `BOLD`/`ITALIC` dækker alt mellem den åbnende og den lukkende markering (inkl. indlejrede markeringer).
-- `LINK` dækker URL'en; UI'et understreger og farver den.
+- `LINK` dækker URL'en; UI'et understreger og farver den og viser den lidt mindre (0,9 em).
 - `MARKER` dækker syntakstegn, som UI'et viser dæmpet: `#`-præfikset med mellemrum, listemarkeringen med
   mellemrum (`- `, `12. `), `*`/`_`-markeringer og escape-backslash. Tilstødende `MARKER`-spans slås sammen.
 

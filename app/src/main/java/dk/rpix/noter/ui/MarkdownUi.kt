@@ -54,7 +54,7 @@ data class MarkdownTransformation(val marker: Color, val bullet: Color, val link
                 MdKind.HEADING -> SpanStyle(fontWeight = FontWeight.Bold, fontSize = headingSize(sp.level))
                 MdKind.BOLD -> SpanStyle(fontWeight = FontWeight.Bold)
                 MdKind.ITALIC -> SpanStyle(fontStyle = FontStyle.Italic)
-                MdKind.LINK -> SpanStyle(color = link, textDecoration = TextDecoration.Underline)
+                MdKind.LINK -> SpanStyle(color = link, textDecoration = TextDecoration.Underline, fontSize = 0.9.em)
                 MdKind.BULLET -> {
                     var i = sp.start
                     while (chars[i] == ' ' || chars[i] == '\t') i++
