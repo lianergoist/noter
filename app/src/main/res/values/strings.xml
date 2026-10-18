@@ -84,8 +84,8 @@
     <string name="about_thanks">Thanks to Radicale, jtx Board and DAVx⁵.</string>
 
     <!-- Formatering -->
-    <string name="format_bold">Bold</string>
-    <string name="format_italic">Italic</string>
+    <string name="format_emphasis">Italic and bold</string>
+    <string name="format_link">Insert link</string>
     <string name="format_heading">Heading</string>
     <string name="format_bullets">Bulleted list</string>
     <string name="format_numbers">Numbered list</string>

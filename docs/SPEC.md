@@ -10,11 +10,11 @@ Må:
 - fungere uden net og sende ændringer senere
 - sameksistere med andre klienter på samme samling (jtx Board via DAVx5, webklient, `notesync.py`)
 - vise let formatering (overskrifter, fed, kursiv, lister, afkrydsningslister, citater, kode, indrykning) i noteteksten, skrevet som Markdown (afsnit 6, fra v1.2)
-- vise URL'er i teksten som links og åbne dem i browseren (afsnit 6, fra v1.2)
+- vise URL'er i teksten som links og åbne dem i browseren (afsnit 6, fra v1.2), også som `[tekst](url)`
 - åbne tekst- og Markdown-filer og delt tekst som nye noter og dele en note som Markdown-fil (afsnit 7, fra v1.2)
 
 Må ikke / senere:
-- fuld Markdown (`[tekst](url)`, billeder, kodeblokke, tabeller, indlejrede citater), redigering af filer direkte (en fil er aldrig en note), forhåndsvisning i særskilt tilstand, vedhæftninger, flere konti, delte noter, push-notifikationer
+- fuld Markdown (billeder, kodeblokke, tabeller, indlejrede citater), redigering af filer direkte (en fil er aldrig en note), forhåndsvisning i særskilt tilstand, vedhæftninger, flere konti, delte noter, push-notifikationer
 - Idéer til senere: widget, hurtig-note
 
 ## 2. Dataformat (VJOURNAL)
@@ -209,6 +209,7 @@ Alt gælder **linje for linje**. Linjeskift er `\n`. Inline-formatering krydser 
 | Kursiv | `*tekst*` eller `_tekst_` | `_` kun ved ordgrænser (`snake_case_navn` er tekst); `*` også inde i ord (`a*b*c`). |
 | Fed og kursiv | `***tekst***` | Kursiv yderst, fed inderst (som CommonMark). |
 | Link | `https://…`, `http://…`, `www.…` | Ved ordgrænse, frem til blanktegn eller `<`/`>`. Tegnsætning til sidst (`.,;:!?'"*_`) og en ulige `)`/`]` hører ikke med. Inden i et link er der ingen fed, kursiv eller escape. Andre skemaer (`ftp:`, `mailto:`, `javascript:`) er tekst. |
+| Link med tekst | `[tekst](https://…)` | Teksten må ikke være tom og ikke indeholde `[` eller `]` uden escape; den kan have fed, kursiv og kode. URL'en starter med `http://`, `https://` eller `www.`, har ingen blanktegn eller `<`/`>`, og parenteser i den skal gå op. `[a] (url)`, `[](url)`, `\[a](url)` og `[a](ftp://…)` er tekst. Inden i URL'en er der ingen formatering. |
 | Kode | `` `tekst` `` | Et løb af n backticks lukkes af det næste løb af præcis n på samme linje (` ``a`b`` ` er koden `a`b`). Inden i kode er der ingen fed, kursiv, link eller escape. Uden partner er backticks tekst. |
 | Escape | `\*`, `\_`, `\#`, `\\` ... | Backslash foran ASCII-tegnsætning gør tegnet bogstaveligt. Foran andet (`C:\sti`) er backslash bare tekst. |
 
@@ -217,7 +218,7 @@ blanktegn foran, og indholdet må ikke være tomt. `2 * 3 * 4`, `** x**` og `***
 en markering uden partner (`**ufærdig`). Fed og kursiv kan indlejres (`**fed *kursiv* fed**`) og bruges i overskrifter
 og listepunkter.
 
-Alt andet (`[tekst](url)`, kodeblokke med ` ``` `, indlejrede citater, tabeller, vandrette streger, overskrifter med `===`) er almindelig tekst.
+Alt andet (`[tekst](url)` med andet end en webadresse, billeder, kodeblokke med ` ``` `, indlejrede citater, tabeller, vandrette streger, overskrifter med `===`) er almindelig tekst.
 
 ### API (`:core`)
 
@@ -229,6 +230,9 @@ data class MdEdit(val text: String, val selStart: Int, val selEnd: Int)
 object Markdown {
     fun spans(text: String): List<MdSpan>
     fun plain(text: String): String
+    fun hidden(text: String): List<MdSpan>
+    fun cycleEmphasis(text: String, selStart: Int, selEnd: Int): MdEdit
+    fun insertLink(text: String, selStart: Int, selEnd: Int): MdEdit
     fun toggleBold(text: String, selStart: Int, selEnd: Int): MdEdit
     fun toggleItalic(text: String, selStart: Int, selEnd: Int): MdEdit
     fun cycleHeading(text: String, selStart: Int, selEnd: Int): MdEdit
@@ -260,24 +264,40 @@ Rækkefølgen af spans er ikke fastlagt.
 - `CODE` dækker teksten mellem backticks; UI'et viser den i fast bredde på grå baggrund (0,9 em).
 - `INDENT` dækker en indrykket linje, der ikke er et listepunkt (kun niveau ≥ 1), `level` = niveau.
 - `BOLD`/`ITALIC` dækker alt mellem den åbnende og den lukkende markering (inkl. indlejrede markeringer).
-- `LINK` dækker URL'en; UI'et understreger og farver den og viser den lidt mindre (0,9 em).
+- `LINK` dækker URL'en, eller teksten i `[tekst](url)`; UI'et understreger og farver den og viser den lidt mindre (0,9 em).
+  For `[tekst](url)` er `[` og `](url)` `MARKER`.
 - `MARKER` dækker syntakstegn, som UI'et viser dæmpet: `#`-præfikset med mellemrum, listemarkeringen med
   mellemrum (`- `, `12. `, `> `; for afkrydsning kun `- `), `*`/`_`-markeringer, backticks og escape-backslash. Tilstødende `MARKER`-spans slås sammen.
+
+`hidden(text): List<MdSpan>` giver de syntakstegn, som UI'et skjuler på linjer, hvor markøren ikke står
+(alle med `kind = MARKER`): `#`-præfikset med mellemrum, `*`/`_`-markeringer, backticks, escape-backslash og
+`[` og `](url)` omkring en linktekst.
+Liste-, afkrydsnings- og citatmarkeringer er ikke med.
 
 `plain` (til listens forhåndsvisning): fjerner `#`-præfiks, `> `, `*`/`_`-markeringer, backticks og escape-backslash,
 skriver `- `/`* `/`+ ` som `• `, `- [ ] ` som `☐ ` og `- [x] ` som `☑ ` og lader nummerering og indrykning stå.
 
 ### Værktøjslinje (redigeringsfunktionerne)
 
-En række knapper over tastaturet, kun når tekstfeltet har fokus: **Fed**, **Kursiv**, **Overskrift**, **Punktliste**,
-**Nummereret liste**, **Afkrydsningsliste**, **Citat**, **Kode**, **Ryk ud**, **Ryk ind**. Knapperne er 34 dp brede og
+En række knapper over tastaturet, kun når tekstfeltet har fokus: **A** (kursiv og fed), **Overskrift**, **Punktliste**,
+**Nummereret liste**, **Afkrydsningsliste**, **Citat**, **Kode**, **Link**, **Ryk ud**, **Ryk ind**. Knapperne er 34 dp brede og
 48 dp høje med 20 dp-ikoner (Material 3's mindste berøringsflade slås fra på linjen), så alle ti er synlige på en
 almindelig telefon. Ikoner som egne vektor-drawables (Material Symbols, Apache 2.0), ikke
 `material-icons-extended`. Hver knap har en `contentDescription` på alle fem sprog. Editoren skifter fra `String` til
-`TextFieldValue` for at kende markeringen; stylingen sker med en `VisualTransformation` med identitets-offsetmapping
-(markeringerne bliver stående, men dæmpes).
+`TextFieldValue` for at kende markeringen; stylingen sker med en `VisualTransformation` med identitets-offsetmapping.
+På de linjer, markeringen berører, står markeringerne dæmpede; på alle andre linjer (og på alle linjer, når
+tekstfeltet ikke har fokus) skjules tegnene fra `hidden` som nulbredde-mellemrum, så `*ord*` ser ud som et kursivt ord.
+Teksten ændres ikke.
 
-- `toggleBold`/`toggleItalic`: Markeret tekst omkranses af `**`/`*`. Blanktegn i kanten af markeringen lægges uden for
+- `cycleEmphasis` (A): Går som Overskrift i ring: ingen → `*kursiv*` → `**fed**` → `***fed og kursiv***` → ingen.
+  Antallet af `*` omkring markeringen (lige udenfor eller som en del af den, højst 3) bestemmer næste trin; den
+  første ikke-tomme linje bestemmer for alle linjerne. `_` tæller ikke. Blanktegn i kanten lægges udenfor, og den
+  markerede tekst forbliver markeret. Uden markering indsættes `**` med markøren i midten; står markøren i et tomt
+  par, udskiftes det med næste trin (`***|***` fjernes).
+- `insertLink` (Link): Indsætter `[]()` med markøren mellem klammerne. Markeret tekst bliver linktekst (`[tekst]()`,
+  markøren i parentesen); er den markerede tekst en URL, bliver det `[](url)` med markøren mellem klammerne.
+  Blanktegn i kanten lægges udenfor. Går markeringen over flere linjer, indsættes `[]()` ved dens slutning.
+- `toggleBold`/`toggleItalic` (bruges ikke længere af værktøjslinjen): Markeret tekst omkranses af `**`/`*`. Blanktegn i kanten af markeringen lægges uden for
   (`" fed "` → `" **fed** "`). Er teksten allerede omkranset (markeringerne lige uden for eller som en del af
   markeringen), fjernes de i stedet. Kursiv tæller kun som omkranset, hvis `*`-løbet har længde 1 eller 3, så
   `**fed**` + kursiv giver `***fed***`. Uden markering indsættes `****`/`**` med markøren i midten; står markøren midt
@@ -303,7 +323,7 @@ almindelig telefon. Ikoner som egne vektor-drawables (Material Symbols, Apache 2
   i en markering eller indrykning, der fjernes eller udskiftes, havner den lige efter det nye præfiks. Er markeringen ikke tom, dækker resultatet de berørte linjer
   helt (første linjes start til sidste linjes slut).
 
-**Åbn link:** Står markøren i en URL (også lige før eller efter den), eller ligger markeringen inden i en, viser
+**Åbn link:** Står markøren i en URL eller i et `[tekst](url)` (også lige før eller efter), eller ligger markeringen inden i et af dem, viser
 værktøjslinjen en ekstra knap fast yderst til højre, **Åbn link** (`urlAt`); formateringsknapperne til venstre kan rulles. Den åbner URL'en med `ACTION_VIEW` i standardbrowseren;
 `www.…` får `https://` foran. Et tryk i teksten sætter altid markøren og åbner aldrig et link. Der er ingen websøgning
 på markeret tekst, som ikke er en URL.

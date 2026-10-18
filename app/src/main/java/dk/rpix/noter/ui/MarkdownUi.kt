@@ -63,6 +63,8 @@ import dk.rpix.noter.core.Markdown
  * punkttegn vises som • og afkrydsningsfelter som ☐/☑. Teksten har samme længde før og efter
  * (overskydende tegn bliver nulbredde-mellemrum), så offset-mappingen er identitet.
  * Citatets '>' gøres usynligt; stregen tegnes af [MarkdownBodyField].
+ * Uden for [active] (linjerne under markøren) skjules '#'-præfikset og inline-markeringerne helt
+ * ([Markdown.hidden]); de bliver nulbredde-mellemrum, så længden stadig er den samme.
  */
 data class MarkdownTransformation(
     val marker: Color,
@@ -71,6 +73,7 @@ data class MarkdownTransformation(
     val quote: Color,
     val codeBackground: Color,
     val checked: Color,
+    val active: IntRange = IntRange.EMPTY,
 ) : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
         val s = text.text
@@ -114,6 +117,9 @@ data class MarkdownTransformation(
             }
             if (style != null) styles += AnnotatedString.Range(style, sp.start, sp.end)
         }
+        for (sp in Markdown.hidden(s)) {
+            for (i in sp.start until sp.end) if (i !in active) chars[i] = '\u200B'
+        }
         return TransformedText(AnnotatedString(String(chars), styles), OffsetMapping.Identity)
     }
 
@@ -124,6 +130,18 @@ data class MarkdownTransformation(
     }
 }
 
+/**
+ * Tegnene på de linjer, markeringen i [value] berører (til [MarkdownTransformation.active]).
+ * Uden fokus er ingen linje aktiv, så alle markeringer skjules.
+ */
+fun activeLines(value: TextFieldValue, focused: Boolean): IntRange {
+    if (!focused) return IntRange.EMPTY
+    val text = value.text
+    val start = text.lastIndexOf('\n', value.selection.min - 1) + 1
+    val end = text.indexOf('\n', value.selection.max).let { if (it < 0) text.length else it }
+    return start..end
+}
+
 private class FormatAction(
     @param:DrawableRes val icon: Int,
     @param:StringRes val label: Int,
@@ -131,14 +149,14 @@ private class FormatAction(
 )
 
 private val actions = listOf(
-    FormatAction(R.drawable.ic_format_bold, R.string.format_bold, Markdown::toggleBold),
-    FormatAction(R.drawable.ic_format_italic, R.string.format_italic, Markdown::toggleItalic),
+    FormatAction(R.drawable.ic_text_format, R.string.format_emphasis, Markdown::cycleEmphasis),
     FormatAction(R.drawable.ic_format_heading, R.string.format_heading, Markdown::cycleHeading),
     FormatAction(R.drawable.ic_format_list_bulleted, R.string.format_bullets, Markdown::toggleBullets),
     FormatAction(R.drawable.ic_format_list_numbered, R.string.format_numbers, Markdown::toggleNumbers),
     FormatAction(R.drawable.ic_checklist, R.string.format_task, Markdown::toggleTask),
     FormatAction(R.drawable.ic_format_quote, R.string.format_quote, Markdown::toggleQuote),
     FormatAction(R.drawable.ic_code, R.string.format_code, Markdown::toggleCode),
+    FormatAction(R.drawable.ic_link, R.string.format_link, Markdown::insertLink),
     FormatAction(R.drawable.ic_format_indent_decrease, R.string.format_outdent, Markdown::outdent),
     FormatAction(R.drawable.ic_format_indent_increase, R.string.format_indent, Markdown::indent),
 )

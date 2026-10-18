@@ -190,6 +190,27 @@ class MarkdownTest {
         }
     }
 
+    // ---- hidden ----
+
+    // Teksten med de skjulte tegn fjernet
+    private fun shown(text: String): String {
+        val h = Markdown.hidden(text)
+        return text.indices.filter { i -> h.none { i >= it.start && i < it.end } }.map { text[it] }.joinToString("")
+    }
+
+    @Test fun hidden() {
+        assertEquals("Indkøb", shown("# Indkøb"))
+        assertEquals("", shown("##"))
+        assertEquals("fed og kursiv og mere", shown("**fed** og *kursiv* og _mere_"))
+        assertEquals("kode og *stjerne*", shown("`kode` og \\*stjerne\\*"))
+        // Liste-, afkrydsnings- og citatmarkeringer bliver stående
+        assertEquals("- fed\n* punkt\n1. tal\n- [ ] gøremål\n> citat", shown("- **fed**\n* punkt\n1. tal\n- [ ] gøremål\n> *citat*"))
+        // Falske positiver skjules ikke
+        assertEquals("snake_case 2 * 3 **ufærdig #tag C:\\sti", shown("snake_case 2 * 3 **ufærdig #tag C:\\sti"))
+        assertEquals("https://a.dk/x_y_z", shown("https://a.dk/x_y_z"))
+        assertTrue(Markdown.hidden("").isEmpty())
+    }
+
     // ---- plain ----
 
     @Test fun plain() {
@@ -506,5 +527,87 @@ class MarkdownTest {
         assertEquals("hvor", Markdown.plain("`hvor`"))
         assertEquals("☐ a\n☑ b", Markdown.plain("- [ ] a\n- [x] b"))
         assertEquals("    ☐ a", Markdown.plain("    - [ ] a"))
+    }
+
+    // ---- Værktøjslinjen: A (kursiv → fed → fed og kursiv → ingen) ----
+
+    @Test fun cycleEmphasis() {
+        val op = Markdown::cycleEmphasis
+        assertEquals("a *[ord]* b", apply(op, "a [ord] b"))
+        assertEquals("a **[ord]** b", apply(op, "a *[ord]* b"))
+        assertEquals("a ***[ord]*** b", apply(op, "a **[ord]** b"))
+        assertEquals("a [ord] b", apply(op, "a ***[ord]*** b"))
+        assertEquals("markeringer med i markeringen", "a **[ord]** b", apply(op, "a [*ord*] b"))
+        assertEquals("a [ord] b", apply(op, "a [***ord***] b"))
+        assertEquals("blanktegn lægges udenfor", "a *[ord]* b", apply(op, "a[ ord ]b"))
+        assertEquals("_ tæller ikke", "*[_ord_]*", apply(op, "[_ord_]"))
+        assertEquals("a *|* b", apply(op, "a | b"))
+        assertEquals("a **|** b", apply(op, "a *|* b"))
+        assertEquals("a ***|*** b", apply(op, "a **|** b"))
+        assertEquals("a | b", apply(op, "a ***|*** b"))
+        assertEquals("første linje bestemmer", "**[a**\n\n**b]**", apply(op, "[*a*\n\nb]"))
+        assertEquals("*[😀æ]*", apply(op, "[😀æ]"))
+    }
+
+    // ---- Links med tekst: [tekst](url) ----
+
+    @Test fun textLinks() {
+        val t = "Se [DavNotes](https://notes.rpix.dk/) her"
+        assertEquals("DavNotes", covered(t, LINK))
+        assertEquals("[](https://notes.rpix.dk/)", covered(t, MARKER))
+        assertEquals("Se DavNotes her", shown(t))
+        assertEquals("www", "w", covered("[w](www.a.dk)", LINK))
+        assertEquals("parentes i URL", "W", covered("[W](https://a.org/wiki/A_(b)).", LINK))
+        assertEquals("W.", shown("[W](https://a.org/wiki/A_(b))."))
+        assertEquals("i et listepunkt", "- a", shown("- [a](https://a.dk)"))
+        assertEquals("to links", "ab", covered("[a](https://a.dk) og [b](https://b.dk)", LINK))
+    }
+
+    @Test fun textLinkWithFormatting() {
+        val t = "[**fed** link](https://a.dk)"
+        assertEquals("**fed** link", covered(t, LINK))
+        assertEquals("fed", covered(t, BOLD))
+        assertEquals("fed link", shown(t))
+        assertEquals("kursiv rundt om", "a [b](https://a.dk) c", covered("*a [b](https://a.dk) c*", ITALIC))
+        assertEquals("`x` y", covered("[`x` y](https://a.dk)", LINK))
+        assertEquals("x", covered("[`x` y](https://a.dk)", CODE))
+        assertEquals("underscore i URL'en er ikke kursiv", "", covered("[a](https://a.dk/_x_)", ITALIC))
+    }
+
+    @Test fun notTextLinks() {
+        // Kun den bare URL er et link
+        for (text in listOf(
+            "[a] (https://a.dk)", "[](https://a.dk)", "\\[a](https://a.dk)", "[a](https://a.dk/ b)", "[a\\](https://a.dk)",
+        )) {
+            assertEquals(text, "https://a.dk", covered(text, LINK).take(12))
+            assertTrue(text, Markdown.hidden(text).none { text[it.start] == '[' })
+        }
+        assertEquals("", covered("[a](ftp://a.dk)", LINK))
+        assertEquals("", covered("[a](mailto:a@a.dk)", LINK))
+        assertEquals("", covered("`[a](https://a.dk)`", LINK))
+        assertEquals("", covered("[a](https://)", LINK))
+        assertEquals("[a](", shown("[a]("))
+    }
+
+    @Test fun textLinkPlainAndUrlAt() {
+        assertEquals("Se her.", Markdown.plain("Se [her](https://a.dk)."))
+        val t = "Se [her](https://a.dk) nu"
+        assertEquals("i teksten", "https://a.dk", Markdown.urlAt(t, 5, 5))
+        assertEquals("ved '['", "https://a.dk", Markdown.urlAt(t, 3, 3))
+        assertEquals("i URL'en", "https://a.dk", Markdown.urlAt(t, 12, 12))
+        assertEquals("lige efter", "https://a.dk", Markdown.urlAt(t, 22, 22))
+        assertNull(Markdown.urlAt(t, 1, 1))
+        assertEquals("https://www.a.dk", Markdown.urlAt("[w](www.a.dk)", 1, 1))
+    }
+
+    // ---- Værktøjslinjen: indsæt link ----
+
+    @Test fun insertLink() {
+        assertEquals(MdEdit("a [](), b", 3, 3), Markdown.insertLink("a , b", 2, 2))
+        assertEquals("markeret tekst bliver linktekst", MdEdit("a [ord]() b", 8, 8), Markdown.insertLink("a ord b", 2, 5))
+        assertEquals("blanktegn lægges udenfor", MdEdit("a [ord]() b", 8, 8), Markdown.insertLink("a ord b", 1, 6))
+        assertEquals("markeret URL", MdEdit("[](https://a.dk)", 1, 1), Markdown.insertLink("https://a.dk", 0, 12))
+        assertEquals("www", MdEdit("[](www.a.dk)", 1, 1), Markdown.insertLink("www.a.dk", 0, 8))
+        assertEquals("flere linjer: kun ved markørens slutning", MdEdit("a\nb[]()", 4, 4), Markdown.insertLink("a\nb", 0, 3))
     }
 }

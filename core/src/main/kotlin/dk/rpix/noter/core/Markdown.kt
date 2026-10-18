@@ -189,9 +189,66 @@ object Markdown {
         return out
     }
 
-    /** Fed og kursiv i [from, to) efter en forenklet udgave af CommonMarks delimiter-algoritme. */
+    /**
+     * Links med tekst i [from, to) som [start ('['), ']', slut (efter ')')]. Teksten må ikke være tom og ikke
+     * indeholde '[' eller ']' uden escape; URL'en skal starte med http://, https:// eller www. og må ikke have
+     * blanktegn. Parenteser i URL'en skal gå op. Intet link starter i kode, og kode må ikke krydse "](url)".
+     */
+    private fun textLinks(text: String, from: Int, to: Int, code: List<IntArray>): List<IntArray> {
+        val out = mutableListOf<IntArray>()
+        var p = from
+        while (p < to) {
+            val c = text[p]
+            if (c == '\\' && p + 1 < to && text[p + 1] in PUNCT) { p += 2; continue }
+            val inCode = code.firstOrNull { p >= it[0] && p < it[1] }
+            if (inCode != null) { p = inCode[1]; continue }
+            val link = if (c == '[') textLinkAt(text, p, to, code) else null
+            if (link != null) p = link[2] else p++
+            link?.let { out += it }
+        }
+        return out
+    }
+
+    private fun textLinkAt(text: String, p: Int, to: Int, code: List<IntArray>): IntArray? {
+        var q = p + 1
+        while (q < to && text[q] != ']') {
+            val c = text[q]
+            if (c == '[') return null
+            val inCode = code.firstOrNull { q >= it[0] && q < it[1] }
+            q = when {
+                c == '\\' && q + 1 < to && text[q + 1] in PUNCT -> q + 2
+                inCode != null -> inCode[1]
+                else -> q + 1
+            }
+        }
+        if (q + 1 >= to || q == p + 1 || text[q + 1] != '(') return null
+        val u = q + 2
+        val prefix = when {
+            text.startsWith("https://", u, ignoreCase = true) -> 8
+            text.startsWith("http://", u, ignoreCase = true) -> 7
+            text.startsWith("www.", u, ignoreCase = true) -> 4
+            else -> return null
+        }
+        var depth = 0
+        var r = u
+        while (r < to) {
+            val c = text[r]
+            if (c.isWhitespace() || c == '<' || c == '>') return null
+            if (c == ')') {
+                if (depth == 0) break
+                depth--
+            } else if (c == '(') {
+                depth++
+            }
+            r++
+        }
+        if (r >= to || r - u <= prefix) return null
+        if (code.any { it[0] <= r && q < it[1] }) return null
+        return intArrayOf(p, q, r + 1)
+    }
+
+    /** Kode, links, fed og kursiv i [from, to). Fed og kursiv efter en forenklet udgave af CommonMarks delimiter-algoritme. */
     private fun inline(text: String, from: Int, to: Int, out: MutableList<MdSpan>, markers: MutableList<IntArray>) {
-        val runs = mutableListOf<Run>()
         // Kode og URL'er er uigennemsigtige: ingen fed, kursiv eller escape inden i dem
         val code = codeSpans(text, from, to)
         for (c in code) {
@@ -200,9 +257,29 @@ object Markdown {
             markers += intArrayOf(c[0], c[0] + n)
             markers += intArrayOf(c[1] - n, c[1])
         }
-        val links = urls(text, from, to).filter { l -> code.none { l[0] < it[1] && it[0] < l[1] } }
+        // [tekst](url): teksten vises som link, '[' og "](url)" er markeringer
+        val textLinks = textLinks(text, from, to, code)
+        for (l in textLinks) {
+            out += MdSpan(MdKind.LINK, l[0] + 1, l[1])
+            markers += intArrayOf(l[0], l[0] + 1)
+            markers += intArrayOf(l[1], l[2])
+        }
+        val whole = textLinks.map { intArrayOf(it[0], it[2]) }
+        val links = urls(text, from, to).filter { l -> (code + whole).none { l[0] < it[1] && it[0] < l[1] } }
         for (l in links) out += MdSpan(MdKind.LINK, l[0], l[1])
-        val opaque = (code + links).sortedBy { it[0] }
+        // Linkteksten får fed og kursiv for sig; udefra er hele linket uigennemsigtigt
+        for (l in textLinks) {
+            emphasis(text, l[0] + 1, l[1], code.filter { it[0] > l[0] && it[1] <= l[1] }, out, markers)
+        }
+        emphasis(text, from, to, (code + links + whole).sortedBy { it[0] }, out, markers)
+    }
+
+    /** Fed, kursiv og escapes i [from, to); [opaque] (sorteret) springes over. */
+    private fun emphasis(
+        text: String, from: Int, to: Int, opaque: List<IntArray>,
+        out: MutableList<MdSpan>, markers: MutableList<IntArray>,
+    ) {
+        val runs = mutableListOf<Run>()
         var li = 0
         var p = from
         while (p < to) {
@@ -265,6 +342,20 @@ object Markdown {
             for (k in found + 1 until ci) runs[k].len = 0
             if (c.len == 0) ci++
         }
+    }
+
+    /**
+     * Syntakstegn, som UI'et skjuler på linjer, hvor markøren ikke står: '#'-præfikset med mellemrum og
+     * inline-markeringer ('*'/'_', backticks, escape-backslash). Liste- og citatmarkeringer er ikke med.
+     * Alle spans er [MdKind.MARKER].
+     */
+    fun hidden(text: String): List<MdSpan> {
+        val markers = mutableListOf<IntArray>()
+        for (l in lines(text)) {
+            if (l.prefix == Prefix.HEADING) markers += intArrayOf(l.start, l.markerEnd)
+            inline(text, l.markerEnd, l.end, mutableListOf(), markers)
+        }
+        return markers.sortedBy { it[0] }.map { MdSpan(MdKind.MARKER, it[0], it[1]) }
     }
 
     fun plain(text: String): String = lines(text).joinToString("\n") { l ->
@@ -335,18 +426,8 @@ object Markdown {
         else -> run == 1 || run == 3
     }
 
-    private fun toggleInline(text: String, s: Int, e: Int, ch: Char, n: Int): MdEdit {
-        val mark = ch.toString().repeat(n)
-        val present = { run: Int -> present(ch, run, n) }
-        val before = { p: Int -> runBefore(text, p, ch) }
-        val after = { p: Int -> runAfter(text, p, ch) }
-        if (s == e) {
-            if (present(minOf(before(s), after(s)))) {
-                return MdEdit(text.removeRange(s, s + n).removeRange(s - n, s), s - n, s - n)
-            }
-            return MdEdit(text.substring(0, s) + mark + mark + text.substring(s), s + n, s + n)
-        }
-        // Den ikke-blanke del af hver linje i markeringen
+    /** Den ikke-blanke del af hver linje i markeringen [s, e). */
+    private fun segments(text: String, s: Int, e: Int): List<IntArray> {
         val segs = mutableListOf<IntArray>()
         var ls = s
         while (true) {
@@ -360,6 +441,21 @@ object Markdown {
             if (le >= e) break
             ls = le + 1
         }
+        return segs
+    }
+
+    private fun toggleInline(text: String, s: Int, e: Int, ch: Char, n: Int): MdEdit {
+        val mark = ch.toString().repeat(n)
+        val present = { run: Int -> present(ch, run, n) }
+        val before = { p: Int -> runBefore(text, p, ch) }
+        val after = { p: Int -> runAfter(text, p, ch) }
+        if (s == e) {
+            if (present(minOf(before(s), after(s)))) {
+                return MdEdit(text.removeRange(s, s + n).removeRange(s - n, s), s - n, s - n)
+            }
+            return MdEdit(text.substring(0, s) + mark + mark + text.substring(s), s + n, s + n)
+        }
+        val segs = segments(text, s, e)
         if (segs.isEmpty()) return MdEdit(text, s, e)
         // 1 = markeringerne er med i markeringen, 2 = de står lige udenfor, 0 = ingen
         val states = segs.map { (a, b) ->
@@ -392,6 +488,67 @@ object Markdown {
     fun toggleItalic(text: String, selStart: Int, selEnd: Int): MdEdit = toggleInline(text, selStart, selEnd, '*', 1)
 
     fun toggleCode(text: String, selStart: Int, selEnd: Int): MdEdit = toggleInline(text, selStart, selEnd, '`', 1)
+
+    /**
+     * Knappen A: ingen → *kursiv* → **fed** → ***fed og kursiv*** → ingen. Antallet af '*' omkring markeringen
+     * (lige udenfor eller som en del af den) bestemmer næste trin; den første linje bestemmer for alle.
+     * Uden markering indsættes eller udskiftes et tomt par ved markøren.
+     */
+    fun cycleEmphasis(text: String, selStart: Int, selEnd: Int): MdEdit {
+        val s = selStart
+        if (s == selEnd) {
+            val k = minOf(runBefore(text, s, '*'), runAfter(text, s, '*'), 3)
+            val mark = "*".repeat((k + 1) % 4)
+            val p = s - k + mark.length
+            return MdEdit(text.substring(0, s - k) + mark + mark + text.substring(s + k), p, p)
+        }
+        val segs = segments(text, s, selEnd)
+        if (segs.isEmpty()) return MdEdit(text, s, selEnd)
+        // Pr. linje: antal '*' og om de er med i markeringen
+        val inside = BooleanArray(segs.size)
+        val counts = segs.mapIndexed { i, (a, b) ->
+            val l = runAfter(text, a, '*')
+            val r = runBefore(text, b, '*')
+            if (l + r < b - a && minOf(l, r) > 0) {
+                inside[i] = true
+                minOf(l, r, 3)
+            } else {
+                minOf(runBefore(text, a, '*'), runAfter(text, b, '*'), 3)
+            }
+        }
+        val mark = "*".repeat((counts.first() + 1) % 4)
+        val changes = mutableListOf<Change>()
+        segs.forEachIndexed { i, (a, b) ->
+            val k = counts[i]
+            if (inside[i]) {
+                changes += Change(a, k, mark); changes += Change(b - k, k, mark)
+            } else {
+                changes += Change(a - k, k, mark); changes += Change(b, k, mark)
+            }
+        }
+        // Første og sidste tegn af indholdet ligger ikke i nogen ændring
+        val first = segs.first()[0] + if (inside.first()) counts.first() else 0
+        val last = segs.last()[1] - if (inside.last()) counts.last() else 0
+        return MdEdit(applyChanges(text, changes), mapPos(changes, first), mapPos(changes, last - 1) + 1)
+    }
+
+    /**
+     * Knappen Link: indsætter "[]()". Markeret tekst bliver linktekst med markøren i parentesen; er den en URL,
+     * kommer den i parentesen med markøren mellem klammerne. Uden markering står markøren mellem klammerne.
+     * Markering over flere linjer: indsættes ved slutningen.
+     */
+    fun insertLink(text: String, selStart: Int, selEnd: Int): MdEdit {
+        var a = selStart
+        var b = selEnd
+        if (text.indexOf('\n', a).let { it in a until b }) a = b
+        while (a < b && text[a].isWhitespace()) a++
+        while (b > a && text[b - 1].isWhitespace()) b--
+        val sel = text.substring(a, b)
+        val isUrl = sel.isNotEmpty() && urls(sel, 0, sel.length).singleOrNull()?.let { it[0] == 0 && it[1] == sel.length } == true
+        val ins = if (isUrl) "[]($sel)" else "[$sel]()"
+        val p = if (isUrl || sel.isEmpty()) a + 1 else a + sel.length + 3
+        return MdEdit(text.substring(0, a) + ins + text.substring(b), p, p)
+    }
 
     /**
      * Fælles for linjefunktionerne: [change] får linjerne under markeringen (tomme linjer udeladt, når der er
@@ -526,6 +683,11 @@ object Markdown {
         val lineStart = text.lastIndexOf('\n', selStart - 1) + 1
         var lineEnd = text.indexOf('\n', selStart)
         if (lineEnd < 0) lineEnd = text.length
+        val code = codeSpans(text, lineStart, lineEnd)
+        textLinks(text, lineStart, lineEnd, code).firstOrNull { it[0] <= selStart && selEnd <= it[2] }?.let {
+            val url = text.substring(it[1] + 2, it[2] - 1)
+            return if (url.startsWith("www.", ignoreCase = true)) "https://$url" else url
+        }
         val hit = urls(text, lineStart, lineEnd).firstOrNull { it[0] <= selStart && selEnd <= it[1] } ?: return null
         val url = text.substring(hit[0], hit[1])
         return if (url.startsWith("www.", ignoreCase = true)) "https://$url" else url

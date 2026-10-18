@@ -82,8 +82,8 @@
     <string name="about_thanks">Tak til Radicale, jtx Board og DAVx⁵.</string>
 
     <!-- Formatering -->
-    <string name="format_bold">Fed</string>
-    <string name="format_italic">Kursiv</string>
+    <string name="format_emphasis">Kursiv og fed</string>
+    <string name="format_link">Indsæt link</string>
     <string name="format_heading">Overskrift</string>
     <string name="format_bullets">Punktliste</string>
     <string name="format_numbers">Nummereret liste</string>

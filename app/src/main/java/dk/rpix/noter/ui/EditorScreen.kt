@@ -391,6 +391,7 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
                 quote = MaterialTheme.colorScheme.onSurfaceVariant,
                 codeBackground = MaterialTheme.colorScheme.surfaceContainerHighest,
                 checked = MaterialTheme.colorScheme.primary,
+                active = activeLines(vm.bodyValue, bodyFocused),
             )
             MarkdownBodyField(
                 value = vm.bodyValue,

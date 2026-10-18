@@ -82,8 +82,8 @@
     <string name="about_thanks">Merci à Radicale, jtx Board et DAVx⁵.</string>
 
     <!-- Formatering -->
-    <string name="format_bold">Gras</string>
-    <string name="format_italic">Italique</string>
+    <string name="format_emphasis">Italique et gras</string>
+    <string name="format_link">Insérer un lien</string>
     <string name="format_heading">Titre</string>
     <string name="format_bullets">Liste à puces</string>
     <string name="format_numbers">Liste numérotée</string>

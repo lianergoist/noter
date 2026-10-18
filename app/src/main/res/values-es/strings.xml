@@ -82,8 +82,8 @@
     <string name="about_thanks">Gracias a Radicale, jtx Board y DAVx⁵.</string>
 
     <!-- Formatering -->
-    <string name="format_bold">Negrita</string>
-    <string name="format_italic">Cursiva</string>
+    <string name="format_emphasis">Cursiva y negrita</string>
+    <string name="format_link">Insertar enlace</string>
     <string name="format_heading">Encabezado</string>
     <string name="format_bullets">Lista con viñetas</string>
     <string name="format_numbers">Lista numerada</string>
