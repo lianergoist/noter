@@ -101,4 +101,9 @@
     <string name="share_failed">Die Notiz kann nicht geteilt werden. Versuche es erneut.</string>
     <string name="no_browser">Keine App kann den Link öffnen.</string>
     <string name="untitled_file">Notiz</string>
+    <string name="link_edit">Bearbeiten</string>
+    <string name="link_edit_title">Link bearbeiten</string>
+    <string name="link_text">Text</string>
+    <string name="link_url">URL</string>
+    <string name="link_remove">Link entfernen</string>
 </resources>

@@ -60,6 +60,7 @@ import dk.rpix.noter.NoterApp
 import dk.rpix.noter.R
 import dk.rpix.noter.core.Markdown
 import dk.rpix.noter.core.MdEdit
+import dk.rpix.noter.core.MdLink
 import dk.rpix.noter.core.Note
 import dk.rpix.noter.data.FileImport
 import java.util.Date
@@ -188,6 +189,13 @@ class EditorViewModel(private val app: NoterApp, initialUid: String?) : ViewMode
     }
 
     /** En knap på værktøjslinjen. */
+    /** Retter et link fra dialogen; er teksten ændret imens (fx af en sync), sker der intet. */
+    fun editLink(link: MdLink, label: String, url: String?) {
+        if (link !in Markdown.links(body)) return
+        val r = Markdown.editLink(body, link, label, url) ?: return
+        onBody(TextFieldValue(r.text, TextRange(r.selStart, r.selEnd)))
+    }
+
     fun format(op: (String, Int, Int) -> MdEdit) {
         val sel = bodyValue.selection
         val r = op(body, sel.min, sel.max)
@@ -273,6 +281,9 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
     val snackbar = remember { SnackbarHostState() }
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     var bodyFocused by remember { mutableStateOf(false) }
+    // Trykket link: først valget Åbn/Redigér, derefter evt. redigeringsdialogen
+    var linkMenu by remember { mutableStateOf<MdLink?>(null) }
+    var linkEdit by remember { mutableStateOf<MdLink?>(null) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val fallbackName = stringResource(R.string.untitled_file)
@@ -402,6 +413,7 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
                 quoteBar = Color(0xFFFFC107), // gul (Material Amber 500), synlig i lyst og mørkt tema
                 placeholder = { Text(stringResource(R.string.body_hint), style = serif) },
                 colors = plain,
+                onLinkClick = { linkMenu = it },
             )
             DateLabels.parseStamp(vm.modified)?.let { t: Date ->
                 Text(
@@ -412,6 +424,30 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
                 )
             }
         }
+    }
+
+    linkMenu?.let { link ->
+        AlertDialog(
+            onDismissRequest = { linkMenu = null },
+            title = { Text(Markdown.plain(link.text)) },
+            text = { Text(link.url) },
+            confirmButton = {
+                TextButton(onClick = {
+                    linkMenu = null
+                    Markdown.urlAt(vm.body, link.start, link.start)?.let(::openUrl)
+                }) { Text(stringResource(R.string.open_link)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { linkMenu = null; linkEdit = link }) { Text(stringResource(R.string.link_edit)) }
+            },
+        )
+    }
+    linkEdit?.let { link ->
+        LinkDialog(
+            link = link,
+            onSave = { label, url -> linkEdit = null; vm.editLink(link, label, url) },
+            onDismiss = { linkEdit = null },
+        )
     }
 
     if (confirmDelete) {

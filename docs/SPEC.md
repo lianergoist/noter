@@ -226,6 +226,7 @@ Alt andet (`[tekst](url)` med andet end en webadresse, billeder, kodeblokke med 
 enum class MdKind { HEADING, BULLET, NUMBERED, INDENT, BOLD, ITALIC, MARKER, LINK, QUOTE, TASK, CHECKBOX, DONE, CODE }
 data class MdSpan(val kind: MdKind, val start: Int, val end: Int, val level: Int = 0)
 data class MdEdit(val text: String, val selStart: Int, val selEnd: Int)
+data class MdLink(val start: Int, val end: Int, val text: String, val url: String)  // [text](url), start = '[', end efter ')'
 
 object Markdown {
     fun spans(text: String): List<MdSpan>
@@ -245,6 +246,8 @@ object Markdown {
     fun outdent(text: String, selStart: Int, selEnd: Int): MdEdit
     fun continueList(text: String, cursor: Int): MdEdit?
     fun urlAt(text: String, selStart: Int, selEnd: Int): String?
+    fun links(text: String): List<MdLink>
+    fun editLink(text: String, link: MdLink, label: String, url: String?): MdEdit?
 }
 ```
 
@@ -325,7 +328,14 @@ Teksten ændres ikke.
 
 **Åbn link:** Står markøren i en URL eller i et `[tekst](url)` (også lige før eller efter), eller ligger markeringen inden i et af dem, viser
 værktøjslinjen en ekstra knap fast yderst til højre, **Åbn link** (`urlAt`); formateringsknapperne til venstre kan rulles. Den åbner URL'en med `ACTION_VIEW` i standardbrowseren;
-`www.…` får `https://` foran. Et tryk i teksten sætter altid markøren og åbner aldrig et link. Der er ingen websøgning
+`www.…` får `https://` foran. Et tryk i teksten sætter markøren og åbner aldrig et link direkte.
+
+**Tryk på et link med tekst:** Et kort tryk på teksten i et sammenfoldet `[tekst](url)` (dvs. på en linje, hvor
+markøren ikke står) sætter ikke markøren, men viser en dialog med linkteksten og URL'en og knapperne **Åbn link** og
+**Redigér**. Redigér viser en dialog med felterne **Tekst** og **URL** og knapperne **Gem** (kun når resultatet er et
+gyldigt link, `editLink`), **Fjern link** (teksten bliver stående uden link) og **Annullér**. Markøren står efter
+linket bagefter. Er noten ændret, mens dialogen var åben, så linket ikke længere findes, sker der intet. Et langt tryk
+og tryk på markørens linje virker som i resten af teksten; bare URL'er får ingen dialog. Der er ingen websøgning
 på markeret tekst, som ikke er en URL.
 
 **Fortsæt liste ved Enter** (`continueList(text, cursor)`): Editoren kalder den, når en ændring er præcis ét indsat

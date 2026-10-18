@@ -6,6 +6,9 @@ enum class MdKind { HEADING, BULLET, NUMBERED, INDENT, BOLD, ITALIC, MARKER, LIN
 /** Et stykke formatering i teksten: UTF-16-indeks, [start] inklusiv, [end] eksklusiv. */
 data class MdSpan(val kind: MdKind, val start: Int, val end: Int, val level: Int = 0)
 
+/** Et link med tekst, `[text](url)`, fra [start] ('[') til [end] (efter ')'). [text] og [url] som de står i teksten. */
+data class MdLink(val start: Int, val end: Int, val text: String, val url: String)
+
 /** Resultatet af en knap på værktøjslinjen: ny tekst og ny markering. */
 data class MdEdit(val text: String, val selStart: Int, val selEnd: Int)
 
@@ -676,6 +679,26 @@ object Markdown {
         val prefix = text.substring(prev.start, prev.indentEnd) + marker
         val p = cursor + prefix.length
         return MdEdit(text.substring(0, cursor) + prefix + text.substring(cursor), p, p)
+    }
+
+    /** Alle links med tekst (`[tekst](url)`) i [text]; bare URL'er er ikke med. */
+    fun links(text: String): List<MdLink> = lines(text).flatMap { l ->
+        textLinks(text, l.markerEnd, l.end, codeSpans(text, l.markerEnd, l.end)).map {
+            MdLink(it[0], it[2], text.substring(it[0] + 1, it[1]), text.substring(it[1] + 2, it[2] - 1))
+        }
+    }
+
+    /**
+     * Retter [link] i [text] til `[label](url)`, eller til bare [label], når [url] er null (fjern link). Blanktegn i
+     * kanten fjernes. Null, hvis resultatet ikke ville være et gyldigt link. Markøren står efter linket.
+     */
+    fun editLink(text: String, link: MdLink, label: String, url: String?): MdEdit? {
+        val l = label.trim()
+        if (l.contains('\n')) return null
+        val ins = if (url == null) l else "[$l](${url.trim()})"
+        if (url != null && links(ins).singleOrNull()?.let { it.start == 0 && it.end == ins.length } != true) return null
+        val p = link.start + ins.length
+        return MdEdit(text.substring(0, link.start) + ins + text.substring(link.end), p, p)
     }
 
     /** Den URL, markøren eller markeringen står i (også lige før eller efter den), eller null. www. får https://. */

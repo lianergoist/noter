@@ -610,4 +610,32 @@ class MarkdownTest {
         assertEquals("www", MdEdit("[](www.a.dk)", 1, 1), Markdown.insertLink("www.a.dk", 0, 8))
         assertEquals("flere linjer: kun ved markørens slutning", MdEdit("a\nb[]()", 4, 4), Markdown.insertLink("a\nb", 0, 3))
     }
+
+    // ---- Links til dialogen: links og editLink ----
+
+    @Test fun linkList() {
+        val t = "Se [her](https://a.dk) og [**fed**](www.b.dk/x_(y)).\n[c](https://c.dk)"
+        assertEquals(
+            listOf(
+                MdLink(3, 22, "her", "https://a.dk"),
+                MdLink(26, 51, "**fed**", "www.b.dk/x_(y)"),
+                MdLink(53, 70, "c", "https://c.dk"),
+            ),
+            Markdown.links(t),
+        )
+        assertTrue("bare URL'er er ikke med", Markdown.links("https://a.dk [a] (https://a.dk)").isEmpty())
+        assertTrue(Markdown.links("").isEmpty())
+    }
+
+    @Test fun editLink() {
+        val t = "Se [her](https://a.dk) nu"
+        val l = Markdown.links(t).single()
+        assertEquals(MdEdit("Se [der](https://b.dk) nu", 22, 22), Markdown.editLink(t, l, "der", "https://b.dk"))
+        assertEquals("fjern link", MdEdit("Se her nu", 6, 6), Markdown.editLink(t, l, "her", null))
+        assertEquals("ugyldig URL", null, Markdown.editLink(t, l, "her", "ftp://a.dk"))
+        assertEquals("tom tekst", null, Markdown.editLink(t, l, "", "https://a.dk"))
+        assertEquals("klammer i teksten", null, Markdown.editLink(t, l, "a]b", "https://a.dk"))
+        assertEquals("blanktegn i URL'en", null, Markdown.editLink(t, l, "her", "https://a.dk/a b"))
+        assertEquals("blanktegn i kanten fjernes", MdEdit("Se [der](https://b.dk) nu", 22, 22), Markdown.editLink(t, l, " der ", " https://b.dk "))
+    }
 }

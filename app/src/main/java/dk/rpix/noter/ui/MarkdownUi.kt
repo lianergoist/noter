@@ -6,7 +6,22 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.input.KeyboardType
+import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TextFieldColors
@@ -55,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import dk.rpix.noter.R
 import dk.rpix.noter.core.MdEdit
+import dk.rpix.noter.core.MdLink
 import dk.rpix.noter.core.MdKind
 import dk.rpix.noter.core.Markdown
 
@@ -80,6 +96,7 @@ data class MarkdownTransformation(
         val spans = Markdown.spans(s)
         val chars = s.toCharArray()
         val styles = mutableListOf<AnnotatedString.Range<SpanStyle>>()
+        val invisible = mutableListOf<Int>()
         // Markeringer først, så punkttegnets farve vinder over den dæmpede
         for (sp in spans.filter { it.kind == MdKind.MARKER }) {
             styles += AnnotatedString.Range(SpanStyle(color = marker), sp.start, sp.end)
@@ -95,7 +112,7 @@ data class MarkdownTransformation(
                 MdKind.QUOTE -> {
                     var i = sp.start
                     while (chars[i] == ' ' || chars[i] == '\t') i++
-                    styles += AnnotatedString.Range(SpanStyle(color = Color.Transparent), i, i + 1)
+                    invisible += i
                     SpanStyle(color = quote)
                 }
                 MdKind.CHECKBOX -> {
@@ -117,6 +134,8 @@ data class MarkdownTransformation(
             }
             if (style != null) styles += AnnotatedString.Range(style, sp.start, sp.end)
         }
+        // Til sidst, så citatets farve ikke overskriver den gennemsigtige '>'
+        for (i in invisible) styles += AnnotatedString.Range(SpanStyle(color = Color.Transparent), i, i + 1)
         for (sp in Markdown.hidden(s)) {
             for (i in sp.start until sp.end) if (i !in active) chars[i] = '\u200B'
         }
@@ -200,7 +219,8 @@ fun FormatBar(url: String?, onOpenUrl: (String) -> Unit, onFormat: ((String, Int
 
 /**
  * Notens tekstfelt: som Material 3's TextField, men med adgang til tekstlayoutet, så citater kan få
- * en farvet streg i venstre side (på '>'-tegnets plads).
+ * en farvet streg i venstre side (på '>'-tegnets plads). Et kort tryk på teksten i et sammenfoldet link
+ * (uden for [MarkdownTransformation.active]) kalder [onLinkClick] i stedet for at sætte markøren.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -212,11 +232,26 @@ fun MarkdownBodyField(
     quoteBar: Color,
     colors: TextFieldColors,
     placeholder: @Composable () -> Unit,
+    onLinkClick: (MdLink) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val interaction = remember { MutableInteractionSource() }
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     val quotes = remember(value.text) { Markdown.spans(value.text).filter { it.kind == MdKind.QUOTE } }
+    val links by rememberUpdatedState(remember(value.text) { Markdown.links(value.text) })
+    val active by rememberUpdatedState(transformation.active)
+    val onLink by rememberUpdatedState(onLinkClick)
+
+    // Linkteksten under et tryk, hvis linket er foldet sammen
+    fun linkAt(pos: Offset): MdLink? {
+        val l = layout ?: return null
+        if (l.layoutInput.text.length != value.text.length) return null
+        val o = l.getOffsetForPosition(pos)
+        return links.firstOrNull { link ->
+            val text = link.start + 1 until link.start + 1 + link.text.length
+            link.start !in active && listOf(o - 1, o).any { it in text && l.getBoundingBox(it).contains(pos) }
+        }
+    }
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
@@ -232,7 +267,21 @@ fun MarkdownBodyField(
                 value = value.text,
                 innerTextField = {
                     Box(
-                        Modifier.drawBehind {
+                        Modifier
+                            .pointerInput(Unit) {
+                                // Opslugt "op" betyder, at tekstfeltet ikke sætter markøren eller får fokus
+                                awaitEachGesture {
+                                    val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                                    val link = linkAt(down.position) ?: return@awaitEachGesture
+                                    val up = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
+                                        waitForUpOrCancellation(PointerEventPass.Initial)
+                                    } ?: return@awaitEachGesture
+                                    if ((up.position - down.position).getDistance() > viewConfiguration.touchSlop) return@awaitEachGesture
+                                    up.consume()
+                                    onLink(link)
+                                }
+                            }
+                            .drawBehind {
                             val l = layout ?: return@drawBehind
                             if (l.layoutInput.text.length != value.text.length) return@drawBehind
                             val w = 5.dp.toPx()
@@ -254,6 +303,45 @@ fun MarkdownBodyField(
                 placeholder = placeholder,
                 colors = colors,
             )
+        },
+    )
+}
+
+/** Redigér et link: tekst og URL. Gem er kun muligt, når resultatet er et gyldigt link ([Markdown.editLink]). */
+@Composable
+fun LinkDialog(link: MdLink, onSave: (label: String, url: String?) -> Unit, onDismiss: () -> Unit) {
+    var label by remember { mutableStateOf(link.text) }
+    var url by remember { mutableStateOf(link.url) }
+    val valid = Markdown.editLink("", MdLink(0, 0, "", ""), label, url) != null
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.link_edit_title)) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = label,
+                    onValueChange = { label = it },
+                    label = { Text(stringResource(R.string.link_text)) },
+                    singleLine = true,
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = url,
+                    onValueChange = { url = it },
+                    label = { Text(stringResource(R.string.link_url)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onSave(label, url) }, enabled = valid) { Text(stringResource(R.string.save)) }
+        },
+        dismissButton = {
+            Row {
+                TextButton(onClick = { onSave(label, null) }) { Text(stringResource(R.string.link_remove)) }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            }
         },
     )
 }

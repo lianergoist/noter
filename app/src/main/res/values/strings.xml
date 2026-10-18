@@ -103,4 +103,9 @@
     <string name="share_failed">Can\'t share the note. Try again.</string>
     <string name="no_browser">No app can open the link.</string>
     <string name="untitled_file">Note</string>
+    <string name="link_edit">Edit</string>
+    <string name="link_edit_title">Edit link</string>
+    <string name="link_text">Text</string>
+    <string name="link_url">URL</string>
+    <string name="link_remove">Remove link</string>
 </resources>

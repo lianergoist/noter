@@ -101,4 +101,9 @@
     <string name="share_failed">Impossible de partager la note. Réessayez.</string>
     <string name="no_browser">Aucune application ne peut ouvrir le lien.</string>
     <string name="untitled_file">Note</string>
+    <string name="link_edit">Modifier</string>
+    <string name="link_edit_title">Modifier le lien</string>
+    <string name="link_text">Texte</string>
+    <string name="link_url">URL</string>
+    <string name="link_remove">Supprimer le lien</string>
 </resources>

@@ -101,4 +101,9 @@
     <string name="share_failed">Kan ikke dele noten. Prøv igen.</string>
     <string name="no_browser">Ingen app kan åbne linket.</string>
     <string name="untitled_file">Note</string>
+    <string name="link_edit">Redigér</string>
+    <string name="link_edit_title">Redigér link</string>
+    <string name="link_text">Tekst</string>
+    <string name="link_url">URL</string>
+    <string name="link_remove">Fjern link</string>
 </resources>
