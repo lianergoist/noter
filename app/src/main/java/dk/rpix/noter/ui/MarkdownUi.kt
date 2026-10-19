@@ -66,6 +66,7 @@ import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import dk.rpix.noter.R
@@ -106,7 +107,12 @@ data class MarkdownTransformation(
                 MdKind.HEADING -> SpanStyle(fontWeight = FontWeight.Bold, fontSize = headingSize(sp.level))
                 MdKind.BOLD -> SpanStyle(fontWeight = FontWeight.Bold)
                 MdKind.ITALIC -> SpanStyle(fontStyle = FontStyle.Italic)
-                MdKind.LINK -> SpanStyle(color = link, textDecoration = TextDecoration.Underline, fontSize = 0.9.em)
+                // Bare URL'er lidt mindre; linktekst i [tekst](url) i normal størrelse
+                MdKind.LINK -> SpanStyle(
+                    color = link,
+                    textDecoration = TextDecoration.Underline,
+                    fontSize = if (sp.level == 0) 0.9.em else TextUnit.Unspecified,
+                )
                 MdKind.CODE -> SpanStyle(fontFamily = FontFamily.Monospace, background = codeBackground, fontSize = 0.9.em)
                 MdKind.DONE -> SpanStyle(color = marker, textDecoration = TextDecoration.LineThrough)
                 MdKind.QUOTE -> {

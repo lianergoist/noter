@@ -194,8 +194,8 @@ object Markdown {
 
     /**
      * Links med tekst i [from, to) som [start ('['), ']', slut (efter ')')]. Teksten må ikke være tom og ikke
-     * indeholde '[' eller ']' uden escape; URL'en skal starte med http://, https:// eller www. og må ikke have
-     * blanktegn. Parenteser i URL'en skal gå op. Intet link starter i kode, og kode må ikke krydse "](url)".
+     * indeholde '[' eller ']' uden escape; URL'en må ikke være tom eller have blanktegn, og har den et skema, skal
+     * det være http:// eller https:// (uden skema åbnes den med https://). Parenteser i URL'en skal gå op. Intet link starter i kode, og kode må ikke krydse "](url)".
      */
     private fun textLinks(text: String, from: Int, to: Int, code: List<IntArray>): List<IntArray> {
         val out = mutableListOf<IntArray>()
@@ -211,6 +211,9 @@ object Markdown {
         }
         return out
     }
+
+    // Et andet skema end http(s) (ftp:, mailto:, javascript:); "localhost:5232" er en port, ikke et skema
+    private val SCHEME = Regex("""[A-Za-z][A-Za-z0-9+.-]*:(?![0-9])""")
 
     private fun textLinkAt(text: String, p: Int, to: Int, code: List<IntArray>): IntArray? {
         var q = p + 1
@@ -229,8 +232,8 @@ object Markdown {
         val prefix = when {
             text.startsWith("https://", u, ignoreCase = true) -> 8
             text.startsWith("http://", u, ignoreCase = true) -> 7
-            text.startsWith("www.", u, ignoreCase = true) -> 4
-            else -> return null
+            SCHEME.matchesAt(text, u) -> return null
+            else -> 0
         }
         var depth = 0
         var r = u
@@ -263,7 +266,7 @@ object Markdown {
         // [tekst](url): teksten vises som link, '[' og "](url)" er markeringer
         val textLinks = textLinks(text, from, to, code)
         for (l in textLinks) {
-            out += MdSpan(MdKind.LINK, l[0] + 1, l[1])
+            out += MdSpan(MdKind.LINK, l[0] + 1, l[1], level = 1)
             markers += intArrayOf(l[0], l[0] + 1)
             markers += intArrayOf(l[1], l[2])
         }
@@ -709,7 +712,7 @@ object Markdown {
         val code = codeSpans(text, lineStart, lineEnd)
         textLinks(text, lineStart, lineEnd, code).firstOrNull { it[0] <= selStart && selEnd <= it[2] }?.let {
             val url = text.substring(it[1] + 2, it[2] - 1)
-            return if (url.startsWith("www.", ignoreCase = true)) "https://$url" else url
+            return if (url.startsWith("http://", ignoreCase = true) || url.startsWith("https://", ignoreCase = true)) url else "https://$url"
         }
         val hit = urls(text, lineStart, lineEnd).firstOrNull { it[0] <= selStart && selEnd <= it[1] } ?: return null
         val url = text.substring(hit[0], hit[1])

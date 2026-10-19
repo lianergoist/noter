@@ -561,6 +561,10 @@ class MarkdownTest {
         assertEquals("W.", shown("[W](https://a.org/wiki/A_(b))."))
         assertEquals("i et listepunkt", "- a", shown("- [a](https://a.dk)"))
         assertEquals("to links", "ab", covered("[a](https://a.dk) og [b](https://b.dk)", LINK))
+        assertEquals("uden http://", "rpix.dk", covered("Besøg [rpix.dk](rpix.dk)", LINK))
+        assertEquals("med port", "a", covered("[a](localhost:5232/x)", LINK))
+        assertEquals("linktekst har level 1", listOf(1), Markdown.spans("[a](a.dk)").filter { it.kind == LINK }.map { it.level })
+        assertEquals("bar URL har level 0", listOf(0), Markdown.spans("https://a.dk").filter { it.kind == LINK }.map { it.level })
     }
 
     @Test fun textLinkWithFormatting() {
@@ -584,6 +588,8 @@ class MarkdownTest {
         }
         assertEquals("", covered("[a](ftp://a.dk)", LINK))
         assertEquals("", covered("[a](mailto:a@a.dk)", LINK))
+        assertEquals("", covered("[a](javascript:alert(1))", LINK))
+        assertEquals("", covered("[a]()", LINK))
         assertEquals("", covered("`[a](https://a.dk)`", LINK))
         assertEquals("", covered("[a](https://)", LINK))
         assertEquals("[a](", shown("[a]("))
@@ -598,6 +604,8 @@ class MarkdownTest {
         assertEquals("lige efter", "https://a.dk", Markdown.urlAt(t, 22, 22))
         assertNull(Markdown.urlAt(t, 1, 1))
         assertEquals("https://www.a.dk", Markdown.urlAt("[w](www.a.dk)", 1, 1))
+        assertEquals("uden http:// får https://", "https://rpix.dk/a", Markdown.urlAt("[r](rpix.dk/a)", 1, 1))
+        assertEquals("HTTP://a.dk", Markdown.urlAt("[r](HTTP://a.dk)", 1, 1))
     }
 
     // ---- Værktøjslinjen: indsæt link ----
@@ -633,6 +641,8 @@ class MarkdownTest {
         assertEquals(MdEdit("Se [der](https://b.dk) nu", 22, 22), Markdown.editLink(t, l, "der", "https://b.dk"))
         assertEquals("fjern link", MdEdit("Se her nu", 6, 6), Markdown.editLink(t, l, "her", null))
         assertEquals("ugyldig URL", null, Markdown.editLink(t, l, "her", "ftp://a.dk"))
+        assertEquals("uden http://", MdEdit("Se [her](b.dk) nu", 14, 14), Markdown.editLink(t, l, "her", "b.dk"))
+        assertEquals("tom URL", null, Markdown.editLink(t, l, "her", ""))
         assertEquals("tom tekst", null, Markdown.editLink(t, l, "", "https://a.dk"))
         assertEquals("klammer i teksten", null, Markdown.editLink(t, l, "a]b", "https://a.dk"))
         assertEquals("blanktegn i URL'en", null, Markdown.editLink(t, l, "her", "https://a.dk/a b"))

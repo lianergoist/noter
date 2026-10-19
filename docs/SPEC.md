@@ -209,7 +209,7 @@ Alt gælder **linje for linje**. Linjeskift er `\n`. Inline-formatering krydser 
 | Kursiv | `*tekst*` eller `_tekst_` | `_` kun ved ordgrænser (`snake_case_navn` er tekst); `*` også inde i ord (`a*b*c`). |
 | Fed og kursiv | `***tekst***` | Kursiv yderst, fed inderst (som CommonMark). |
 | Link | `https://…`, `http://…`, `www.…` | Ved ordgrænse, frem til blanktegn eller `<`/`>`. Tegnsætning til sidst (`.,;:!?'"*_`) og en ulige `)`/`]` hører ikke med. Inden i et link er der ingen fed, kursiv eller escape. Andre skemaer (`ftp:`, `mailto:`, `javascript:`) er tekst. |
-| Link med tekst | `[tekst](https://…)` | Teksten må ikke være tom og ikke indeholde `[` eller `]` uden escape; den kan have fed, kursiv og kode. URL'en starter med `http://`, `https://` eller `www.`, har ingen blanktegn eller `<`/`>`, og parenteser i den skal gå op. `[a] (url)`, `[](url)`, `\[a](url)` og `[a](ftp://…)` er tekst. Inden i URL'en er der ingen formatering. |
+| Link med tekst | `[tekst](url)` | Teksten må ikke være tom og ikke indeholde `[` eller `]` uden escape; den kan have fed, kursiv og kode. URL'en er ikke tom, har ingen blanktegn eller `<`/`>`, og parenteser i den skal gå op. Har den et skema, skal det være `http://` eller `https://`; uden skema (`rpix.dk`, `www.…`, `localhost:5232`) åbnes den med `https://` foran. `[a] (url)`, `[](url)`, `[a]()`, `\[a](url)`, `[a](ftp://…)` og `[a](mailto:…)` er tekst. Inden i URL'en er der ingen formatering. |
 | Kode | `` `tekst` `` | Et løb af n backticks lukkes af det næste løb af præcis n på samme linje (` ``a`b`` ` er koden `a`b`). Inden i kode er der ingen fed, kursiv, link eller escape. Uden partner er backticks tekst. |
 | Escape | `\*`, `\_`, `\#`, `\\` ... | Backslash foran ASCII-tegnsætning gør tegnet bogstaveligt. Foran andet (`C:\sti`) er backslash bare tekst. |
 
@@ -267,7 +267,8 @@ Rækkefølgen af spans er ikke fastlagt.
 - `CODE` dækker teksten mellem backticks; UI'et viser den i fast bredde på grå baggrund (0,9 em).
 - `INDENT` dækker en indrykket linje, der ikke er et listepunkt (kun niveau ≥ 1), `level` = niveau.
 - `BOLD`/`ITALIC` dækker alt mellem den åbnende og den lukkende markering (inkl. indlejrede markeringer).
-- `LINK` dækker URL'en, eller teksten i `[tekst](url)`; UI'et understreger og farver den og viser den lidt mindre (0,9 em).
+- `LINK` dækker URL'en, eller teksten i `[tekst](url)` (`level` = 1); UI'et understreger og farver den og viser en bar URL
+  lidt mindre (0,9 em), linkteksten i normal størrelse.
   For `[tekst](url)` er `[` og `](url)` `MARKER`.
 - `MARKER` dækker syntakstegn, som UI'et viser dæmpet: `#`-præfikset med mellemrum, listemarkeringen med
   mellemrum (`- `, `12. `, `> `; for afkrydsning kun `- `), `*`/`_`-markeringer, backticks og escape-backslash. Tilstødende `MARKER`-spans slås sammen.
@@ -328,7 +329,7 @@ Teksten ændres ikke.
 
 **Åbn link:** Står markøren i en URL eller i et `[tekst](url)` (også lige før eller efter), eller ligger markeringen inden i et af dem, viser
 værktøjslinjen en ekstra knap fast yderst til højre, **Åbn link** (`urlAt`); formateringsknapperne til venstre kan rulles. Den åbner URL'en med `ACTION_VIEW` i standardbrowseren;
-`www.…` får `https://` foran. Et tryk i teksten sætter markøren og åbner aldrig et link direkte.
+`www.…` og en URL uden skema i `[tekst](url)` får `https://` foran. Et tryk i teksten sætter markøren og åbner aldrig et link direkte.
 
 **Tryk på et link med tekst:** Et kort tryk på teksten i et sammenfoldet `[tekst](url)` (dvs. på en linje, hvor
 markøren ikke står) sætter ikke markøren, men viser en dialog med linkteksten og URL'en og knapperne **Åbn link** og
