@@ -14,7 +14,7 @@ sat, bevares uændret, når du redigerer en note.
   værktøjslinje over tastaturet. Lister fortsætter ved Enter. Noterne forbliver ren tekst, som andre
   klienter kan læse.
 - Links i teksten kan åbnes i browseren.
-- Åbn tekst- og Markdown-filer som nye noter, også via "Åbn med" og "Del", og gem en note som fil.
+- Åbn tekst- og Markdown-filer som nye noter, også via "Åbn med" og "Del", og del en note som fil.
 - Gemmer automatisk, mens du skriver, og når du forlader en note.
 - Fungerer offline. Ændringer sendes ved næste synkronisering.
 - Synkroniserer, når appen åbnes, efter hver ændring, ved træk-for-at-opdatere og cirka hvert kvarter.

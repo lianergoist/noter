@@ -5,7 +5,7 @@
 <li>Opret, redigér, søg i og slet noter med titel, tekst og tags.</li>
 <li>Let formatering skrevet som Markdown: overskrifter, fed, kursiv, lister og indrykning, med en værktøjslinje over tastaturet. Noterne forbliver ren tekst, som andre apps kan læse.</li>
 <li>Links i teksten kan åbnes i browseren.</li>
-<li>Åbn tekst- og Markdown-filer som nye noter, også via "Åbn med" og "Del", og gem en note som fil.</li>
+<li>Åbn tekst- og Markdown-filer som nye noter, også via "Åbn med" og "Del", og del en note som fil.</li>
 <li>Gemmer automatisk, mens du skriver, og når du forlader en note.</li>
 <li>Synkroniserer, når appen åbnes, efter hver ændring, ved træk-for-at-opdatere og cirka hvert kvarter.</li>
 <li>Ingen note overskrives i blinde. Er en note ændret både her og et andet sted, gemmes din version som en ny note med "(konflikt)" i titlen. Tekst flettes aldrig.</li>

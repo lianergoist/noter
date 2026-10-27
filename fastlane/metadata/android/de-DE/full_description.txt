@@ -5,7 +5,7 @@
 <li>Notizen mit Titel, Text und Tags anlegen, bearbeiten, durchsuchen und löschen.</li>
 <li>Einfache Formatierung als Markdown: Überschriften, fett, kursiv, Listen und Einzüge, mit einer Leiste über der Tastatur. Notizen bleiben reiner Text, den andere Apps lesen können.</li>
 <li>Links im Text lassen sich im Browser öffnen.</li>
-<li>Text- und Markdown-Dateien als neue Notizen öffnen, auch über „Öffnen mit“ und „Teilen“, und eine Notiz als Datei speichern.</li>
+<li>Text- und Markdown-Dateien als neue Notizen öffnen, auch über „Öffnen mit“ und „Teilen“, und eine Notiz als Datei teilen.</li>
 <li>Speichert automatisch beim Schreiben und beim Verlassen einer Notiz.</li>
 <li>Synchronisiert beim Öffnen der App, nach jeder Änderung, beim Herunterziehen zum Aktualisieren und etwa alle 15 Minuten.</li>
 <li>Überschreibt nie blind. Wurde eine Notiz hier und an anderer Stelle geändert, wird deine Version als neue Notiz mit „(Konflikt)“ im Titel gespeichert. Text wird nie zusammengeführt.</li>

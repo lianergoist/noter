@@ -5,7 +5,7 @@
 <li>Créer, modifier, rechercher et supprimer des notes avec titre, texte et tags.</li>
 <li>Mise en forme légère en Markdown : titres, gras, italique, listes et retraits, avec une barre d'outils au-dessus du clavier. Les notes restent du texte brut que d'autres applications peuvent lire.</li>
 <li>Les liens du texte s'ouvrent dans le navigateur.</li>
-<li>Ouvrir des fichiers texte et Markdown comme nouvelles notes, aussi via « Ouvrir avec » et « Partager », et enregistrer une note en fichier.</li>
+<li>Ouvrir des fichiers texte et Markdown comme nouvelles notes, aussi via « Ouvrir avec » et « Partager », et partager une note sous forme de fichier.</li>
 <li>Enregistrement automatique pendant la saisie et à la sortie d'une note.</li>
 <li>Synchronisation à l'ouverture de l'application, après chaque modification, en tirant pour actualiser et environ toutes les 15 minutes.</li>
 <li>Aucune note n'est écrasée à l'aveugle. Si une note a été modifiée ici et ailleurs, votre version est enregistrée comme nouvelle note avec « (conflit) » dans le titre. Le texte n'est jamais fusionné.</li>
