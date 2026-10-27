@@ -117,7 +117,7 @@ er synkroniseret). Lader man Google lave en ny nøgle, kan det ikke laves om bag
    - Data safety: ingen data indsamles eller deles med udvikleren eller tredjeparter; data sendes kun krypteret
      (HTTPS) til den server, brugeren selv angiver. Brugeren kan slette sine data. Læs Googles definitioner
      igen, før formularen sendes; de ændres med mellemrum.
-   - Indholdsvurdering (spørgeskema), målgruppe 18+ (ikke rettet mod børn), ingen nyheds-, sundheds- eller
+   - Indholdsvurdering (spørgeskema), målgruppe 13 år og derover (ikke rettet mod børn; kun 18+ kan begrænse tilgængeligheden), ingen nyheds-, sundheds- eller
      finansfunktioner.
 6. Nye personlige konti skal have en **lukket test med mindst 12 testere i 14 dage**, før de kan søge om
    produktion. Opret sporet *Closed testing*, tilføj testerne (Google-konti), og upload den første bundle dér.
