@@ -1,4 +1,4 @@
-# Udgivelse (GitHub og F-Droid)
+# Udgivelse (GitHub, F-Droid og Google Play)
 
 DavNotes udgives med **reproducerbart byg**: F-Droid bygger appen selv fra det taggede commit,
 sammenligner resultatet med den signerede APK på GitHub og udgiver vores APK med vores signatur.
@@ -82,6 +82,61 @@ En langsom emulator kan vise "System UI isn't responding". Kan dialogen ikke luk
   (`https://raw.githubusercontent.com/lianergoist/noter/main/docs/fdroid/dk.rpix.noter.yml`),
   så der ikke kommer en prompt eller en dobbelt kopi med. Filen skal slutte med ét linjeskift.
 - Ret filen i forken på grenen `dk.rpix.noter`, så den åbne merge request opdateres.
+
+## Google Play
+
+Play kræver en App Bundle (`.aab`), ikke en APK, og bruger altid **Play App Signing**: Google signerer det,
+brugerne henter. Vi giver Google **vores egen app-nøgle** (`noter-release.jks`), så Play-, GitHub- og
+F-Droid-versionen har samme signatur, og brugerne kan skifte uden at afinstallere (og miste noter, der ikke
+er synkroniseret). Lader man Google lave en ny nøgle, kan det ikke laves om bagefter.
+
+### Første gang
+
+1. Opret en udviklerkonto på https://play.google.com/console (engangsgebyr, identitetsbekræftelse).
+2. Lav en **upload-nøgle**, adskilt fra app-nøglen, så app-nøglen ikke bruges til daglig:
+
+   ```
+   keytool -genkeypair -keystore ~/.android/keystores/noter-upload.jks -alias upload \
+       -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=DavNotes upload, O=rpix.dk, C=DK"
+   ```
+
+   Gem nøglen og adgangskoderne samme sted som app-nøglen (sikkerhedskopi uden for repoet).
+3. Opret appen (navn "DavNotes", standardsprog engelsk, app, gratis). Under *Test and release → App integrity →
+   App signing* vælges **Use existing app signing key from Java keystore**. Konsollen giver en krypteringsnøgle
+   og en kommando med PEPK-værktøjet (`pepk.jar`); kør den mod `noter-release.jks` med aliaset fra
+   `NOTER_KEY_ALIAS`, og upload den krypterede ZIP. Upload derefter upload-nøglens certifikat:
+   `keytool -export -rfc -keystore ~/.android/keystores/noter-upload.jks -alias upload -file upload.pem`.
+4. Butiksside på alle fem sprog: titel, kort og lang beskrivelse fra `fastlane/metadata/android/<sprog>/`,
+   ikon (`en-US/images/icon.png`, 512 × 512), skærmbilleder (`phoneScreenshots/`) og feature graphic
+   (`<sprog>/images/featureGraphic.png`, 1024 × 500, laves af `tools/make_feature_graphic.py` ud fra
+   `short_description.txt`; kør scriptet igen, hvis teksten ændres).
+5. *App content* (alle punkter skal udfyldes):
+   - Privatlivspolitik: `https://github.com/lianergoist/noter/blob/main/docs/PRIVACY.md`
+   - Reklamer: nej. Adgang til appen: alt kræver en egen CalDAV-server; giv reviewerne en testkonto
+     (URL, bruger, adgangskode) i formularen, ikke i repoet.
+   - Data safety: ingen data indsamles eller deles med udvikleren eller tredjeparter; data sendes kun krypteret
+     (HTTPS) til den server, brugeren selv angiver. Brugeren kan slette sine data. Læs Googles definitioner
+     igen, før formularen sendes; de ændres med mellemrum.
+   - Indholdsvurdering (spørgeskema), målgruppe 18+ (ikke rettet mod børn), ingen nyheds-, sundheds- eller
+     finansfunktioner.
+6. Nye personlige konti skal have en **lukket test med mindst 12 testere i 14 dage**, før de kan søge om
+   produktion. Opret sporet *Closed testing*, tilføj testerne (Google-konti), og upload den første bundle dér.
+
+### Ny version
+
+Samme `versionCode` og `versionName` som til GitHub og F-Droid (trin 1–3 ovenfor). Byg med upload-nøglen:
+
+```
+./gradlew clean :app:bundleRelease \
+    -PNOTER_KEYSTORE=$HOME/.android/keystores/noter-upload.jks -PNOTER_KEY_ALIAS=upload \
+    -PNOTER_KEYSTORE_PASSWORD=... -PNOTER_KEY_PASSWORD=...
+```
+
+(eller midlertidigt i `~/.gradle/gradle.properties`; husk at skifte tilbage, før APK'en til GitHub bygges,
+den skal signeres med app-nøglen). Kontrollér certifikatet med
+`keytool -printcert -jarfile app/build/outputs/bundle/release/app-release.aab`, og upload
+`app-release.aab` til sporet. Ændringsloggen kopieres fra `changelogs/<versionCode>.txt` på hvert sprog.
+En `versionCode` kan kun bruges én gang på Play, også hvis udgivelsen trækkes tilbage.
 
 ## Krav, projektet allerede opfylder
 
