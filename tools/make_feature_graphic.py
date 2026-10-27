@@ -69,6 +69,14 @@ def wrap(dr, text, font, width):
             cur = word
     return lines + [cur] if cur else lines
 
+def balanced_wrap(dr, text, font, width):
+    """Som wrap, men med den mindste bredde, der giver samme antal linjer, så sidste linje ikke står alene."""
+    lines = wrap(dr, text, font, width)
+    w = width
+    while w > width // 2 and len(wrap(dr, text, font, w - 4)) == len(lines):
+        w -= 4
+    return wrap(dr, text, font, w)
+
 def render(tagline):
     img = Image.new("RGBA", (W * S, H * S), BG)
     # Papiret fylder ca. 330 px i højden (52 enheder), centreret lodret til venstre
@@ -80,7 +88,7 @@ def render(tagline):
     title_font = ImageFont.truetype(TITLE_FONT, 104 * S)
     text_font = ImageFont.truetype(TEXT_FONT, 34 * S)
     x, text_w = 450 * S, 520 * S
-    lines = wrap(dr, tagline, text_font, text_w)
+    lines = balanced_wrap(dr, tagline, text_font, text_w)
     title_h = 104 * S
     line_h = 46 * S
     gap = 28 * S
