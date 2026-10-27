@@ -37,6 +37,9 @@ Android's share menu. The app asks for no storage permissions.
 ## Permissions
 
 - **Internet** and **network state**, to sync with your server and to sync again when a connection is back.
+- **Run at startup**, **keep awake** and **foreground service**, added by Android's WorkManager so the
+  scheduled background sync keeps running after a restart and is not stopped halfway. They do not give the
+  app access to any other data.
 
 ## Deleting your data
 
@@ -94,6 +97,9 @@ vælger i Androids delemenu. Appen beder ikke om adgang til lageret.
 
 - **Internet** og **netværkstilstand**, for at synkronisere med din server og synkronisere igen, når der er
   forbindelse.
+- **Kør ved opstart**, **hold enheden vågen** og **forgrundstjeneste**, som Androids WorkManager tilføjer,
+  så den planlagte synkronisering i baggrunden fortsætter efter en genstart og ikke stoppes halvvejs. De giver
+  ikke appen adgang til andre data.
 
 ## Sletning af data
 
