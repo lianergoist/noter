@@ -140,7 +140,7 @@ NOTER_UPLOAD_KEY_PASSWORD=...
 Uden `-PNOTER_SIGN_WITH=upload` signeres med app-nøglen som til GitHub. Kontrollér certifikatet med
 `keytool -printcert -jarfile app/build/outputs/bundle/release/app-release.aab`, og upload
 `app-release.aab` til sporet. Ændringsloggen kopieres fra `changelogs/<versionCode>.txt` på hvert sprog.
-En `versionCode` kan kun bruges én gang på Play, også hvis udgivelsen trækkes tilbage.
+En `versionCode` kan kun bruges én gang på Play, også hvis udgivelsen trækkes tilbage. Også en bundle, der kun er uploadet og slettet igen, bruger versionCode op.
 
 ## Krav, projektet allerede opfylder
 
