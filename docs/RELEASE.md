@@ -86,61 +86,71 @@ En langsom emulator kan vise "System UI isn't responding". Kan dialogen ikke luk
 ## Google Play
 
 Play kræver en App Bundle (`.aab`), ikke en APK, og bruger altid **Play App Signing**: Google signerer det,
-brugerne henter. Vi giver Google **vores egen app-nøgle** (`noter-release.jks`), så Play-, GitHub- og
-F-Droid-versionen har samme signatur, og brugerne kan skifte uden at afinstallere (og miste noter, der ikke
-er synkroniseret). Lader man Google lave en ny nøgle, kan det ikke laves om bagefter.
+brugerne henter. Google har **vores egen app-nøgle** (`noter-release.jks`, SHA-256 `A4:8A:93:…:D4:FC`), så
+Play-, GitHub- og F-Droid-versionen har samme signatur, og brugerne kan skifte uden at afinstallere (og miste
+noter, der ikke er synkroniseret). Play bruger **app-nøglen også som upload-nøgle**: bundles til Play signeres
+med `noter-release.jks` ligesom APK'en til GitHub.
 
-### Første gang
+### Første gang (gjort i oktober 2026)
 
 1. Opret en udviklerkonto på https://play.google.com/console (engangsgebyr, identitetsbekræftelse).
-2. Lav en **upload-nøgle**, adskilt fra app-nøglen, så app-nøglen ikke bruges til daglig:
+2. Opret appen (navn "DavNotes", standardsprog engelsk, app, gratis). Google laver straks sin egen
+   app-nøgle. Skift den **før den første udgivelse** rulles ud på åben test eller i produktion; bagefter kan den
+   ikke skiftes. Siden ligger under *Beskyttet med Play → Beskyttelse i Play Butik → Administrer
+   Play-appsignatur → Skift nøgle* (ikke længere under *Test og udgiv → App-integritet*). Vælg at uploade en
+   nøgle fra en Java-keystore, hent **Googles krypteringsnøgle** (`encryption_public_key.pem`) og `pepk.jar`
+   fra dialogen, og kør (med mellemrum foran, så adgangskoden ikke havner i historikken):
 
    ```
-   keytool -genkeypair -keystore ~/.android/keystores/noter-upload.jks -alias upload \
-       -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=DavNotes upload, O=rpix.dk, C=DK"
+    PW="$(sed -n 's/^#\?NOTER_KEYSTORE_PASSWORD=//p' ~/.gradle/gradle.properties)"
+    java -jar pepk.jar --keystore=$HOME/.android/keystores/noter-release.jks --alias=noter \
+        --keystore-pass="$PW" --output=noter-app-key.zip --include-cert \
+        --rsa-aes-encryption --encryption-key-path=encryption_public_key.pem
+    unset PW
    ```
 
-   Gem nøglen og adgangskoderne samme sted som app-nøglen (sikkerhedskopi uden for repoet).
-3. Opret appen (navn "DavNotes", standardsprog engelsk, app, gratis). Under *Test and release → App integrity →
-   App signing* vælges **Use existing app signing key from Java keystore**. Konsollen giver en krypteringsnøgle
-   og en kommando med PEPK-værktøjet (`pepk.jar`); kør den mod `noter-release.jks` med aliaset fra
-   `NOTER_KEY_ALIAS`, og upload den krypterede ZIP. Upload derefter upload-nøglens certifikat:
-   `keytool -export -rfc -keystore ~/.android/keystores/noter-upload.jks -alias upload -file upload.pem`.
-4. Butiksside på alle fem sprog: titel, kort og lang beskrivelse fra `fastlane/metadata/android/<sprog>/`,
-   ikon (`en-US/images/icon.png`, 512 × 512), skærmbilleder (`phoneScreenshots/`) og feature graphic
+   Upload ZIP'en, slet den igen, og kontrollér, at app-nøglens SHA-256 på siden er `A4:8A:93:…:D4:FC`.
+   Bundles, der var uploadet før skiftet, kan ikke bruges, og deres `versionCode` er brugt op.
+3. Butiksside på alle fem sprog: titel, kort og lang beskrivelse fra `fastlane/metadata/android/<sprog>/`
+   (Play viser ikke HTML-lister, så punkterne skrives som "• "), ikon (`en-US/images/icon.png`, 512 × 512),
+   skærmbilleder (`phoneScreenshots/`, dansk og engelsk; de andre sprog bruger de engelske) og feature graphic
    (`<sprog>/images/featureGraphic.png`, 1024 × 500, laves af `tools/make_feature_graphic.py` ud fra
-   `short_description.txt`; kør scriptet igen, hvis teksten ændres).
-5. *App content* (alle punkter skal udfyldes):
+   `short_description.txt`; kør scriptet igen, hvis teksten ændres). Upload skærmbillederne ét ad gangen i
+   rækkefølge; uploades de samlet, kommer de i omvendt orden.
+4. *Appindhold* (alle punkter skal udfyldes, og *Oplysninger om login* først, ellers er *Målgruppe* spærret):
    - Privatlivspolitik: `https://github.com/lianergoist/noter/blob/main/docs/PRIVACY.md`
-   - Reklamer: nej. Adgang til appen: alt kræver en egen CalDAV-server; giv reviewerne en testkonto
-     (URL, bruger, adgangskode) i formularen, ikke i repoet.
-   - Data safety: ingen data indsamles eller deles med udvikleren eller tredjeparter; data sendes kun krypteret
-     (HTTPS) til den server, brugeren selv angiver. Brugeren kan slette sine data. Læs Googles definitioner
-     igen, før formularen sendes; de ændres med mellemrum.
-   - Indholdsvurdering (spørgeskema), målgruppe 13 år og derover (ikke rettet mod børn; kun 18+ kan begrænse tilgængeligheden), ingen nyheds-, sundheds- eller
-     finansfunktioner.
-6. Nye personlige konti skal have en **lukket test med mindst 12 testere i 14 dage**, før de kan søge om
-   produktion. Opret sporet *Closed testing*, tilføj testerne (Google-konti), og upload den første bundle dér.
+   - Annoncer, annoncerings-id, myndighedsapp, finansielle funktioner, sundhed: nej/ingen.
+   - Oplysninger om login: alt kræver en egen CalDAV-server; giv reviewerne en testkonto (URL, bruger,
+     adgangskode) i formularen, ikke i repoet.
+   - Indholdsklassificering (IARC): "Alle andre apptyper", nej til alle spørgsmål (giver PEGI 3).
+   - Målgruppe: 13 år og derover (ikke rettet mod børn; kun 18+ kan begrænse tilgængeligheden).
+   - Datasikkerhed (forsigtig fortolkning, da Google regner al data, der forlader enheden, som indsamlet):
+     *Bruger-id'er* og *Andet brugergenereret indhold* er indsamlet, ikke delt, ikke kortvarigt, påkrævet,
+     til appfunktionalitet; krypteret under overførsel; ingen kontooprettelse i appen, men login med konti
+     oprettet uden for appen (brugerens egen server); sletning via
+     `…/PRIVACY.md#deleting-your-data`. Læs Googles definitioner igen ved ændringer.
+5. Vælg lande/regioner for produktionssporet (står ellers på 0), og send alt fra *Udgivelsesoversigt*.
 
 ### Ny version
 
-Samme `versionCode` og `versionName` som til GitHub og F-Droid (trin 1–3 ovenfor). Byg med upload-nøglen. Den står ved siden af app-nøglen i `~/.gradle/gradle.properties`:
+Samme `versionCode` og `versionName` som til GitHub og F-Droid (trin 1–3 ovenfor). Byg med app-nøglen
+(`NOTER_*` i `~/.gradle/gradle.properties`, de samme egenskaber som til GitHub-APK'en):
 
 ```
-NOTER_UPLOAD_KEYSTORE=/home/<bruger>/.android/keystores/noter-upload.jks
-NOTER_UPLOAD_KEYSTORE_PASSWORD=...
-NOTER_UPLOAD_KEY_ALIAS=upload
-NOTER_UPLOAD_KEY_PASSWORD=...
+./gradlew clean :app:bundleRelease
 ```
 
-```
-./gradlew clean :app:bundleRelease -PNOTER_SIGN_WITH=upload
-```
+Kontrollér certifikatet med `keytool -printcert -jarfile app/build/outputs/bundle/release/app-release.aab`
+(SHA-1 `34:31:6A:…:DC:89`, SHA-256 `A4:8A:93:…:D4:FC`), og upload `app-release.aab` til produktionssporet.
+Udgivelsesnoterne skrives i ét felt med et mærke pr. sprog (`<en-US>…</en-US>`, `<da-DK>…</da-DK>` osv.)
+og kopieres fra `changelogs/<versionCode>.txt`.
+En `versionCode` kan kun bruges én gang på Play, også hvis udgivelsen trækkes tilbage, og også for en bundle,
+der kun er uploadet og slettet igen.
 
-Uden `-PNOTER_SIGN_WITH=upload` signeres med app-nøglen som til GitHub. Kontrollér certifikatet med
-`keytool -printcert -jarfile app/build/outputs/bundle/release/app-release.aab`, og upload
-`app-release.aab` til sporet. Ændringsloggen kopieres fra `changelogs/<versionCode>.txt` på hvert sprog.
-En `versionCode` kan kun bruges én gang på Play, også hvis udgivelsen trækkes tilbage. Også en bundle, der kun er uploadet og slettet igen, bruger versionCode op.
+Vil man senere have en separat upload-nøgle, findes `noter-upload.jks` allerede (`NOTER_UPLOAD_*` i
+`~/.gradle/gradle.properties`). Anmod om nulstilling af upload-nøglen på siden *Administrer Play-appsignatur*
+med certifikatet fra `keytool -export -rfc -keystore ~/.android/keystores/noter-upload.jks -alias upload
+-file upload.pem`, vent på Googles godkendelse, og byg derefter med `-PNOTER_SIGN_WITH=upload`.
 
 ## Krav, projektet allerede opfylder
 
