@@ -22,14 +22,16 @@ android {
 
     // Release-signering læses fra ~/.gradle/gradle.properties (aldrig fra repoet).
     // Mangler egenskaberne, bygges release usigneret.
-    val keystore = providers.gradleProperty("NOTER_KEYSTORE").orNull?.takeIf { it.isNotBlank() }
+    // Med -PNOTER_SIGN_WITH=upload bruges upload-nøglen til Google Play (NOTER_UPLOAD_*) i stedet.
+    val signPrefix = if (providers.gradleProperty("NOTER_SIGN_WITH").orNull == "upload") "NOTER_UPLOAD_" else "NOTER_"
+    val keystore = providers.gradleProperty("${signPrefix}KEYSTORE").orNull?.takeIf { it.isNotBlank() }
     signingConfigs {
         if (keystore != null) {
             create("release") {
                 storeFile = file(keystore)
-                storePassword = providers.gradleProperty("NOTER_KEYSTORE_PASSWORD").get()
-                keyAlias = providers.gradleProperty("NOTER_KEY_ALIAS").get()
-                keyPassword = providers.gradleProperty("NOTER_KEY_PASSWORD").get()
+                storePassword = providers.gradleProperty("${signPrefix}KEYSTORE_PASSWORD").get()
+                keyAlias = providers.gradleProperty("${signPrefix}KEY_ALIAS").get()
+                keyPassword = providers.gradleProperty("${signPrefix}KEY_PASSWORD").get()
             }
         }
     }

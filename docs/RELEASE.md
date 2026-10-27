@@ -124,16 +124,20 @@ er synkroniseret). Lader man Google lave en ny nøgle, kan det ikke laves om bag
 
 ### Ny version
 
-Samme `versionCode` og `versionName` som til GitHub og F-Droid (trin 1–3 ovenfor). Byg med upload-nøglen:
+Samme `versionCode` og `versionName` som til GitHub og F-Droid (trin 1–3 ovenfor). Byg med upload-nøglen. Den står ved siden af app-nøglen i `~/.gradle/gradle.properties`:
 
 ```
-./gradlew clean :app:bundleRelease \
-    -PNOTER_KEYSTORE=$HOME/.android/keystores/noter-upload.jks -PNOTER_KEY_ALIAS=upload \
-    -PNOTER_KEYSTORE_PASSWORD=... -PNOTER_KEY_PASSWORD=...
+NOTER_UPLOAD_KEYSTORE=/home/<bruger>/.android/keystores/noter-upload.jks
+NOTER_UPLOAD_KEYSTORE_PASSWORD=...
+NOTER_UPLOAD_KEY_ALIAS=upload
+NOTER_UPLOAD_KEY_PASSWORD=...
 ```
 
-(eller midlertidigt i `~/.gradle/gradle.properties`; husk at skifte tilbage, før APK'en til GitHub bygges,
-den skal signeres med app-nøglen). Kontrollér certifikatet med
+```
+./gradlew clean :app:bundleRelease -PNOTER_SIGN_WITH=upload
+```
+
+Uden `-PNOTER_SIGN_WITH=upload` signeres med app-nøglen som til GitHub. Kontrollér certifikatet med
 `keytool -printcert -jarfile app/build/outputs/bundle/release/app-release.aab`, og upload
 `app-release.aab` til sporet. Ændringsloggen kopieres fra `changelogs/<versionCode>.txt` på hvert sprog.
 En `versionCode` kan kun bruges én gang på Play, også hvis udgivelsen trækkes tilbage.
