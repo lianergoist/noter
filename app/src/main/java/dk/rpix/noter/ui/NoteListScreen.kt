@@ -43,7 +43,6 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -131,7 +130,7 @@ fun NoteListScreen(onOpen: (String) -> Unit, onNew: () -> Unit, onSettings: () -
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.notes)) },
+                title = { Text(stringResource(R.string.notes), style = NoteType.appTitle) },
                 actions = {
                     IconButton(onClick = { openFile.launch("text/*") }) {
                         Icon(painterResource(R.drawable.ic_file_open), contentDescription = stringResource(R.string.open_file))
@@ -299,7 +298,7 @@ private fun NoteRow(n: Note, t: Date?, now: Date, onOpen: (String) -> Unit) {
             Text(
                 n.title.ifEmpty { stringResource(R.string.untitled) },
                 modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.titleMedium,
+                style = if (n.title.isEmpty()) NoteType.untitled else NoteType.listTitle,
                 color = if (n.title.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -317,7 +316,7 @@ private fun NoteRow(n: Note, t: Date?, now: Date, onOpen: (String) -> Unit) {
         if (first != null) {
             Text(
                 first,
-                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Serif),
+                style = NoteType.snippet,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

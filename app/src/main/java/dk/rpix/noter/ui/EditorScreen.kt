@@ -42,7 +42,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
@@ -370,7 +369,7 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
         )
-        val serif = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Serif)
+        val serif = NoteType.body
         Column(
             Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize().imePadding()
                 .verticalScroll(rememberScrollState()),
@@ -379,8 +378,8 @@ fun EditorScreen(uid: String?, onBack: () -> Unit) {
                 value = vm.title,
                 onValueChange = vm::onTitle,
                 modifier = Modifier.fillMaxWidth(),
-                textStyle = MaterialTheme.typography.headlineSmall,
-                placeholder = { Text(stringResource(R.string.title), style = MaterialTheme.typography.headlineSmall) },
+                textStyle = NoteType.title,
+                placeholder = { Text(stringResource(R.string.title), style = NoteType.title) },
                 colors = plain,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
