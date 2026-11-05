@@ -260,11 +260,18 @@ Rækkefølgen af spans er ikke fastlagt.
 - `BULLET`/`NUMBERED` dækker hele linjen inkl. indrykning, `level` = indrykningsniveau.
 - `TASK` dækker et afkrydsningspunkt som `BULLET` (og der er ingen `BULLET` for linjen). `CHECKBOX` dækker `[ ]`/`[x]`,
   `level` = 1, hvis det er afkrydset. `DONE` dækker teksten efter et afkrydset felt (UI'et gennemstreger og dæmper den).
-  UI'et viser `- [ ]` som `☐` og `- [x]` som `☑` på stregens plads; de øvrige tegn bliver nulbredde-mellemrum.
+  UI'et tegner en tom boks / en udfyldt boks med flueben på stregens plads (selv, ud fra tekstlayoutet, ikke som `☐`/`☑`,
+  der kan komme fra en højere symbolskrift); de øvrige tegn bliver nulbredde-mellemrum. Et tryk på boksen krydser af
+  eller fjerner krydset.
 - `QUOTE` dækker hele citatlinjen inkl. indrykning, `level` = indrykningsniveau. UI'et gør `>` usynligt og tegner en
   gul lodret streg (5 dp) på dets plads ud fra tekstlayoutet (derfor `BasicTextField` med `TextFieldDefaults.DecorationBox`,
   ikke `ParagraphStyle`, som giver forkerte markørpositioner). Teksten efter `> ` står derved let indrykket.
-- `CODE` dækker teksten mellem backticks; UI'et viser den i fast bredde på grå baggrund (0,9 em).
+- `CODE` dækker teksten mellem backticks; UI'et viser den i fast bredde på grå baggrund (0,9 em). Baggrunden tegnes
+  ud fra tekstlayoutet om skriftens højde, ikke hele linjens.
+- Linjeafstanden er ca. 1,7. Lister (punkt, nummer, afkrydsning) og citater får en halv linje ekstra over og under sig:
+  en linje får den, når både den og linjen før er ikke-tomme og af hver sin slags. Afstanden kommer fra hævede usynlige tegn (mellemrum,
+  linjeskift), ikke fra en fast linjehøjde eller `ParagraphStyle`.
+- Markøren tegnes af UI'et i skriftens højde (ikke linjens), så luften over linjen ikke gør den høj.
 - `INDENT` dækker en indrykket linje, der ikke er et listepunkt (kun niveau ≥ 1), `level` = niveau.
 - `BOLD`/`ITALIC` dækker alt mellem den åbnende og den lukkende markering (inkl. indlejrede markeringer).
 - `LINK` dækker URL'en, eller teksten i `[tekst](url)` (`level` = 1); UI'et understreger og farver den og viser en bar URL
@@ -316,7 +323,7 @@ Teksten ændres ikke.
   indrykket punkt.
 - `toggleTask`: Linjer, der ikke er afkrydsningspunkter, bliver det (`- [ ] `; en anden listemarkering eller
   overskrift erstattes, eksisterende punkter beholder deres kryds). Er alle allerede punkter, krydses de alle af,
-  eller krydsene fjernes, hvis alle var afkrydset. Et tryk i teksten krydser aldrig af. Punktliste-knappen gør et
+  eller krydsene fjernes, hvis alle var afkrydset. Et tryk på selve boksen krydser den af; et tryk på teksten gør ikke. Punktliste-knappen gør et
   afkrydsningspunkt til et almindeligt punkt.
 - `toggleQuote`: Som punktliste: er alle linjer citater, fjernes `> `; ellers indsættes `> ` efter indrykningen.
   En listemarkering bliver stående (som tekst i citatet).
