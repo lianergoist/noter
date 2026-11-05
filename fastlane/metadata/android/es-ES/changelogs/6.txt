@@ -1,0 +1,1 @@
+Las notas usan una fuente con serifa y más espacio entre líneas. Las listas y las citas tienen un poco de espacio arriba y abajo. Toca una casilla para marcarla o desmarcarla. El cursor y el resaltado de código ahora siguen la altura del texto.

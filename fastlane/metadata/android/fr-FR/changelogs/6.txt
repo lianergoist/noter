@@ -1,0 +1,1 @@
+Les notes s'affichent dans une police à empattements, avec plus d'espace entre les lignes. Les listes et les citations ont un peu d'espace au-dessus et en dessous. Touchez une case pour la cocher ou la décocher. Le curseur et le surlignage du code suivent maintenant la hauteur du texte.

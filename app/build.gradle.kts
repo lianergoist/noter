@@ -14,8 +14,8 @@ android {
         applicationId = "dk.rpix.noter"
         minSdk = 24
         targetSdk = 37
-        versionCode = 5
-        versionName = "1.2"
+        versionCode = 6
+        versionName = "1.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -1,0 +1,1 @@
+Noterne står i en skrift med seriffer og med mere luft mellem linjerne. Lister og citater får lidt afstand over og under sig. Tryk på en afkrydsningsboks for at sætte eller fjerne krydset. Markøren og kode-markeringen følger nu skriftens højde.

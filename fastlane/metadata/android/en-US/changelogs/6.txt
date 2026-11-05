@@ -1,0 +1,1 @@
+Notes are set in a serif font with more space between lines. Lists and quotes get a little space above and below. Tap a checkbox to check or uncheck it. The cursor and code highlighting now match the height of the text.

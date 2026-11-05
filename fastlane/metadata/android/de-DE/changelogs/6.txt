@@ -1,0 +1,1 @@
+Notizen stehen in einer Serifenschrift mit mehr Zeilenabstand. Listen und Zitate bekommen etwas Abstand darüber und darunter. Tippe auf ein Kontrollkästchen, um es abzuhaken oder den Haken zu entfernen. Cursor und Code-Hervorhebung passen jetzt zur Schrifthöhe.
