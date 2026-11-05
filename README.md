@@ -1,78 +1,80 @@
 # DavNotes
 
-Enkel noteapp til Android. Noterne gemmes som `VJOURNAL`-objekter i en CalDAV-samling på din egen
-[Radicale](https://radicale.org/)-server og synkroniseres begge veje. Appen virker uden net og sender
-ændringerne, når forbindelsen er tilbage.
+**English** | [Dansk](README.da.md)
 
-Appen kan dele samling med andre klienter, fx jtx Board via DAVx5. Egenskaber, som andre klienter har
-sat, bevares uændret, når du redigerer en note.
+Simple notes app for Android. Notes are stored as `VJOURNAL` objects in a CalDAV collection on your own
+[Radicale](https://radicale.org/) server and synced both ways. The app works offline and sends
+the changes when the connection is back.
 
-## Funktioner
+The app can share a collection with other clients, e.g. jtx Board via DAVx5. Properties set by other
+clients are preserved unchanged when you edit a note.
 
-- Opret, redigér, søg i og slet noter med titel, tekst og tags.
-- Let formatering skrevet som Markdown: overskrifter, fed, kursiv, lister og indrykning, med en
-  værktøjslinje over tastaturet. Lister fortsætter ved Enter. Noterne forbliver ren tekst, som andre
-  klienter kan læse.
-- Links i teksten kan åbnes i browseren.
-- Åbn tekst- og Markdown-filer som nye noter, også via "Åbn med" og "Del", og del en note som fil.
-- Gemmer automatisk, mens du skriver, og når du forlader en note.
-- Fungerer offline. Ændringer sendes ved næste synkronisering.
-- Synkroniserer, når appen åbnes, efter hver ændring, ved træk-for-at-opdatere og cirka hvert kvarter.
-- Ingen note overskrives i blinde. Er en note ændret både her og et andet sted, gemmes din version
-  som en ny note med "(konflikt)" i titlen ("(conflict)" på engelsk osv.). Tekst flettes aldrig.
-- Finder dine samlinger på serveren og kan oprette en ny noter-samling.
-- Adgangskoden krypteres med en nøgle i Android Keystore. Kun HTTPS.
-- På engelsk, dansk, tysk, fransk og spansk. Følger telefonens sprog, og på Android 13+ kan sproget
-  vælges for appen alene i systemindstillingerne.
+## Features
 
-Ikke med (bevidst): fuld Markdown (fx tabeller, billeder og `[tekst](url)`), vedhæftninger, flere konti og delte noter.
+- Create, edit, search and delete notes with title, text and tags.
+- Light formatting written as Markdown: headings, bold, italic, lists and indentation, with a
+  toolbar above the keyboard. Lists continue on Enter. Notes remain plain text that other
+  clients can read.
+- Links in the text can be opened in the browser.
+- Open text and Markdown files as new notes, also via "Open with" and "Share", and share a note as a file.
+- Saves automatically while you type and when you leave a note.
+- Works offline. Changes are sent at the next sync.
+- Syncs when the app is opened, after every change, on pull-to-refresh and roughly every 15 minutes.
+- No note is overwritten blindly. If a note was changed both here and elsewhere, your version is saved
+  as a new note with "(conflict)" in the title ("(konflikt)" in Danish etc.). Text is never merged.
+- Finds your collections on the server and can create a new notes collection.
+- The password is encrypted with a key in the Android Keystore. HTTPS only.
+- In English, Danish, German, French and Spanish. Follows the phone's language, and on Android 13+ the language
+  can be chosen for the app alone in the system settings.
 
-## Kom i gang
+Not included (on purpose): full Markdown (e.g. tables, images and `[text](url)`), attachments, multiple accounts and shared notes.
 
-Kræver Android 7.0 (API 24) eller nyere og en CalDAV-server, der understøtter `sync-collection`
-(RFC 6578). Appen er udviklet og testet mod Radicale 3.8.
+## Getting started
 
-1. Byg og installér appen (se nedenfor).
-2. Åbn indstillingerne, og skriv adressen til samlingen, fx `https://radicale.example.dk/bruger/noter/`,
-   samt bruger og adgangskode.
-3. Kender du ikke stien, så skriv serverens adresse og tryk **Find samlinger**. Findes der ingen
-   noter-samling, så tryk **Opret noter-samling**.
-4. Tryk **Gem**. Appen tjekker login og samling og begynder at synkronisere.
+Requires Android 7.0 (API 24) or later and a CalDAV server that supports `sync-collection`
+(RFC 6578). The app is developed and tested against Radicale 3.8.
 
-## Byg
+1. Build and install the app (see below).
+2. Open the settings and enter the address of the collection, e.g. `https://radicale.example.com/user/notes/`,
+   plus username and password.
+3. If you don't know the path, enter the server's address and tap **Find collections**. If there is no
+   notes collection, tap **Create notes collection**.
+4. Tap **Save**. The app checks the login and collection and starts syncing.
+
+## Build
 
 ```
 ./gradlew assembleDebug      # app/build/outputs/apk/debug/app-debug.apk
-./gradlew assembleRelease    # usigneret release-APK
+./gradlew assembleRelease    # unsigned release APK
 ```
 
-Byggeriet bruger Gradle-wrapperen, AGP 9.4 og Kotlin 2.2. Åbn projektet i Android Studio, eller
-byg fra kommandolinjen med `local.properties`, der peger på Android SDK'et.
+The build uses the Gradle wrapper, AGP 9.4 and Kotlin 2.2. Open the project in Android Studio, or
+build from the command line with a `local.properties` pointing to the Android SDK.
 
-Debug-bygget har pakkenavnet `dk.rpix.noter.debug` og hedder "DavNotes debug", så det kan ligge på
-telefonen ved siden af release-bygget. Det tillader `http://` til `10.0.2.2`, `localhost` og
-`127.0.0.1`, så det kan bruge en lokal testserver. Release-bygget kræver HTTPS.
+The debug build has the package name `dk.rpix.noter.debug` and is called "DavNotes debug", so it can sit on
+the phone next to the release build. It allows `http://` to `10.0.2.2`, `localhost` and
+`127.0.0.1`, so it can use a local test server. The release build requires HTTPS.
 
-## Opbygning
+## Structure
 
-| Modul | Indhold |
+| Module | Contents |
 |---|---|
-| `:core` | Ren Kotlin/JVM: iCalendar-laget (`Ical`), CalDAV-klienten (`DavClient` på OkHttp), `NoteStore`-interfacet og synkroniseringsalgoritmen (`Syncer`). Kan testes uden emulator. |
-| `:app` | Compose og Material 3, Room (implementerer `NoteStore`), WorkManager til synkronisering og DataStore til indstillinger. |
+| `:core` | Pure Kotlin/JVM: the iCalendar layer (`Ical`), the CalDAV client (`DavClient` on OkHttp), the `NoteStore` interface and the sync algorithm (`Syncer`). Can be tested without an emulator. |
+| `:app` | Compose and Material 3, Room (implements `NoteStore`), WorkManager for syncing and DataStore for settings. |
 
-Kernen er en direkte port af referenceimplementeringen i `reference/` (Python og JavaScript).
-Den fulde specifikation af dataformat, CalDAV-kald og synkroniseringsregler står i
-[`docs/SPEC.md`](docs/SPEC.md).
+The core is a direct port of the reference implementation in `reference/` (Python and JavaScript).
+The full specification of the data format, CalDAV requests and sync rules is in
+[`docs/SPEC.md`](docs/SPEC.md) (in Danish).
 
 ```
-app/        Android-appen
-core/       Kernen (ical, dav, sync)
-docs/       Specifikation
-reference/  Referenceimplementering (notesync.py, selftest.py, webklient)
-tools/      Hjælpescripts (app-ikonet)
+app/        The Android app
+core/       The core (ical, dav, sync)
+docs/       Specification
+reference/  Reference implementation (notesync.py, selftest.py, web client)
+tools/      Helper scripts (the app icon)
 ```
 
-## Test
+## Tests
 
 ### Unit tests
 
@@ -80,32 +82,32 @@ tools/      Hjælpescripts (app-ikonet)
 ./gradlew test
 ```
 
-Kører iCalendar-tests og alle synkroniseringsscenarier mod en CalDAV-server i hukommelsen. Kræver
-ingen server og ingen telefon. Scenarierne er porteret fra `reference/selftest.py`: to enheder,
-konflikter, redigering mod sletning, ugyldigt sync-token, offline og forkert adgangskode.
+Runs the iCalendar tests and all sync scenarios against an in-memory CalDAV server. Requires
+no server and no phone. The scenarios are ported from `reference/selftest.py`: two devices,
+conflicts, edit versus delete, invalid sync token, offline and wrong password.
 
-### Mod en rigtig Radicale
+### Against a real Radicale
 
-De samme scenarier kan køre mod en lokal Radicale. Hver test opretter sin egen samling og sletter
-den igen.
+The same scenarios can run against a local Radicale. Each test creates its own collection and deletes
+it again.
 
 ```
 python3 -m venv .venv && .venv/bin/pip install radicale
 ```
 
-Opsæt og start serveren som beskrevet i afsnittet "Test" i [`docs/SPEC.md`](docs/SPEC.md). Kør så:
+Set up and start the server as described in the "Test" section of [`docs/SPEC.md`](docs/SPEC.md). Then run:
 
 ```
 NOTES_TEST_URL=http://127.0.0.1:5232/anna/noter/ ./gradlew test
 ```
 
-Bruger og adgangskode tages fra `NOTES_TEST_USER` og `NOTES_TEST_PASSWORD` (standard `anna` og
-`hemmelig`, som i specifikationens testopsætning). Uden `NOTES_TEST_URL` springes disse tests over.
+Username and password are taken from `NOTES_TEST_USER` and `NOTES_TEST_PASSWORD` (default `anna` and
+`hemmelig`, as in the specification's test setup). Without `NOTES_TEST_URL` these tests are skipped.
 
-### På telefonen
+### On the phone
 
-`NewNoteButtonTest` er en instrumenteret Compose-test, der tjekker, at Ny note-knappen kan læses af
-TalkBack. Telefonen skal være låst op.
+`NewNoteButtonTest` is an instrumented Compose test that checks that the New note button can be read by
+TalkBack. The phone must be unlocked.
 
 ```
 ./gradlew assembleDebug assembleDebugAndroidTest
@@ -114,43 +116,43 @@ adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 adb shell am instrument -w dk.rpix.noter.debug.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-Undgå `./gradlew connectedAndroidTest` på en telefon, du bruger. Den afinstallerer appen bagefter,
-og så forsvinder indstillinger og noter, der ikke er sendt endnu.
+Avoid `./gradlew connectedAndroidTest` on a phone you use. It uninstalls the app afterwards,
+and then settings and notes that have not been sent yet are lost.
 
-En lokal testserver kan nås fra telefonen med `adb reverse tcp:5232 tcp:5232` og adressen
-`http://localhost:5232/anna/noter/`. Fra emulatoren hedder den `http://10.0.2.2:5232/anna/noter/`.
+A local test server can be reached from the phone with `adb reverse tcp:5232 tcp:5232` and the address
+`http://localhost:5232/anna/noter/`. From the emulator it is `http://10.0.2.2:5232/anna/noter/`.
 
-## App-ikonet
+## The app icon
 
-Ikonet genereres af `tools/make_icon.py` (kræver Pillow). Scriptet skriver de adaptive vektorer,
-WebP-billederne til Android 7.x og butiksikonet til F-Droid ud fra samme geometri:
+The icon is generated by `tools/make_icon.py` (requires Pillow). The script writes the adaptive vectors,
+the WebP images for Android 7.x and the store icon for F-Droid from the same geometry:
 
 ```
-python3 tools/make_icon.py [forhåndsvisning.png]
+python3 tools/make_icon.py [preview.png]
 ```
 
-## Udgivelse
+## Releases
 
-Appen udgives på GitHub og F-Droid med reproducerbart byg og samme signatur begge steder. Butikstekster,
-ikon og skærmbilleder ligger i `fastlane/metadata/android/`. Fremgangsmåden står i
-[`docs/RELEASE.md`](docs/RELEASE.md).
+The app is released on GitHub and F-Droid with a reproducible build and the same signature in both places. Store texts,
+icon and screenshots are in `fastlane/metadata/android/`. The procedure is described in
+[`docs/RELEASE.md`](docs/RELEASE.md) (in Danish).
 
-## Kendte begrænsninger
+## Known limitations
 
-- `SEQUENCE` øges ikke ved redigering. Synkroniseringen bruger etags.
-- Tags skrives adskilt med komma, så et tag kan ikke selv indeholde komma, når det skrives i appen.
-  Formatet kan godt, og sådanne tags fra andre klienter vises korrekt.
-- Konfliktkopier er almindelige noter, som du selv rydder op i.
-- Thunderbird viser samlingen som en tom kalender, fordi den ikke kan vise `VJOURNAL`.
-- Hele samlingen hentes ved første synkronisering. Derefter hentes kun ændringer.
+- `SEQUENCE` is not incremented on edit. Syncing uses etags.
+- Tags are written separated by commas, so a tag cannot itself contain a comma when typed in the app.
+  The format allows it, and such tags from other clients are shown correctly.
+- Conflict copies are ordinary notes that you clean up yourself.
+- Thunderbird shows the collection as an empty calendar, because it cannot display `VJOURNAL`.
+- The whole collection is fetched on the first sync. After that only changes are fetched.
 
-## Licens
+## License
 
-Udviklet i Claude af lianergoist. Udgivet under MIT-licensen, se [`LICENSE`](LICENSE).
+Developed in Claude by lianergoist. Released under the MIT License, see [`LICENSE`](LICENSE).
 
-Appen bruger biblioteker under Apache License 2.0 (AndroidX, OkHttp, Okio, Kotlin og kotlinx) og
-Public Suffix List under MPL 2.0. Se [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) eller
-Settings → About DavNotes (Indstillinger → Om DavNotes) i appen.
+The app uses libraries under the Apache License 2.0 (AndroidX, OkHttp, Okio, Kotlin and kotlinx) and
+the Public Suffix List under MPL 2.0. See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) or
+Settings → About DavNotes in the app.
 
-Tak til [Radicale](https://radicale.org/), [jtx Board](https://jtx.techbee.at/) og
-[DAVx⁵](https://www.davx5.com/), som DavNotes er bygget til at arbejde sammen med.
+Thanks to [Radicale](https://radicale.org/), [jtx Board](https://jtx.techbee.at/) and
+[DAVx⁵](https://www.davx5.com/), which DavNotes is built to work with.
