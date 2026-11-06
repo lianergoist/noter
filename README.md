@@ -2,149 +2,74 @@
 
 **English** | [Dansk](README.da.md)
 
-Simple notes app for Android. Notes are stored as `VJOURNAL` objects in a CalDAV collection on your own
-[Radicale](https://radicale.org/) server and synced both ways. The app works offline and sends
-the changes when the connection is back.
+**Notes that follow you, without Google.**
 
-The app can share a collection with other clients, e.g. jtx Board via DAVx5. Properties set by other
-clients are preserved unchanged when you edit a note.
+DavNotes is a free and simple notes app for Android. Your notes are kept on a server you choose, so they are
+the same on your phone, your tablet and in the browser. No ads, no tracking, and no company reading along.
 
-## Features
+<a href="https://play.google.com/store/apps/details?id=dk.rpix.noter">Get it on Google Play</a> ·
+<a href="https://f-droid.org/en/packages/dk.rpix.noter/">Get it on F-Droid</a> ·
+<a href="https://rpix.dk/projekter/davnotes/?lang=en">Read more about DavNotes</a>
 
-- Create, edit, search and delete notes with title, text and tags.
-- Light formatting written as Markdown: headings, bold, italic, lists and indentation, with a
-  toolbar above the keyboard. Lists continue on Enter. Notes remain plain text that other
-  clients can read.
-- Links in the text can be opened in the browser.
-- Open text and Markdown files as new notes, also via "Open with" and "Share", and share a note as a file.
-- Saves automatically while you type and when you leave a note.
-- Works offline. Changes are sent at the next sync.
-- Syncs when the app is opened, after every change, on pull-to-refresh and roughly every 15 minutes.
-- No note is overwritten blindly. If a note was changed both here and elsewhere, your version is saved
-  as a new note with "(conflict)" in the title ("(konflikt)" in Danish etc.). Text is never merged.
-- Finds your collections on the server and can create a new notes collection.
-- The password is encrypted with a key in the Android Keystore. HTTPS only.
-- In English, Danish, German, French and Spanish. Follows the phone's language, and on Android 13+ the language
-  can be chosen for the app alone in the system settings.
+<p>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="200" alt="The list of notes">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="200" alt="A note in the editor">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="200" alt="Settings">
+</p>
 
-Not included (on purpose): full Markdown (e.g. tables, images and `[text](url)`), attachments, multiple accounts and shared notes.
+## What it does
+
+- **Write, search and tag your notes.** Each note has a title, text and tags you can search for.
+- **Saves as you type.** There is no save button to forget.
+- **Works without internet.** Write on the train or in the cabin. Your changes are sent as soon as you are online again.
+- **Never loses your text.** If the same note was changed in two places at once, your version is kept as a new
+  note with "(conflict)" in the title, so you can decide what to keep.
+- **Light formatting.** Headings, bold, italic, lists, checklists, quotes and links, with buttons above the keyboard.
+  Notes stay plain text, so other apps can still read them.
+- **Open and share files.** Turn a text or Markdown file into a note, or share a note as a file to mail, Drive or Nextcloud.
+- **In your language.** English, Danish, German, French and Spanish.
+
+## Where are my notes kept?
+
+On a calendar server (CalDAV). Most people don't know it, but the same kind of server that holds your calendar can
+also hold notes. You have two options:
+
+1. **A free account at caldav.rpix.dk.** All you need is an email address. The same account also gives you calendars,
+   to-do lists and contacts, so you can move it all away from Google.
+   [Read about caldav.rpix.dk](https://rpix.dk/projekter/caldav/?lang=en) or
+   [create an account](https://caldav.rpix.dk/register.php).
+2. **Your own server.** DavNotes works with any CalDAV server that supports syncing changes, for example
+   [Radicale](https://radicale.org/) or Nextcloud.
+
+On a computer you can read and write the same notes in the browser with
+[WebNotes](https://caldav.rpix.dk/notes/).
 
 ## Getting started
 
-Requires Android 7.0 (API 24) or later and a CalDAV server that supports `sync-collection`
-(RFC 6578). The app is developed and tested against Radicale 3.8.
+1. Install DavNotes from [Google Play](https://play.google.com/store/apps/details?id=dk.rpix.noter) or
+   [F-Droid](https://f-droid.org/en/packages/dk.rpix.noter/). It needs Android 7.0 or later.
+2. Open the settings and enter the server address, your username and your password.
+   With an account at caldav.rpix.dk, the address is `https://caldav.rpix.dk/dav/` and the username is your email address.
+3. Tap **Find collections** and choose your notes. If you don't have a notes collection yet, tap **Create notes collection**.
+4. Tap **Save**. That's it. Your notes now sync on their own.
 
-1. Build and install the app (see below).
-2. Open the settings and enter the address of the collection, e.g. `https://radicale.example.com/user/notes/`,
-   plus username and password.
-3. If you don't know the path, enter the server's address and tap **Find collections**. If there is no
-   notes collection, tap **Create notes collection**.
-4. Tap **Save**. The app checks the login and collection and starts syncing.
+## Good to know
 
-## Build
+- Your password is stored encrypted on the phone and is only ever sent over a secure connection (HTTPS).
+- The notes also work with other apps, such as [jtx Board](https://jtx.techbee.at/) via [DAVx⁵](https://www.davx5.com/).
+  DavNotes leaves alone whatever those apps have added to a note.
+- Conflict copies are ordinary notes. Delete the one you don't need.
+- A tag can't contain a comma, because commas separate the tags.
+- Thunderbird shows the notes collection as an empty calendar. That is expected: it can't show notes.
+- Questions or ideas? Write to [thomas@rpix.dk](mailto:thomas@rpix.dk) or open an issue here on GitHub.
 
-```
-./gradlew assembleDebug      # app/build/outputs/apk/debug/app-debug.apk
-./gradlew assembleRelease    # unsigned release APK
-```
+## For developers
 
-The build uses the Gradle wrapper, AGP 9.4 and Kotlin 2.2. Open the project in Android Studio, or
-build from the command line with a `local.properties` pointing to the Android SDK.
-
-The debug build has the package name `dk.rpix.noter.debug` and is called "DavNotes debug", so it can sit on
-the phone next to the release build. It allows `http://` to `10.0.2.2`, `localhost` and
-`127.0.0.1`, so it can use a local test server. The release build requires HTTPS.
-
-## Structure
-
-| Module | Contents |
-|---|---|
-| `:core` | Pure Kotlin/JVM: the iCalendar layer (`Ical`), the CalDAV client (`DavClient` on OkHttp), the `NoteStore` interface and the sync algorithm (`Syncer`). Can be tested without an emulator. |
-| `:app` | Compose and Material 3, Room (implements `NoteStore`), WorkManager for syncing and DataStore for settings. |
-
-The core is a direct port of the reference implementation in `reference/` (Python and JavaScript).
-The full specification of the data format, CalDAV requests and sync rules is in
-[`docs/SPEC.md`](docs/SPEC.md) (in Danish).
-
-```
-app/        The Android app
-core/       The core (ical, dav, sync)
-docs/       Specification
-reference/  Reference implementation (notesync.py, selftest.py, web client)
-tools/      Helper scripts (the app icon)
-```
-
-## Tests
-
-### Unit tests
-
-```
-./gradlew test
-```
-
-Runs the iCalendar tests and all sync scenarios against an in-memory CalDAV server. Requires
-no server and no phone. The scenarios are ported from `reference/selftest.py`: two devices,
-conflicts, edit versus delete, invalid sync token, offline and wrong password.
-
-### Against a real Radicale
-
-The same scenarios can run against a local Radicale. Each test creates its own collection and deletes
-it again.
-
-```
-python3 -m venv .venv && .venv/bin/pip install radicale
-```
-
-Set up and start the server as described in the "Test" section of [`docs/SPEC.md`](docs/SPEC.md). Then run:
-
-```
-NOTES_TEST_URL=http://127.0.0.1:5232/anna/noter/ ./gradlew test
-```
-
-Username and password are taken from `NOTES_TEST_USER` and `NOTES_TEST_PASSWORD` (default `anna` and
-`hemmelig`, as in the specification's test setup). Without `NOTES_TEST_URL` these tests are skipped.
-
-### On the phone
-
-`NewNoteButtonTest` is an instrumented Compose test that checks that the New note button can be read by
-TalkBack. The phone must be unlocked.
-
-```
-./gradlew assembleDebug assembleDebugAndroidTest
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-adb shell am instrument -w dk.rpix.noter.debug.test/androidx.test.runner.AndroidJUnitRunner
-```
-
-Avoid `./gradlew connectedAndroidTest` on a phone you use. It uninstalls the app afterwards,
-and then settings and notes that have not been sent yet are lost.
-
-A local test server can be reached from the phone with `adb reverse tcp:5232 tcp:5232` and the address
-`http://localhost:5232/anna/noter/`. From the emulator it is `http://10.0.2.2:5232/anna/noter/`.
-
-## The app icon
-
-The icon is generated by `tools/make_icon.py` (requires Pillow). The script writes the adaptive vectors,
-the WebP images for Android 7.x and the store icon for F-Droid from the same geometry:
-
-```
-python3 tools/make_icon.py [preview.png]
-```
-
-## Releases
-
-The app is released on GitHub and F-Droid with a reproducible build and the same signature in both places. Store texts,
-icon and screenshots are in `fastlane/metadata/android/`. The procedure is described in
-[`docs/RELEASE.md`](docs/RELEASE.md) (in Danish).
-
-## Known limitations
-
-- `SEQUENCE` is not incremented on edit. Syncing uses etags.
-- Tags are written separated by commas, so a tag cannot itself contain a comma when typed in the app.
-  The format allows it, and such tags from other clients are shown correctly.
-- Conflict copies are ordinary notes that you clean up yourself.
-- Thunderbird shows the collection as an empty calendar, because it cannot display `VJOURNAL`.
-- The whole collection is fetched on the first sync. After that only changes are fetched.
+DavNotes is open source. How to build, test and release the app is described in
+[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md), and the full specification of the data format and the sync
+rules is in [`docs/SPEC.md`](docs/SPEC.md) (in Danish). The browser client lives in
+[lianergoist/webnotes](https://github.com/lianergoist/webnotes), and the server setup behind caldav.rpix.dk in
+[lianergoist/caldav](https://github.com/lianergoist/caldav).
 
 ## License
 
