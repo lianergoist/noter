@@ -26,7 +26,7 @@ the same on your phone, your tablet and in the browser. No ads, no tracking, and
   note with "(conflict)" in the title, so you can decide what to keep.
 - **Light formatting.** Headings, bold, italic, lists, checklists, quotes and links, with buttons above the keyboard.
   Notes stay plain text, so other apps can still read them.
-- **Open and share files.** Turn a text or Markdown file into a note, or share a note as a file to mail, Drive or Nextcloud.
+- **Open and share files.** Turn a text or Markdown file into a note, or share a note as a file to mail, Drive or another app.
 - **In your language.** English, Danish, German, French and Spanish.
 
 ## Where are my notes kept?
@@ -39,7 +39,7 @@ also hold notes. You have two options:
    [Read about caldav.rpix.dk](https://rpix.dk/projekter/caldav/?lang=en) or
    [create an account](https://caldav.rpix.dk/register.php).
 2. **Your own server.** DavNotes works with any CalDAV server that supports syncing changes, for example
-   [Radicale](https://radicale.org/) or Nextcloud.
+   [Radicale](https://radicale.org/).
 
 On a computer you can read and write the same notes in the browser with
 [WebNotes](https://caldav.rpix.dk/notes/).

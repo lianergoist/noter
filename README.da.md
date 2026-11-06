@@ -26,7 +26,7 @@ samme på telefonen, tabletten og i browseren. Ingen reklamer, ingen sporing og 
   med "(konflikt)" i titlen, så du selv kan vælge, hvad du vil beholde.
 - **Let formatering.** Overskrifter, fed, kursiv, lister, afkrydsningslister, citater og links, med knapper over tastaturet.
   Noterne forbliver almindelig tekst, så andre apps stadig kan læse dem.
-- **Åbn og del filer.** Gør en tekst- eller Markdown-fil til en note, eller del en note som fil til mail, Drive eller Nextcloud.
+- **Åbn og del filer.** Gør en tekst- eller Markdown-fil til en note, eller del en note som fil til mail, Drive eller en anden app.
 - **På dit sprog.** Dansk, engelsk, tysk, fransk og spansk.
 
 ## Hvor ligger mine noter?
@@ -39,7 +39,7 @@ noter. Du har to muligheder:
    [Læs om caldav.rpix.dk](https://rpix.dk/projekter/caldav/) eller
    [opret en konto](https://caldav.rpix.dk/register.php).
 2. **Din egen server.** DavNotes virker med enhver CalDAV-server, der kan synkronisere ændringer, fx
-   [Radicale](https://radicale.org/) eller Nextcloud.
+   [Radicale](https://radicale.org/).
 
 På computeren kan du læse og skrive de samme noter i browseren med
 [WebNotes](https://caldav.rpix.dk/notes/).
