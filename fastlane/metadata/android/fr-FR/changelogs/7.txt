@@ -1,0 +1,1 @@
+Corrige un plantage au démarrage lorsque la collection contient aussi de nombreux événements ou de grosses pièces jointes. La recherche et la création d'une collection de notes fonctionnent désormais avec Nextcloud et les serveurs similaires.

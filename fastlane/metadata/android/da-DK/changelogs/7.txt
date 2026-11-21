@@ -1,0 +1,1 @@
+Retter et nedbrud ved start, når samlingen også rummer mange kalenderbegivenheder eller store vedhæftninger. Det virker nu at finde og oprette en noter-samling på Nextcloud og lignende servere.

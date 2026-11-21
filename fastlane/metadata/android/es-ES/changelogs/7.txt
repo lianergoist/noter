@@ -1,0 +1,1 @@
+Corrige un cierre al iniciar cuando la colección también contiene muchos eventos o adjuntos grandes. Ahora se puede buscar y crear una colección de notas en Nextcloud y servidores similares.

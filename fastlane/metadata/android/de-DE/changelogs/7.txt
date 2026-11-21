@@ -1,0 +1,1 @@
+Behebt einen Absturz beim Start, wenn die Sammlung auch viele Kalendertermine oder große Anhänge enthält. Das Finden und Anlegen einer Notizsammlung funktioniert jetzt mit Nextcloud und ähnlichen Servern.

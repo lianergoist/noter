@@ -1,0 +1,1 @@
+Fixes a crash at startup when the collection also holds many calendar events or large attachments. Finding and creating a notes collection now works with Nextcloud and similar servers.
