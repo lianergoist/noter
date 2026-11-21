@@ -39,6 +39,26 @@ open class DavError(val status: Int, message: String = "") :
 
 class AuthError(message: String = "forkert brugernavn eller adgangskode") : DavError(401, message)
 
+/**
+ * Den tekniske årsag til en fejl, til visning under den venlige besked (issue #3), fx
+ * "SocketTimeoutException: failed to connect to /192.168.2.120 (port 443) after 30000ms".
+ * [NetworkError]/[CertificateError] springes over, fordi de kun pakker årsagen ind; derefter
+ * vises kæden af årsager med klassenavn, og en besked, der gentager sig, udelades.
+ * Rummer hverken adgangskode eller notetekst (OkHttp nævner kun vært og port).
+ */
+fun technicalDetail(e: Throwable?): String? {
+    if (e == null) return null
+    val start = if ((e is NetworkError || e is CertificateError) && e.cause != null) e.cause!! else e
+    val seen = mutableSetOf<String>()
+    return generateSequence(start) { it.cause.takeIf { c -> c !== it } }
+        .take(6)
+        .map { t ->
+            val msg = t.message?.takeIf { it.isNotBlank() && seen.add(it) }
+            if (msg != null) "${t.javaClass.simpleName}: $msg" else t.javaClass.simpleName
+        }
+        .joinToString("\n← ")
+}
+
 /** Serveren svarer, men ligner ikke en CalDAV-server (fx en almindelig WebDAV-server). */
 class NotCalDavError(message: String = "serveren ligner ikke en CalDAV-server") : DavError(0, message)
 
