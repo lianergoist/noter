@@ -37,7 +37,7 @@ Læs hele specifikationen, før du skriver kode: @docs/SPEC.md
 - Spørg før du tilføjer eller opgraderer afhængigheder.
 - Aldrig adgangskoder, URL'er med login eller testservere i commits. Log aldrig `Authorization`-headeren eller notetekst i release-bygget.
 - Appen hedder "DavNotes" på alle sprog (pakkenavnet forbliver `dk.rpix.noter`).
-- UI-tekster: engelsk er standard i `res/values/strings.xml`; oversættelser i `values-da`, `values-de`, `values-fr` og `values-es`. En ny tekst tilføjes på alle fem sprog.
+- UI-tekster: engelsk er standard i `res/values/strings.xml`; oversættelser i `values-da`, `values-de`, `values-fr`, `values-es` og `values-uk` (ukrainsk, lavet af en bruger). En ny tekst tilføjes på alle seks sprog.
   Sentence case, korte aktive verber ("New note", "Delete", "Save" / "Ny note", "Slet", "Gem"). Fejl forklarer, hvad der skete og hvad man kan gøre, uden at undskylde.
 - Kommunikér med ejeren på dansk. Identifikatorer på engelsk, kommentarer på dansk som i referencekoden.
 

@@ -294,7 +294,7 @@ En række knapper over tastaturet, kun når tekstfeltet har fokus: **A** (kursiv
 **Nummereret liste**, **Afkrydsningsliste**, **Citat**, **Kode**, **Link**, **Ryk ud**, **Ryk ind**. Knapperne er 34 dp brede og
 48 dp høje med 20 dp-ikoner (Material 3's mindste berøringsflade slås fra på linjen), så alle ti er synlige på en
 almindelig telefon. Ikoner som egne vektor-drawables (Material Symbols, Apache 2.0), ikke
-`material-icons-extended`. Hver knap har en `contentDescription` på alle fem sprog. Editoren skifter fra `String` til
+`material-icons-extended`. Hver knap har en `contentDescription` på alle sprog. Editoren skifter fra `String` til
 `TextFieldValue` for at kende markeringen; stylingen sker med en `VisualTransformation` med identitets-offsetmapping.
 På de linjer, markeringen berører, står markeringerne dæmpede; på alle andre linjer (og på alle linjer, når
 tekstfeltet ikke har fokus) skjules tegnene fra `hidden` som nulbredde-mellemrum, så `*ord*` ser ud som et kursivt ord.
@@ -387,7 +387,7 @@ listemarkering fortsættes ikke.
     kun lagerudbydere, ikke fx Material Files).
   - Fejl vises roligt: "Kan ikke åbne filen. Den er for stor, tom eller ikke en tekstfil." / "Kan ikke dele noten.
     Prøv igen."
-- **Sprog:** engelsk er standard; dansk, tysk, fransk og spansk er oversættelser. Datoer formateres i telefonens sprog.
+- **Sprog:** engelsk er standard; dansk, tysk, fransk, spansk og ukrainsk er oversættelser. Datoer formateres i telefonens sprog.
   Appen hedder "DavNotes" på alle sprog. Valg af sprog pr. app i systemindstillingerne (Android 13+).
 - **Tekster (dansk oversættelse, som i webklienten):** "Noter", "Ny note", "Søg i noter", "Titel", "Tilføj tags, adskilt med komma", "Skriv her", "Slet",
   "Gemmer", "Gemt", "Ikke gemt", "Ingen noter endnu. Tryk på Ny note for at skrive den første.", "Ingen noter matcher søgningen.",

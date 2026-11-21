@@ -27,7 +27,7 @@ the same on your phone, your tablet and in the browser. No ads, no tracking, and
 - **Light formatting.** Headings, bold, italic, lists, checklists, quotes and links, with buttons above the keyboard.
   Notes stay plain text, so other apps can still read them.
 - **Open and share files.** Turn a text or Markdown file into a note, or share a note as a file to mail, Drive or another app.
-- **In your language.** English, Danish, German, French and Spanish.
+- **In your language.** English, Danish, German, French, Spanish and Ukrainian.
 
 ## Where are my notes kept?
 

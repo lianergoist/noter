@@ -1,0 +1,108 @@
+<resources>
+    <!-- Liste -->
+    <string name="notes">Нотатки</string>
+    <string name="new_note">Нова нотатка</string>
+    <string name="search_notes">Пошук нотаток</string>
+    <string name="clear_search">Очистити пошук</string>
+    <string name="settings">Налаштування</string>
+    <string name="untitled">Без назви</string>
+    <string name="empty_notes">Поки без нотаток. Натисни Нова нотатка, щоб написати першу.</string>
+    <string name="empty_search">Немає збігів за запитом.</string>
+    <string name="group_today">Сьогодні</string>
+    <string name="group_yesterday">Вчора</string>
+    <string name="group_last_7_days">Останні 7 днів</string>
+    <string name="group_no_date">Без дати</string>
+    <string name="unsent">Невідправлені</string>
+
+    <!-- Synkronisering -->
+    <string name="sync_never">Несинхронізовані</string>
+    <string name="sync_last">Синхронізовані %1$s</string>
+    <string name="syncing">Синхронізація</string>
+    <string name="sync_offline">Сервер недосяжний. Ваші зміни будуть відправлені, щойно ви будете онлайн.</string>
+    <string name="sync_auth">Ви не авторизовані. Авторизуйтесь і зможете побачити і зберегти свої нотатки.</string>
+    <string name="sync_server_error">Сервер показує помилку %1$d. Спробуйте трохи пізніше або перевірте адресу в Налаштуваннях.</string>
+    <string name="sync_other_error">Синхронізацію зупинено: %1$s. Спробуйте трохи пізніше.</string>
+    <string name="sync_not_configured">Додаток не може з\'єднатися з сервером. Введіть адресу, ім\'я користувача і пароль у Налаштуваннях.</string>
+    <string name="conflict_label">(конфлікт)</string>
+    <string name="conflict">Цю нотатку змінено деінде. Вашу версію збережено окремо з \"(конфлікт)\" у назві.</string>
+    <string name="recreated">Цю нотатку було видалено деінде. Її створено знову з вашими змінами.</string>
+    <string name="deleted_elsewhere">Цю нотатку було видалено деінде.</string>
+    <string name="log_in">Увійти</string>
+    <string name="close">Закрити</string>
+
+    <!-- Editor -->
+    <string name="back">Назад</string>
+    <string name="title">Назва</string>
+    <string name="tags_hint">Додайте теги, розділені комами</string>
+    <string name="body_hint">Пишіть тут</string>
+    <string name="delete">Видалити</string>
+    <string name="cancel">Відміна</string>
+    <string name="delete_confirm">Видалити нотатку \"%1$s\"?</string>
+    <string name="delete_confirm_untitled">Видалити нотатку без назви?</string>
+    <string name="saving">Збереження</string>
+    <string name="saved">Збережено</string>
+    <string name="not_saved">Не збережено</string>
+    <string name="modified_at">Змінено %1$s</string>
+
+    <!-- Indstillinger -->
+    <string name="server_url">Адреса колекції</string>
+    <string name="server_url_hint">https://radicale.example.com/user/notes/</string>
+    <string name="user">Користувач</string>
+    <string name="password">Пароль</string>
+    <string name="password_kept">Ваш пароль збережено. Залиште це поле порожнім, щоб залишити цей пароль.</string>
+    <string name="save">Зберегти</string>
+    <string name="find_collections">Шукати колекції</string>
+    <string name="create_collection">Створити колекцію нотаток</string>
+    <string name="collections_found">Обрати колекцію</string>
+    <string name="no_collections">Сервер не містить колекцій для нотаток. Натисніть Створити колекцію нотаток, щоб створити першу.</string>
+    <string name="settings_saved">З\'єднано. Ваші нотатки зараз синхронізуються.</string>
+    <string name="collection_created">Колекцію було створено.</string>
+    <string name="checking">Перевірка колекції</string>
+    <string name="err_url_https">Адреса повинна починатися з https://. Виправте і спробуйте знову.</string>
+    <string name="err_url_invalid">Адресу не можливо прочитати. Введіть повну адресу, наприклад, https://radicale.example.com/user/notes/.</string>
+    <string name="err_user_missing">Введіть ваше ім\'я користувача.</string>
+    <string name="err_password_missing">Введіть ваш пароль.</string>
+    <string name="err_login">Ім\'я користувача або пароль неправильні. Виправте їх і спробуйте знову.</string>
+    <string name="err_network">Сервер недосяжний. Перевірте адресу, мережу і спробуйте знову.</string>
+    <string name="err_not_found">Колекція не існує на сервері. Натисніть Створити колекцію нотаток, або оберіть іншу зі Знайти колекції.</string>
+    <string name="err_server">Сервер показує помилку %1$d. Перевірте адресу і спробуйте знову.</string>
+    <string name="err_not_caldav">Сервер не схожий на CalDAV сервер. Перевірте адресу або оберіть сервер з календарями.</string>
+    <string name="sync_interval_note">Нотатки синхронізуються при відкритті додатку, за кожної зміни та орієнтовно кожні 15 хвилин.</string>
+
+    <!-- Om -->
+    <string name="about">Про DavNotes</string>
+    <string name="about_version">Версія %1$s</string>
+    <string name="about_author">Розроблено lianergoist за допомогою Claude. Випущено під ліцензією MIT.</string>
+    <string name="about_license_mit">Показати ліцензію MIT</string>
+    <string name="about_libraries">Бібліотеки</string>
+    <string name="about_apache_intro">Ці бібліотеки випущені на умовах ліцензії Apache 2.0:</string>
+    <string name="about_license_apache">Показати ліцензію Apache 2.0</string>
+    <string name="about_psl">OkHttp включає Public Suffix List з publicsuffix.org під Mozilla Public License 2.0. Джерело доступне на https://publicsuffix.org/list/.</string>
+    <string name="about_thanks">Подяка Radicale, jtx Board та DAVx⁵.</string>
+
+    <!-- Formatering -->
+    <string name="format_emphasis">Курсив та жирний</string>
+    <string name="format_link">Вставити посилання</string>
+    <string name="format_heading">Заголовок</string>
+    <string name="format_bullets">Маркований список</string>
+    <string name="format_numbers">Нумерований список</string>
+    <string name="format_task">Список завдань</string>
+    <string name="format_quote">Цитата</string>
+    <string name="format_code">Код</string>
+    <string name="format_outdent">Зменшити відступ</string>
+    <string name="format_indent">Збільшити відступ</string>
+
+    <!-- Filer og links -->
+    <string name="open_file">Відкрити файл</string>
+    <string name="share">Поділитися</string>
+    <string name="open_link">Відкрити посилання</string>
+    <string name="file_open_failed">Не вдалося відкрити файл. Він завеликий, порожній або не є текстовим.</string>
+    <string name="share_failed">Не вдалося поділитися нотаткою. Спробуйте знову.</string>
+    <string name="no_browser">Немає програми, яка може відкрити посилання.</string>
+    <string name="untitled_file">Нотатка</string>
+    <string name="link_edit">Редагувати</string>
+    <string name="link_edit_title">Редагувати посилання</string>
+    <string name="link_text">Текст</string>
+    <string name="link_url">URL-адреса</string>
+    <string name="link_remove">Видалити посилання</string>
+</resources>
