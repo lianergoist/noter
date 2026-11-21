@@ -1,0 +1,1 @@
+Server mit eigenem Zertifikat funktionieren jetzt: DavNotes akzeptiert Stammzertifikate, die du selbst auf dem Telefon installiert hast. Wird ein Zertifikat nicht anerkannt, sagt die App das jetzt, statt zu melden, dass der Server nicht erreichbar ist.

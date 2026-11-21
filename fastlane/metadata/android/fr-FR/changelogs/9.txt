@@ -1,0 +1,1 @@
+Les serveurs avec leur propre certificat fonctionnent désormais : DavNotes accepte les certificats racines que vous avez installés sur le téléphone. Si un certificat n'est pas reconnu, l'application le dit au lieu d'indiquer que le serveur est injoignable.

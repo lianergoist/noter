@@ -1,0 +1,1 @@
+Servers with your own certificate now work: DavNotes accepts root certificates you have installed on the phone. If a certificate can't be trusted, the app now says so instead of reporting that the server can't be reached.

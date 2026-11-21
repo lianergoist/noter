@@ -1,0 +1,1 @@
+Los servidores con certificado propio ya funcionan: DavNotes acepta los certificados raíz que hayas instalado en el teléfono. Si un certificado no es de confianza, la aplicación ahora lo indica en lugar de decir que no se puede conectar con el servidor.

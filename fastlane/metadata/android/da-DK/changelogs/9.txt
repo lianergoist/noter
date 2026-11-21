@@ -1,0 +1,1 @@
+Servere med eget certifikat virker nu: DavNotes godkender rodcertifikater, du selv har installeret på telefonen. Kan et certifikat ikke godkendes, siger appen det nu i stedet for at melde, at serveren ikke kan nås.
