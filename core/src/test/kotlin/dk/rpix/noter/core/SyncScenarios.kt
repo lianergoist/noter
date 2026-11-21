@@ -179,6 +179,7 @@ abstract class SyncScenarios {
         val ignored = a.byHref(href)
         assertTrue("VEVENT huskes som ignoreret", ignored != null && ignored.ignored && ignored.uid == "href:$href")
         assertTrue("ignorerede objekter sendes ikke", a.pending().isEmpty())
+        assertEquals("indholdet af ignorerede objekter gemmes ikke", "", ignored!!.raw)
 
         sync(b)
         assertEquals(listOf("Rigtig note"), titles(b))
@@ -189,6 +190,21 @@ abstract class SyncScenarios {
         assertEquals("ignoreret objekt hentes ikke igen", 0, r.fetched)
         assertNotNull(b.byHref(href))
         assertConverged()
+    }
+
+    /** Issue #5: en kæmperække (fx en begivenhed med indlejret vedhæftning) crashede Room. */
+    @Test fun hugeObjectIsIgnored() {
+        val other = server.client()
+        val href = other.collectionPath + "stor.ics"
+        val huge = Ical.newIcs("stor", "Stor note", "x".repeat(Syncer.MAX_RAW_CHARS), emptyList())
+        val status = other.put(href, huge, null).status
+        assumeTrue("serveren afviste det store objekt ($status)", status < 400)
+        a.add("Lille note")
+        sync(a)
+        assertEquals(listOf("Lille note"), titles(a))
+        val big = a.byHref(href)
+        assertTrue("stort objekt huskes som ignoreret", big != null && big.ignored && big.raw.isEmpty())
+        assertEquals("og hentes ikke igen", 0, sync(a).fetched)
     }
 
     // -- konflikter --------------------------------------------------------------

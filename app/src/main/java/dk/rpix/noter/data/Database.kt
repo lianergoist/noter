@@ -14,6 +14,9 @@ import androidx.room.RoomDatabase
 import androidx.room.Transaction
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import dk.rpix.noter.core.Syncer
 import dk.rpix.noter.core.Note
 import kotlinx.coroutines.flow.Flow
 import org.json.JSONArray
@@ -135,13 +138,28 @@ abstract class NoteDao {
     }
 }
 
-@Database(entities = [NoteEntity::class, MetaEntity::class], version = 1, exportSchema = true)
+/**
+ * Issue #5: version 1 gemte hele indholdet af objekter, der ikke er noter (begivenheder, evt. med
+ * indlejrede vedhæftninger). En række over 2 MB kan ikke læses (SQLiteBlobTooBigException), og
+ * appen crashede ved start. Tøm dem, og fjern urørte rækker, der er for store; de hentes ikke igen
+ * før de ændres på serveren, og så husker Syncer dem som ignorerede.
+ */
+val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("UPDATE notes SET raw = '' WHERE ignored = 1")
+        db.execSQL("DELETE FROM notes WHERE dirty = 0 AND length(raw) > ${Syncer.MAX_RAW_CHARS}")
+    }
+}
+
+@Database(entities = [NoteEntity::class, MetaEntity::class], version = 2, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class NoterDatabase : RoomDatabase() {
     abstract fun notes(): NoteDao
 
     companion object {
         fun open(context: Context): NoterDatabase =
-            Room.databaseBuilder(context, NoterDatabase::class.java, "noter.db").build()
+            Room.databaseBuilder(context, NoterDatabase::class.java, "noter.db")
+                .addMigrations(MIGRATION_1_2)
+                .build()
     }
 }

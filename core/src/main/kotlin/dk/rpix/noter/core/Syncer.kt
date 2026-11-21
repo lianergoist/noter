@@ -57,7 +57,10 @@ class Syncer(
             }
         }
 
-        for ((href, etag, raw) in client.multiget(toFetch)) adopt(href, etag, raw)
+        // Ét multiget ad gangen, så en samling med tusinder af begivenheder ikke ligger i hukommelsen på én gang
+        for (chunk in toFetch.chunked(MULTIGET_SIZE)) {
+            for ((href, etag, raw) in client.multiget(chunk)) adopt(href, etag, raw)
+        }
         store.setMeta(SYNC_TOKEN, res.token)
     }
 
@@ -76,10 +79,15 @@ class Syncer(
      */
     private fun adopt(href: String, etag: String, raw: String) {
         val p = try {
-            Ical.parseIcs(raw)
+            if (raw.length > MAX_RAW_CHARS) null else Ical.parseIcs(raw)
         } catch (_: IcalException) {
+            null
+        }
+        if (p == null) {
+            // Ikke en note (eller for stor til databasen). Kun etagen skal huskes, ikke indholdet:
+            // en kalender kan rumme tusinder af begivenheder, nogle med indlejrede vedhæftninger.
             val old = store.byHref(href)
-            store.putClean(old?.uid, "href:$href", href, etag, raw, null)
+            store.putClean(old?.uid, "href:$href", href, etag, "", null)
             return
         }
         val local = store.byHref(href) ?: store.byUid(p.uid)
@@ -147,5 +155,12 @@ class Syncer(
 
     companion object {
         const val SYNC_TOKEN = "sync_token"
+        const val MULTIGET_SIZE = 50
+
+        /**
+         * Større objekter end dette behandles som "ikke en note". Androids CursorWindow rummer
+         * højst 2 MB pr. række, og rækken har både `raw` og `body` (op til 3 byte pr. tegn).
+         */
+        const val MAX_RAW_CHARS = 250_000
     }
 }

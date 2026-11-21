@@ -287,21 +287,22 @@ class DavClient(
 
     /**
      * Find brugerens kalendersamlinger. Vælg dem med VJOURNAL, helst dem der kun har VJOURNAL.
-     * Port af `discover` i reference/dav.js.
+     * Port af `discover` i reference/dav.js, men samlingerne søges under `calendar-home-set`
+     * (Nextcloud/Baïkal har dem ikke under principal, som Radicale har).
      */
     fun discover(): List<CollectionInfo> {
-        val principal = principal()
+        val home = calendarHome(principal())
         val r = xml(
-            "PROPFIND", principal,
+            "PROPFIND", home,
             """<D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav"><D:prop>""" +
                 "<D:displayname/><D:resourcetype/><C:supported-calendar-component-set/></D:prop></D:propfind>",
             "1",
         )
-        if (r.status != 207) throw DavError(r.status, "PROPFIND $principal")
+        if (r.status != 207) throw DavError(r.status, "PROPFIND $home")
         val out = mutableListOf<CollectionInfo>()
         for (resp in parseXml(r.body).kids(DAV, "response")) {
             val path = Hrefs.withSlash(Hrefs.normalize(resp.kidText(DAV to "href") ?: continue))
-            if (path == principal) continue
+            if (path == home) continue
             val props = resp.okProps()
             fun find(ns: String, name: String) = props.firstNotNullOfOrNull { it.kid(ns, name) }
             val rt = find(DAV, "resourcetype") ?: continue
@@ -318,40 +319,60 @@ class DavClient(
     }
 
     /**
-     * Brugerens principal-sti med / til sidst (PROPFIND / efter `current-user-principal`).
-     * Kaster [NotCalDavError], hvis serveren ikke oplyser nogen eller slet ikke kender PROPFIND.
+     * Brugerens principal-sti med / til sidst (`current-user-principal`, RFC 5397). Spørger først
+     * adressen selv, så `/.well-known/caldav` (RFC 6764; OkHttp følger omdirigeringen og beholder
+     * PROPFIND) og til sidst serverens rod. Nextcloud svarer fx ikke på PROPFIND på roden.
+     * Kaster [NotCalDavError], hvis ingen af dem oplyser en principal.
      */
     fun principal(): String {
-        val r = xml("PROPFIND", "/", """<D:propfind xmlns:D="DAV:"><D:prop><D:current-user-principal/></D:prop></D:propfind>""", "0")
-        if (r.status == 405 || r.status == 501) throw NotCalDavError() // kan slet ikke WebDAV
-        if (r.status != 207) throw DavError(r.status, "PROPFIND /")
-        val cup = runCatching { parseXml(r.body) }.getOrNull()
-            ?.getElementsByTagNameNS(DAV, "current-user-principal")?.item(0) as Element?
-        val href = (cup?.getElementsByTagNameNS(DAV, "href")?.item(0) as Element?)?.textContent
-        if (href.isNullOrBlank()) throw NotCalDavError()
-        return Hrefs.withSlash(Hrefs.normalize(href))
+        val body = """<D:propfind xmlns:D="DAV:"><D:prop><D:current-user-principal/></D:prop></D:propfind>"""
+        for (path in listOf(collectionPath, "/.well-known/caldav", "/").distinct()) {
+            val r = xml("PROPFIND", path, body, "0")
+            if (r.status != 207) continue // kan ikke WebDAV her, eller findes ikke: prøv næste
+            val href = runCatching { parseXml(r.body) }.getOrNull()?.firstPropHref(DAV, "current-user-principal")
+            if (!href.isNullOrBlank()) return Hrefs.withSlash(Hrefs.normalize(href))
+        }
+        throw NotCalDavError()
     }
 
+    /** Hvor brugerens kalendere ligger (`calendar-home-set`, RFC 4791). Radicale: principal selv. */
+    fun calendarHome(principal: String): String {
+        val r = xml(
+            "PROPFIND", principal,
+            """<D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav"><D:prop>""" +
+                "<C:calendar-home-set/></D:prop></D:propfind>",
+            "0",
+        )
+        if (r.status != 207) return principal
+        val href = runCatching { parseXml(r.body) }.getOrNull()?.firstPropHref(CAL, "calendar-home-set")
+        return if (href.isNullOrBlank()) principal else Hrefs.withSlash(Hrefs.normalize(href))
+    }
+
+    /** Første `href` i egenskaben (ns, name) fra en propstat med status 200. */
+    private fun Element.firstPropHref(ns: String, name: String): String? =
+        kids(DAV, "response").asSequence()
+            .flatMap { it.okProps() }
+            .mapNotNull { it.kid(ns, name)?.kid(DAV, "href")?.textContent?.trim() }
+            .firstOrNull { it.isNotEmpty() }
+
     /**
-     * Hvor en ny noter-samling skal oprettes. Peger adressen på serverens rod eller på brugerens
-     * principal (som når man har brugt "Find samlinger"), bliver det `<principal>noter/`
-     * (eller `noter-2/` osv., hvis navnet er optaget). Ellers adressen selv.
+     * Hvor en ny noter-samling skal oprettes. Peger adressen på serverens rod, på brugerens
+     * principal eller på en mappe over kalenderne (fx Nextclouds `/remote.php/dav/`), bliver det
+     * `<calendar-home-set>noter/` (eller `noter-2/` osv., hvis navnet er optaget). Ellers adressen selv.
      */
     fun newCollectionPath(slug: String = "noter"): String {
-        val principal = when (collectionPath.count { it == '/' }) {
-            1 -> principal() // "/": uden principal ved vi ikke, hvor samlingen skal ligge
-            2 -> try {
-                principal()
-            } catch (e: AuthError) {
-                throw e
-            } catch (_: DavError) {
-                null
-            }
-            else -> null
-        }
-        if (principal == null || (collectionPath != "/" && collectionPath != principal)) return collectionPath
+        val principal = try {
+            principal()
+        } catch (e: AuthError) {
+            throw e
+        } catch (e: DavError) {
+            if (collectionPath == "/") throw e // uden principal ved vi ikke, hvor samlingen skal ligge
+            null
+        } ?: return collectionPath
+        val home = calendarHome(principal)
+        if (collectionPath != principal && !home.startsWith(collectionPath)) return collectionPath
         for (n in 1..20) {
-            val path = principal + (if (n == 1) slug else "$slug-$n") + "/"
+            val path = home + (if (n == 1) slug else "$slug-$n") + "/"
             if (!collectionExists(path)) return path
         }
         throw DavError(0, "kunne ikke finde et ledigt navn til samlingen")

@@ -13,7 +13,8 @@ Brugere kan derfor skifte frit mellem GitHub og F-Droid. Det kræver, at de to b
 3. Kør `./gradlew test assembleDebug`, commit og push.
 4. Tag commit'et `v<versionName>` (fx `v1.1`) og push tagget: `git tag v1.1 && git push origin v1.1`.
 5. Byg den signerede APK **fra det taggede commit og med ren arbejdsmappe**
-   (APK'en indeholder commit-hashen, så et byg fra et andet commit ligner ikke F-Droids):
+   (en midlertidig `git worktree` er fin; APK'en indeholder ikke commit-hashen, fordi `vcsInfo` er slået fra.
+   Det var den, der gjorde 1.2.1 forskellig fra F-Droids byg):
 
    ```
    git status            # skal være ren
@@ -157,7 +158,8 @@ med certifikatet fra `keytool -export -rfc -keystore ~/.android/keystores/noter-
 - MIT-licens, offentlig kildekode, kun frie afhængigheder fra Google Maven og Maven Central.
 - Ingen Google Play Services, Firebase, sporing eller reklamer, og ingen anti-features.
 - Release kan bygges usigneret fra kommandolinjen (uden `NOTER_KEYSTORE`).
-- Ingen afhængighedsblok i APK'en (`dependenciesInfo` er slået fra).
+- Ingen afhængighedsblok i APK'en (`dependenciesInfo` er slået fra) og ingen
+  `META-INF/version-control-info.textproto` (`vcsInfo` er slået fra).
 - Ingen JDK-download under bygget (ingen foojay, intet `gradle-daemon-jvm.properties`).
   Bygget giver samme APK med JDK 21 og JDK 25 og fra forskellige mapper.
 - Butikstekster, ikon og skærmbilleder i `fastlane/metadata/android/`.

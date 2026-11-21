@@ -90,7 +90,7 @@ Etags: gem og send dem ordret, med citationstegn.
 | Formål | Kald |
 |---|---|
 | Opret samling (valgfrit) | `MKCALENDAR <samling>` med `supported-calendar-component-set` = kun `VJOURNAL` og `displayname` |
-| Find principal (valgfrit) | `PROPFIND /` `Depth: 0` med `current-user-principal`, derefter `PROPFIND <principal>` `Depth: 1` med `displayname`, `resourcetype`, `supported-calendar-component-set`; vælg samlinger der indeholder `VJOURNAL`, helst dem der **kun** gør |
+| Find principal (valgfrit) | `PROPFIND` `Depth: 0` med `current-user-principal` på den indtastede adresse, ellers `/.well-known/caldav` (omdirigering følges med PROPFIND), ellers `/`. Derefter `PROPFIND <principal>` `Depth: 0` med `calendar-home-set` (mangler den: principal selv, som i Radicale) og `PROPFIND <home>` `Depth: 1` med `displayname`, `resourcetype`, `supported-calendar-component-set`; vælg samlinger der indeholder `VJOURNAL`, helst dem der **kun** gør. En ny samling oprettes under `<home>` (Nextcloud: `/remote.php/dav/calendars/<bruger>/`) |
 | Hent ændringer | `REPORT <samling>` med `sync-collection` (se nedenfor) |
 | Hent indhold | `REPORT <samling>` med `calendar-multiget`, højst 50 hrefs pr. kald |
 | Opret | `PUT <samling><uid>.ics`, `If-None-Match: *`, `Content-Type: text/calendar; charset=utf-8` |
@@ -145,7 +145,7 @@ En sync = **pull, derefter push**. Højst én sync ad gangen (`Mutex` plus unikt
    - `etag == null` (slettet på serveren): hvis der findes en lokal række med den `href`, kald `serverDeleted(lokal)`.
    - ellers hvis der ingen lokal række er, eller dens etag er anderledes: læg `href` på hentelisten.
 4. Hvis `full`: alle lokale rækker med `href`, som **ikke** nævnes i svaret (med etag), er slettet på serveren → `serverDeleted`.
-5. `multiget` for hentelisten, og kald `adopt(href, etag, raw)` på hvert resultat.
+5. `multiget` for hentelisten (50 ad gangen), og kald `adopt(href, etag, raw)` på hvert resultat.
 6. Gem det nye `sync_token` **til sidst** (først når alt ovenfor lykkedes).
 
 `serverDeleted(lokal)`:
@@ -153,7 +153,7 @@ En sync = **pull, derefter push**. Højst én sync ad gangen (`Mutex` plus unikt
 - Ellers fjern rækken.
 
 `adopt(href, etag, raw)`:
-1. Kan `raw` ikke parses som en note (ingen `VJOURNAL`): gem en række med `uid = "href:<href>"`, `ignored = 1`, så etagen er kendt og objektet ikke hentes igen. Færdig.
+1. Kan `raw` ikke parses som en note (ingen `VJOURNAL`), eller er den over 250.000 tegn (Androids CursorWindow rummer højst 2 MB pr. række): gem en række med `uid = "href:<href>"`, `ignored = 1` og **tom** `raw`, så etagen er kendt og objektet ikke hentes igen. Færdig. (Afviger fra referencen, som gemmer `raw`; en kalender kan rumme tusinder af begivenheder med vedhæftninger.)
 2. `lokal = byHref(href) ?: byUid(uid)`.
 3. Hvis `lokal` er `dirty` og ikke `deleted`, og `(titel, tekst, tags)` er **forskellige** fra serverens: **konflikt**.
    Opret en ny note (nyt UUID) med titlen `"<lokal titel> <konfliktmærke>"` (trimmet), den lokale tekst og tags, `dirty = 1`, uden `href`.

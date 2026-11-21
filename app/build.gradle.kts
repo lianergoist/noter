@@ -46,6 +46,11 @@ android {
             optimization {
                 enable = true
             }
+            // Ingen META-INF/version-control-info.textproto: den afhænger af, om der bygges fra en
+            // git-klon eller en worktree, og gjorde F-Droids reproducerbare byg af 1.2.1 forskelligt (issue #2)
+            vcsInfo {
+                include = false
+            }
         }
     }
     compileOptions {
