@@ -62,6 +62,7 @@ data class Account(val url: String, val user: String, val password: String)
 /** Seneste fejl fra en sync, vist roligt på listen. */
 sealed interface SyncError {
     data object Network : SyncError
+    data object Certificate : SyncError
     data object Auth : SyncError
     data object NotConfigured : SyncError
     data class Server(val status: Int) : SyncError
@@ -69,6 +70,7 @@ sealed interface SyncError {
 
     fun encode(): String = when (this) {
         Network -> "network"
+        Certificate -> "certificate"
         Auth -> "auth"
         NotConfigured -> "config"
         is Server -> "server:$status"
@@ -79,6 +81,7 @@ sealed interface SyncError {
         fun decode(s: String?): SyncError? = when {
             s == null -> null
             s == "network" -> Network
+            s == "certificate" -> Certificate
             s == "auth" -> Auth
             s == "config" -> NotConfigured
             s.startsWith("server:") -> Server(s.removePrefix("server:").toIntOrNull() ?: 0)

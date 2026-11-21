@@ -16,6 +16,7 @@ import dk.rpix.noter.BuildConfig
 import dk.rpix.noter.NoterApp
 import dk.rpix.noter.R
 import dk.rpix.noter.core.AuthError
+import dk.rpix.noter.core.CertificateError
 import dk.rpix.noter.core.DavClient
 import dk.rpix.noter.core.DavError
 import dk.rpix.noter.core.NetworkError
@@ -93,6 +94,8 @@ class SyncManager(
             SyncOutcome.Failed(SyncError.Auth)
         } catch (_: NetworkError) {
             SyncOutcome.Failed(SyncError.Network)
+        } catch (_: CertificateError) {
+            SyncOutcome.Failed(SyncError.Certificate)
         } catch (e: DavError) {
             SyncOutcome.Failed(if (e.status != 0) SyncError.Server(e.status) else SyncError.Other(e.message ?: ""))
         } catch (e: IllegalArgumentException) {

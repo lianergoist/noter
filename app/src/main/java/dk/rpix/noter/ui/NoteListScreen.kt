@@ -233,6 +233,7 @@ private fun StatusLine(s: StatusState, onLogin: () -> Unit) {
 @Composable
 fun syncErrorText(e: SyncError): String = when (e) {
     SyncError.Network -> stringResource(R.string.sync_offline)
+    SyncError.Certificate -> stringResource(R.string.sync_certificate)
     SyncError.Auth -> stringResource(R.string.sync_auth)
     SyncError.NotConfigured -> stringResource(R.string.sync_not_configured)
     is SyncError.Server -> stringResource(R.string.sync_server_error, e.status)

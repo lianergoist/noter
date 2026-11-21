@@ -3,7 +3,10 @@ package dk.rpix.noter.core
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.net.URI
+import java.security.cert.CertificateException
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLHandshakeException
+import javax.net.ssl.SSLPeerUnverifiedException
 import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
 import okhttp3.Credentials
@@ -24,6 +27,12 @@ import org.xml.sax.InputSource
 
 /** Serveren kunne ikke nås (offline, DNS, timeout ...). Ændringer er allerede gemt lokalt. */
 class NetworkError(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+/**
+ * Serveren svarer, men dens certifikat godkendes ikke (selvsigneret, ukendt rodcertifikat,
+ * udløbet eller udstedt til et andet navn). Det går ikke over af sig selv som en netværksfejl.
+ */
+class CertificateError(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 open class DavError(val status: Int, message: String = "") :
     Exception(if (status != 0) "HTTP $status: $message" else message)
@@ -249,8 +258,16 @@ class DavClient(
                 return Response(r.code, r.headers, data)
             }
         } catch (e: IOException) {
+            if (isCertificateProblem(e)) throw CertificateError(e.message ?: e.javaClass.simpleName, e)
             throw NetworkError(e.message ?: e.javaClass.simpleName, e)
         }
+    }
+
+    /** Forkert navn (OkHttps egen kontrol) eller et certifikat, der ikke kan godkendes. */
+    private fun isCertificateProblem(e: IOException): Boolean {
+        if (e is SSLPeerUnverifiedException) return true
+        if (e !is SSLHandshakeException) return false
+        return generateSequence<Throwable>(e) { it.cause }.any { it is CertificateException }
     }
 
     private fun xml(method: String, path: String, xml: String, depth: String? = null): Response =

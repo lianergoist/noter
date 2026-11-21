@@ -127,7 +127,7 @@ så start forfra uden token (fuld resync, se nedenfor).
 XML: brug en **navneområde-bevidst** parser (`DocumentBuilderFactory.setNamespaceAware(true)`) og find elementer via
 (navneområde, lokalt navn), aldrig via præfiks. Læs kun direkte børn, så en indlejret `href` ikke forveksles.
 
-Fejl: `401` → `AuthError`. Netværksfejl/timeout → `NetworkError` (ændringer er allerede gemt lokalt). Alt andet uventet → `DavError(status)`.
+Fejl: `401` → `AuthError`. Certifikatet godkendes ikke (`SSLHandshakeException` med en `CertificateException` som årsag, eller `SSLPeerUnverifiedException` ved forkert navn) → `CertificateError`, så brugeren får en anden besked end "Kan ikke nå serveren". Anden netværksfejl/timeout → `NetworkError` (ændringer er allerede gemt lokalt). Alt andet uventet → `DavError(status)`.
 
 HTTP-klient: **OkHttp**. `HttpURLConnection` kan ikke sende `PROPFIND`/`REPORT`/`MKCALENDAR`.
 Brug `Request.Builder().method("REPORT", body)`; `REPORT` og `PUT` kræver en body, `DELETE` bruger `.delete()`.
@@ -362,7 +362,7 @@ listemarkering fortsættes ikke.
 - **Redigering:** editoren skriver til den lokale række (`dirty = 1`) efter ca. 1,2 sekund uden tastetryk og når man forlader skærmen. En tom ny note oprettes ikke.
   Ændres rækken af en sync (ikke `dirty`), mens editoren er åben og brugeren ikke har rørt noget, så opdatér visningen; ellers lad teksten stå.
 - **Oprettelse af samling:** knap i indstillingerne ("Opret noter-samling") som kalder `MKCALENDAR`, hvis serveren ikke har nogen.
-- **Login:** URL, bruger og adgangskode. Gem adgangskoden med Android Keystore. `androidx.security:security-crypto` er forældet, så vælg den nuværende anbefalede løsning (fx DataStore + Keystore-nøgle eller Tink). Afvis `http://`, undtagen i debug-bygget til `10.0.2.2`/`localhost` via en network security config.
+- **Login:** URL, bruger og adgangskode. Gem adgangskoden med Android Keystore. `androidx.security:security-crypto` er forældet, så vælg den nuværende anbefalede løsning (fx DataStore + Keystore-nøgle eller Tink). Afvis `http://`, undtagen i debug-bygget til `10.0.2.2`/`localhost` via en network security config. Både systemets og brugerinstallerede rodcertifikater godkendes (`<certificates src="user"/>`), så en egen server med privat CA virker; selvsignerede certifikater godkendes ikke med et tryk i appen.
 - **Skærme:** liste (grupperet efter dato) → editor, og indstillinger. Søgefelt øverst på listen.
   Grupper: "I dag", "I går", "Seneste 7 dage", derefter måned og år, og til sidst "Uden dato".
   Listepunkt: titel (eller "Uden titel"), første ikke-tomme linje af teksten, tags og klokkeslæt/ugedag/dato.

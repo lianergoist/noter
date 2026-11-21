@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Kun HTTPS. Debug-bygget har sin egen version, der tillader en lokal testserver. -->
+<!-- Kun HTTPS. Debug-bygget har sin egen version, der tillader en lokal testserver.
+     Rodcertifikater, brugeren selv har installeret, godkendes også (issue #3): mange har egen
+     server med et privat eller selvsigneret certifikat, ligesom DAVx⁵ tillader. -->
 <network-security-config>
-    <base-config cleartextTrafficPermitted="false" />
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
 </network-security-config>

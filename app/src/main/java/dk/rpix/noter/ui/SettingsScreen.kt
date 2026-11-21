@@ -47,6 +47,7 @@ import dk.rpix.noter.core.DavClient
 import dk.rpix.noter.core.DavError
 import dk.rpix.noter.core.Hrefs
 import dk.rpix.noter.core.NetworkError
+import dk.rpix.noter.core.CertificateError
 import dk.rpix.noter.core.NotCalDavError
 import dk.rpix.noter.data.Account
 import dk.rpix.noter.sync.SyncScheduler
@@ -110,6 +111,8 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
                 notice = Notice(R.string.err_login)
             } catch (_: NetworkError) {
                 notice = Notice(R.string.err_network)
+            } catch (_: CertificateError) {
+                notice = Notice(R.string.err_certificate)
             } catch (_: NotCalDavError) {
                 notice = Notice(R.string.err_not_caldav)
             } catch (e: DavError) {
