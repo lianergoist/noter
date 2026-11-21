@@ -42,9 +42,16 @@ Builds:
     gradle:
       - yes
 
+  - versionName: 1.2.3
+    versionCode: 8
+    commit: 6c68c76934556031facb0114bb2956747f43d332
+    subdir: app
+    gradle:
+      - yes
+
 AllowedAPKSigningKeys: a48a93b3dcb252dbaa3ba8a9c678c3eccad7bbff36937c8a64d595eb5b2dd4fc
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 1.2.2
-CurrentVersionCode: 7
+CurrentVersion: 1.2.3
+CurrentVersionCode: 8
