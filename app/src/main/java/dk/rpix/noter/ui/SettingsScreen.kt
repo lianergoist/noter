@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,6 +50,7 @@ import dk.rpix.noter.core.Hrefs
 import dk.rpix.noter.core.NetworkError
 import dk.rpix.noter.core.CertificateError
 import dk.rpix.noter.core.NotCalDavError
+import dk.rpix.noter.core.technicalDetail
 import dk.rpix.noter.data.Account
 import dk.rpix.noter.sync.SyncScheduler
 import dk.rpix.noter.sync.davClient
@@ -59,7 +61,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /** Meddelelse på indstillingsskærmen: strengressource + evt. tal (HTTP-status). */
-data class Notice(val res: Int, val arg: Int? = null, val error: Boolean = true)
+data class Notice(val res: Int, val arg: Int? = null, val error: Boolean = true, val detail: String? = null)
 
 class SettingsViewModel(private val app: NoterApp) : ViewModel() {
     var url by mutableStateOf("")
@@ -109,14 +111,15 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
                 block(davClient(account), account)
             } catch (_: AuthError) {
                 notice = Notice(R.string.err_login)
-            } catch (_: NetworkError) {
-                notice = Notice(R.string.err_network)
-            } catch (_: CertificateError) {
-                notice = Notice(R.string.err_certificate)
+            } catch (e: NetworkError) {
+                notice = Notice(R.string.err_network, detail = technicalDetail(e))
+            } catch (e: CertificateError) {
+                notice = Notice(R.string.err_certificate, detail = technicalDetail(e))
             } catch (_: NotCalDavError) {
                 notice = Notice(R.string.err_not_caldav)
             } catch (e: DavError) {
-                notice = if (e.status == 404) Notice(R.string.err_not_found) else Notice(R.string.err_server, e.status)
+                notice = if (e.status == 404) Notice(R.string.err_not_found)
+                else Notice(R.string.err_server, e.status, detail = technicalDetail(e))
             } catch (_: IllegalArgumentException) {
                 notice = Notice(R.string.err_url_invalid)
             } finally {
@@ -233,6 +236,16 @@ fun SettingsScreen(onBack: () -> Unit, onAbout: () -> Unit) {
                     color = if (n.error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodyMedium,
                 )
+                // Teknisk årsag (issue #3), kan markeres og kopieres til en fejlrapport
+                n.detail?.let { d ->
+                    SelectionContainer {
+                        Text(
+                            d,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = vm::save, enabled = !vm.busy) { Text(stringResource(R.string.save)) }
