@@ -29,7 +29,15 @@ Builds:
 
   - versionName: 1.2.1
     versionCode: 6
+    disable: reference binary differs (version-control-info), fixed in 1.2.2
     commit: 286dd25e93dcf30855c57bdb42bd564e7571205d
+    subdir: app
+    gradle:
+      - yes
+
+  - versionName: 1.2.2
+    versionCode: 7
+    commit: 21b0ead0c06c4a4b5fb0b436b8a2248bdb0c456b
     subdir: app
     gradle:
       - yes
@@ -38,5 +46,5 @@ AllowedAPKSigningKeys: a48a93b3dcb252dbaa3ba8a9c678c3eccad7bbff36937c8a64d595eb5
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 1.2.1
-CurrentVersionCode: 6
+CurrentVersion: 1.2.2
+CurrentVersionCode: 7
