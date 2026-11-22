@@ -227,6 +227,10 @@ private fun StatusLine(s: StatusState, onLogin: () -> Unit) {
         if (!s.running && (error == SyncError.Auth || error == SyncError.NotConfigured)) {
             TextButton(onClick = onLogin) { Text(stringResource(R.string.log_in)) }
         }
+        // Tilladelsen bedes der om i indstillingerne, når man trykker Gem
+        if (!s.running && error == SyncError.LocalNetwork) {
+            TextButton(onClick = onLogin) { Text(stringResource(R.string.settings)) }
+        }
     }
 }
 
@@ -234,6 +238,7 @@ private fun StatusLine(s: StatusState, onLogin: () -> Unit) {
 fun syncErrorText(e: SyncError): String = when (e) {
     SyncError.Network -> stringResource(R.string.sync_offline)
     SyncError.Certificate -> stringResource(R.string.sync_certificate)
+    SyncError.LocalNetwork -> stringResource(R.string.sync_local_network)
     SyncError.Auth -> stringResource(R.string.sync_auth)
     SyncError.NotConfigured -> stringResource(R.string.sync_not_configured)
     is SyncError.Server -> stringResource(R.string.sync_server_error, e.status)

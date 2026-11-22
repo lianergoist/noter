@@ -21,6 +21,7 @@
     <string name="syncing">Synchronisation</string>
     <string name="sync_offline">Impossible de joindre le serveur. Vos modifications seront envoyées dès le retour de la connexion.</string>
     <string name="sync_certificate">Le certificat du serveur n\'est pas reconnu, les notes ne peuvent donc pas être synchronisées. Vos modifications restent sur le téléphone. Installez le certificat racine du serveur sur le téléphone, ou vérifiez l\'adresse dans les Paramètres.</string>
+    <string name="sync_local_network">DavNotes n\'est pas autorisé à utiliser le réseau local, les notes ne peuvent donc pas être synchronisées avec votre serveur. Vos modifications restent sur le téléphone. Ouvrez les Paramètres et appuyez sur Enregistrer pour l\'autoriser.</string>
     <string name="sync_auth">Vous n\'êtes pas connecté. Reconnectez-vous pour voir et enregistrer vos notes.</string>
     <string name="sync_server_error">Le serveur a répondu avec l\'erreur %1$d. Réessayez plus tard ou vérifiez l\'adresse dans les paramètres.</string>
     <string name="sync_other_error">La synchronisation s\'est arrêtée : %1$s. Réessayez plus tard.</string>
@@ -67,6 +68,8 @@
     <string name="err_login">Le nom d\'utilisateur ou le mot de passe est incorrect. Corrigez-les et réessayez.</string>
     <string name="err_network">Impossible de joindre le serveur. Vérifiez l\'adresse et votre connexion, puis réessayez.</string>
     <string name="err_certificate">Le certificat du serveur n\'est pas reconnu. Installez le certificat racine du serveur sur le téléphone, ou utilisez un certificat d\'une autorité publique comme Let\'s Encrypt.</string>
+    <string name="err_local_network">DavNotes n\'est pas autorisé à utiliser le réseau local et ne peut donc pas joindre un serveur à cette adresse. Autorisez l\'accès au réseau local dans les autorisations de l\'application, puis réessayez.</string>
+    <string name="open_app_settings">Ouvrir les paramètres de l\'appli</string>
     <string name="err_not_found">La collection n\'existe pas sur le serveur. Touchez Créer une collection de notes ou choisissez-en une autre avec Rechercher des collections.</string>
     <string name="err_server">Le serveur a répondu avec l\'erreur %1$d. Vérifiez l\'adresse et réessayez.</string>
     <string name="err_not_caldav">Le serveur ne semble pas être un serveur CalDAV. Vérifiez l\'adresse ou utilisez un serveur avec des calendriers.</string>

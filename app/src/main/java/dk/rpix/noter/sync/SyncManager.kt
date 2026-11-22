@@ -1,7 +1,10 @@
 package dk.rpix.noter.sync
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import androidx.core.content.ContextCompat
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -19,6 +22,7 @@ import dk.rpix.noter.core.AuthError
 import dk.rpix.noter.core.CertificateError
 import dk.rpix.noter.core.DavClient
 import dk.rpix.noter.core.DavError
+import dk.rpix.noter.core.LocalNetwork
 import dk.rpix.noter.core.NetworkError
 import dk.rpix.noter.core.SyncStats
 import dk.rpix.noter.core.Syncer
@@ -47,6 +51,18 @@ fun allowInsecure(url: String): Boolean {
     val host = runCatching { Uri.parse(url.trim()).host }.getOrNull()
     return host in setOf("10.0.2.2", "localhost", "127.0.0.1")
 }
+
+const val LOCAL_NETWORK_PERMISSION = "android.permission.ACCESS_LOCAL_NETWORK"
+
+/**
+ * Sand, hvis [url] er på lokalnetværket, og Android 17+ vil blokere forbindelsen, fordi appen ikke har
+ * ACCESS_LOCAL_NETWORK. Forbindelsen ville ellers bare ende i en timeout (issue #3). Kan slå op i DNS:
+ * kald den ikke på hovedtråden.
+ */
+fun localNetworkBlocked(context: Context, url: String): Boolean =
+    Build.VERSION.SDK_INT >= 37 &&
+        ContextCompat.checkSelfPermission(context, LOCAL_NETWORK_PERMISSION) != PackageManager.PERMISSION_GRANTED &&
+        LocalNetwork.isLocal(url)
 
 fun davClient(account: Account) =
     DavClient(account.url, account.user, account.password, allowInsecure = allowInsecure(account.url))
@@ -88,6 +104,8 @@ class SyncManager(
 
     private suspend fun runSync(): SyncOutcome {
         val account = settings.account() ?: return SyncOutcome.Failed(SyncError.NotConfigured)
+        // Uden tilladelsen ville forsøget bare vente 30 sekunder og fejle som "kan ikke nå serveren"
+        if (localNetworkBlocked(context, account.url)) return SyncOutcome.Failed(SyncError.LocalNetwork)
         return try {
             SyncOutcome.Ok(Syncer(store, davClient(account), context.getString(R.string.conflict_label)).sync())
         } catch (_: AuthError) {

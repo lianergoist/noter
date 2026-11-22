@@ -63,6 +63,8 @@ data class Account(val url: String, val user: String, val password: String)
 sealed interface SyncError {
     data object Network : SyncError
     data object Certificate : SyncError
+    /** Serveren er på lokalnetværket, og appen har ikke tilladelsen til det (Android 17+). */
+    data object LocalNetwork : SyncError
     data object Auth : SyncError
     data object NotConfigured : SyncError
     data class Server(val status: Int) : SyncError
@@ -71,6 +73,7 @@ sealed interface SyncError {
     fun encode(): String = when (this) {
         Network -> "network"
         Certificate -> "certificate"
+        LocalNetwork -> "local_network"
         Auth -> "auth"
         NotConfigured -> "config"
         is Server -> "server:$status"
@@ -82,6 +85,7 @@ sealed interface SyncError {
             s == null -> null
             s == "network" -> Network
             s == "certificate" -> Certificate
+            s == "local_network" -> LocalNetwork
             s == "auth" -> Auth
             s == "config" -> NotConfigured
             s.startsWith("server:") -> Server(s.removePrefix("server:").toIntOrNull() ?: 0)

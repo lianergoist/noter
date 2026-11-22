@@ -363,6 +363,12 @@ listemarkering fortsættes ikke.
   Ændres rækken af en sync (ikke `dirty`), mens editoren er åben og brugeren ikke har rørt noget, så opdatér visningen; ellers lad teksten stå.
 - **Oprettelse af samling:** knap i indstillingerne ("Opret noter-samling") som kalder `MKCALENDAR`, hvis serveren ikke har nogen.
 - **Login:** URL, bruger og adgangskode. Gem adgangskoden med Android Keystore. `androidx.security:security-crypto` er forældet, så vælg den nuværende anbefalede løsning (fx DataStore + Keystore-nøgle eller Tink). Afvis `http://`, undtagen i debug-bygget til `10.0.2.2`/`localhost` via en network security config. Både systemets og brugerinstallerede rodcertifikater godkendes (`<certificates src="user"/>`), så en egen server med privat CA virker; selvsignerede certifikater godkendes ikke med et tryk i appen.
+- **Lokalnetværk (Android 17+):** Apps med targetSdk 37 skal have `ACCESS_LOCAL_NETWORK` for at nå en server på
+  lokalnetværket; uden den ender forbindelsen i en timeout (issue #3). `LocalNetwork.isLocal` i `:core` afgør, om
+  adressen er lokal (private og link-lokale IP'er, `.local`, `.home.arpa`, navne uden punktum og navne, der slås op til en
+  lokal adresse; ikke loopback). Indstillingerne beder om tilladelsen, før Gem/Find samlinger/Opret sender noget; afvises
+  den, vises en besked med en knap til appens systemindstillinger. En sync mod en lokal adresse uden tilladelsen forsøges
+  ikke, men giver fejlen `LocalNetwork` på listen med en knap til Indstillinger.
 - **Skærme:** liste (grupperet efter dato) → editor, og indstillinger. Søgefelt øverst på listen.
   Grupper: "I dag", "I går", "Seneste 7 dage", derefter måned og år, og til sidst "Uden dato".
   Listepunkt: titel (eller "Uden titel"), første ikke-tomme linje af teksten, tags og klokkeslæt/ugedag/dato.

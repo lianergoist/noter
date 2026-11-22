@@ -21,6 +21,7 @@
     <string name="syncing">Synkroniserer</string>
     <string name="sync_offline">Kan ikke nå serveren. Dine ændringer gemmes igen, så snart forbindelsen er tilbage.</string>
     <string name="sync_certificate">Serverens certifikat kan ikke godkendes, så noterne kan ikke synkroniseres. Dine ændringer ligger på telefonen. Installér serverens rodcertifikat på telefonen, eller tjek adressen i Indstillinger.</string>
+    <string name="sync_local_network">DavNotes må ikke bruge lokalnetværket, så noterne kan ikke synkroniseres med din server. Dine ændringer ligger på telefonen. Åbn Indstillinger, og tryk på Gem for at give lov.</string>
     <string name="sync_auth">Du er ikke logget ind. Log ind igen for at se og gemme dine noter.</string>
     <string name="sync_server_error">Serveren svarede med fejl %1$d. Prøv igen senere, eller tjek adressen i indstillingerne.</string>
     <string name="sync_other_error">Synkroniseringen stoppede: %1$s. Prøv igen senere.</string>
@@ -67,6 +68,8 @@
     <string name="err_login">Brugernavn eller adgangskode passer ikke. Ret dem, og prøv igen.</string>
     <string name="err_network">Kan ikke nå serveren. Tjek adressen og din forbindelse, og prøv igen.</string>
     <string name="err_certificate">Serverens certifikat kan ikke godkendes. Installér serverens rodcertifikat på telefonen, eller brug et certifikat fra en offentlig udsteder som Let\'s Encrypt.</string>
+    <string name="err_local_network">DavNotes må ikke bruge lokalnetværket og kan derfor ikke nå en server på denne adresse. Giv adgang til lokalnetværket under appens tilladelser, og prøv igen.</string>
+    <string name="open_app_settings">Åbn appindstillinger</string>
     <string name="err_not_found">Samlingen findes ikke på serveren. Tryk på Opret noter-samling, eller vælg en anden med Find samlinger.</string>
     <string name="err_server">Serveren svarede med fejl %1$d. Tjek adressen, og prøv igen.</string>
     <string name="err_not_caldav">Serveren ligner ikke en CalDAV-server. Tjek adressen, eller brug en server med kalendere.</string>

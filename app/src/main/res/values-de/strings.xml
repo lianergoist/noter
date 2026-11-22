@@ -21,6 +21,7 @@
     <string name="syncing">Synchronisiere</string>
     <string name="sync_offline">Der Server ist nicht erreichbar. Deine Änderungen werden gesendet, sobald die Verbindung wieder da ist.</string>
     <string name="sync_certificate">Das Zertifikat des Servers wird nicht anerkannt, daher können die Notizen nicht synchronisiert werden. Deine Änderungen bleiben auf dem Telefon. Installiere das Stammzertifikat des Servers auf dem Telefon oder prüfe die Adresse in den Einstellungen.</string>
+    <string name="sync_local_network">DavNotes darf das lokale Netzwerk nicht verwenden, daher können die Notizen nicht mit deinem Server synchronisiert werden. Deine Änderungen bleiben auf dem Telefon. Öffne die Einstellungen und tippe auf Speichern, um es zu erlauben.</string>
     <string name="sync_auth">Du bist nicht angemeldet. Melde dich erneut an, um deine Notizen zu sehen und zu speichern.</string>
     <string name="sync_server_error">Der Server hat mit Fehler %1$d geantwortet. Versuche es später erneut, oder prüfe die Adresse in den Einstellungen.</string>
     <string name="sync_other_error">Die Synchronisierung wurde angehalten: %1$s. Versuche es später erneut.</string>
@@ -67,6 +68,8 @@
     <string name="err_login">Benutzername oder Passwort stimmt nicht. Korrigiere sie und versuche es erneut.</string>
     <string name="err_network">Der Server ist nicht erreichbar. Prüfe die Adresse und deine Verbindung und versuche es erneut.</string>
     <string name="err_certificate">Das Zertifikat des Servers wird nicht anerkannt. Installiere das Stammzertifikat des Servers auf dem Telefon oder verwende ein Zertifikat einer öffentlichen Stelle wie Let\'s Encrypt.</string>
+    <string name="err_local_network">DavNotes darf das lokale Netzwerk nicht verwenden und erreicht daher keinen Server unter dieser Adresse. Erlaube den Zugriff auf das lokale Netzwerk in den Berechtigungen der App und versuche es erneut.</string>
+    <string name="open_app_settings">App-Einstellungen öffnen</string>
     <string name="err_not_found">Die Sammlung gibt es auf dem Server nicht. Tippe auf Notizen-Sammlung anlegen, oder wähle mit Sammlungen suchen eine andere.</string>
     <string name="err_server">Der Server hat mit Fehler %1$d geantwortet. Prüfe die Adresse und versuche es erneut.</string>
     <string name="err_not_caldav">Der Server sieht nicht nach einem CalDAV-Server aus. Prüfe die Adresse, oder nutze einen Server mit Kalendern.</string>
