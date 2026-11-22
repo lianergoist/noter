@@ -1,9 +1,9 @@
-<p>DavNotes is a simple note app for Android. Your notes are stored as VJOURNAL entries in a CalDAV collection on your own server and synced both ways.</p>
+<p>DavNotes is a simple note app for Android. Your notes are stored as VJOURNAL entries in a CalDAV collection on a server you choose and synced both ways.</p>
 <p>It works offline. Changes are saved on the phone right away and sent to the server as soon as you are online again.</p>
 <p><b>Features</b></p>
 <ul>
 <li>Create, edit, search and delete notes with a title, text and tags.</li>
-<li>Light formatting written as Markdown: headings, bold, italic, lists and indentation, with a toolbar above the keyboard. Notes stay plain text that other apps can read.</li>
+<li>Light formatting written as Markdown: headings, bold, italic, lists, checklists, quotes and indentation, with a toolbar above the keyboard. Notes stay plain text that other apps can read.</li>
 <li>Links in the text can be opened in the browser.</li>
 <li>Open text and Markdown files as new notes, also via "Open with" and "Share", and share a note as a file.</li>
 <li>Saves automatically while you type and when you leave a note.</li>
@@ -12,8 +12,12 @@
 <li>Shares the collection with other clients, such as jtx Board via DAVx⁵. Properties set by other apps are kept unchanged when you edit a note.</li>
 <li>Finds your collections on the server and can create a new notes collection.</li>
 <li>The password is encrypted with a key in the Android Keystore. HTTPS only.</li>
-<li>In English, Danish, German, French and Spanish.</li>
+<li>In English, Danish, German, French, Spanish and Ukrainian.</li>
 </ul>
-<p><b>Requirements</b></p>
-<p>A CalDAV server that supports sync-collection (RFC 6578). DavNotes is developed and tested with Radicale 3.</p>
-<p>No ads, no tracking, no accounts other than your own server.</p>
+<p><b>Where are my notes kept?</b></p>
+<p>On a CalDAV server that supports sync-collection (RFC 6578). You have two options:</p>
+<ul>
+<li><b>A free account at caldav.rpix.dk.</b> All you need is an email address, so it is also an easy way to try DavNotes. The same account holds calendars, tasks and contacts. Accounts that are not used for 30 days are deleted after a warning by email. When the server is full, you join a waiting list.</li>
+<li><b>Your own server</b>, for example Radicale. DavNotes is developed and tested with Radicale 3.</li>
+</ul>
+<p>No ads and no tracking.</p>

@@ -1,9 +1,9 @@
-<p>DavNotes er en enkel noteapp til Android. Noterne gemmes som VJOURNAL-objekter i en CalDAV-samling på din egen server og synkroniseres begge veje.</p>
+<p>DavNotes er en enkel noteapp til Android. Noterne gemmes som VJOURNAL-objekter i en CalDAV-samling på en server, du selv vælger, og synkroniseres begge veje.</p>
 <p>Appen virker uden net. Ændringer gemmes straks på telefonen og sendes til serveren, så snart forbindelsen er tilbage.</p>
 <p><b>Funktioner</b></p>
 <ul>
 <li>Opret, redigér, søg i og slet noter med titel, tekst og tags.</li>
-<li>Let formatering skrevet som Markdown: overskrifter, fed, kursiv, lister og indrykning, med en værktøjslinje over tastaturet. Noterne forbliver ren tekst, som andre apps kan læse.</li>
+<li>Let formatering skrevet som Markdown: overskrifter, fed, kursiv, lister, afkrydsningslister, citater og indrykning, med en værktøjslinje over tastaturet. Noterne forbliver ren tekst, som andre apps kan læse.</li>
 <li>Links i teksten kan åbnes i browseren.</li>
 <li>Åbn tekst- og Markdown-filer som nye noter, også via "Åbn med" og "Del", og del en note som fil.</li>
 <li>Gemmer automatisk, mens du skriver, og når du forlader en note.</li>
@@ -12,8 +12,12 @@
 <li>Deler samling med andre klienter, fx jtx Board via DAVx⁵. Egenskaber, som andre apps har sat, bevares uændret, når du redigerer en note.</li>
 <li>Finder dine samlinger på serveren og kan oprette en ny noter-samling.</li>
 <li>Adgangskoden krypteres med en nøgle i Android Keystore. Kun HTTPS.</li>
-<li>På engelsk, dansk, tysk, fransk og spansk.</li>
+<li>På engelsk, dansk, tysk, fransk, spansk og ukrainsk.</li>
 </ul>
-<p><b>Krav</b></p>
-<p>En CalDAV-server, der understøtter sync-collection (RFC 6578). DavNotes er udviklet og testet mod Radicale 3.</p>
-<p>Ingen reklamer, ingen sporing og ingen konti ud over din egen server.</p>
+<p><b>Hvor ligger mine noter?</b></p>
+<p>På en CalDAV-server, der understøtter sync-collection (RFC 6578). Du har to muligheder:</p>
+<ul>
+<li><b>En gratis konto på caldav.rpix.dk.</b> Det kræver kun en e-mailadresse, så det er også en nem måde at prøve DavNotes på. Den samme konto rummer kalendere, opgaver og kontakter. Konti, der ikke bruges i 30 dage, slettes efter en advarsel pr. mail. Er serveren fuld, kommer du på en venteliste.</li>
+<li><b>Din egen server</b>, fx Radicale. DavNotes er udviklet og testet mod Radicale 3.</li>
+</ul>
+<p>Ingen reklamer og ingen sporing.</p>

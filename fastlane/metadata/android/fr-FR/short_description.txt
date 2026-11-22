@@ -1,1 +1,1 @@
-Notes simples, synchronisées avec votre propre serveur CalDAV
+Notes simples, synchronisées avec votre serveur CalDAV ou un compte gratuit

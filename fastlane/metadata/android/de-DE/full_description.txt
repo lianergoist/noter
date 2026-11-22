@@ -1,9 +1,9 @@
-<p>DavNotes ist eine einfache Notiz-App für Android. Deine Notizen werden als VJOURNAL-Einträge in einer CalDAV-Sammlung auf deinem eigenen Server gespeichert und in beide Richtungen synchronisiert.</p>
+<p>DavNotes ist eine einfache Notiz-App für Android. Deine Notizen werden als VJOURNAL-Einträge in einer CalDAV-Sammlung auf einem Server deiner Wahl gespeichert und in beide Richtungen synchronisiert.</p>
 <p>Die App funktioniert offline. Änderungen werden sofort auf dem Telefon gespeichert und an den Server gesendet, sobald die Verbindung wieder da ist.</p>
 <p><b>Funktionen</b></p>
 <ul>
 <li>Notizen mit Titel, Text und Tags anlegen, bearbeiten, durchsuchen und löschen.</li>
-<li>Einfache Formatierung als Markdown: Überschriften, fett, kursiv, Listen und Einzüge, mit einer Leiste über der Tastatur. Notizen bleiben reiner Text, den andere Apps lesen können.</li>
+<li>Einfache Formatierung als Markdown: Überschriften, fett, kursiv, Listen, Checklisten, Zitate und Einzüge, mit einer Leiste über der Tastatur. Notizen bleiben reiner Text, den andere Apps lesen können.</li>
 <li>Links im Text lassen sich im Browser öffnen.</li>
 <li>Text- und Markdown-Dateien als neue Notizen öffnen, auch über „Öffnen mit“ und „Teilen“, und eine Notiz als Datei teilen.</li>
 <li>Speichert automatisch beim Schreiben und beim Verlassen einer Notiz.</li>
@@ -12,8 +12,12 @@
 <li>Teilt die Sammlung mit anderen Clients, z. B. jtx Board über DAVx⁵. Eigenschaften anderer Apps bleiben beim Bearbeiten unverändert.</li>
 <li>Findet deine Sammlungen auf dem Server und kann eine neue Notizen-Sammlung anlegen.</li>
 <li>Das Passwort wird mit einem Schlüssel im Android Keystore verschlüsselt. Nur HTTPS.</li>
-<li>Auf Englisch, Dänisch, Deutsch, Französisch und Spanisch.</li>
+<li>Auf Englisch, Dänisch, Deutsch, Französisch, Spanisch und Ukrainisch.</li>
 </ul>
-<p><b>Voraussetzungen</b></p>
-<p>Ein CalDAV-Server mit Unterstützung für sync-collection (RFC 6578). DavNotes wird mit Radicale 3 entwickelt und getestet.</p>
-<p>Keine Werbung, kein Tracking, keine Konten außer deinem eigenen Server.</p>
+<p><b>Wo liegen meine Notizen?</b></p>
+<p>Auf einem CalDAV-Server mit Unterstützung für sync-collection (RFC 6578). Du hast zwei Möglichkeiten:</p>
+<ul>
+<li><b>Ein kostenloses Konto bei caldav.rpix.dk.</b> Du brauchst nur eine E-Mail-Adresse, daher ist es auch ein einfacher Weg, DavNotes auszuprobieren. Dasselbe Konto bietet Kalender, Aufgaben und Kontakte. Konten, die 30 Tage nicht genutzt werden, werden nach einer Warnung per E-Mail gelöscht. Ist der Server voll, kommst du auf eine Warteliste.</li>
+<li><b>Dein eigener Server</b>, z. B. Radicale. DavNotes wird mit Radicale 3 entwickelt und getestet.</li>
+</ul>
+<p>Keine Werbung und kein Tracking.</p>
