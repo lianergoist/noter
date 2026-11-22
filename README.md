@@ -39,7 +39,8 @@ also hold notes. You have two options:
    [Read about caldav.rpix.dk](https://rpix.dk/projekter/caldav/?lang=en) or
    [create an account](https://caldav.rpix.dk/register.php).
 2. **Your own server.** DavNotes works with any CalDAV server that supports syncing changes, for example
-   [Radicale](https://radicale.org/).
+   [Radicale](https://radicale.org/), Baïkal or Nextcloud. The server must accept Basic authentication over HTTPS;
+   DavNotes doesn't support Digest. In Baïkal, set *WebDAV authentication type* to *Basic* in the admin settings.
 
 On a computer you can read and write the same notes in the browser with
 [WebNotes](https://caldav.rpix.dk/notes/).
@@ -56,6 +57,8 @@ On a computer you can read and write the same notes in the browser with
 ## Good to know
 
 - Your password is stored encrypted on the phone and is only ever sent over a secure connection (HTTPS).
+- On Android 17 and later, DavNotes asks for access to the local network when your server is on your home network.
+  Allow it, or the app can't reach the server.
 - The notes also work with other apps, such as [jtx Board](https://jtx.techbee.at/) via [DAVx⁵](https://www.davx5.com/).
   DavNotes leaves alone whatever those apps have added to a note.
 - Conflict copies are ordinary notes. Delete the one you don't need.
