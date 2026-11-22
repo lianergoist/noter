@@ -47,6 +47,8 @@
     <string name="modified_at">Змінено %1$s</string>
 
     <!-- Indstillinger -->
+    <string name="free_account_hint">Немає сервера? Створіть безкоштовний акаунт на caldav.rpix.dk. Потім введіть адресу https://caldav.rpix.dk/dav/, а як користувача — свою адресу електронної пошти, і торкніться «Шукати колекції».</string>
+    <string name="create_free_account">Створити безкоштовний акаунт</string>
     <string name="server_url">Адреса колекції</string>
     <string name="server_url_hint">https://radicale.example.com/user/notes/</string>
     <string name="user">Користувач</string>

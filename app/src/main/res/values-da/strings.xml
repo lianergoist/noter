@@ -48,6 +48,8 @@
     <string name="modified_at">Ændret %1$s</string>
 
     <!-- Indstillinger -->
+    <string name="free_account_hint">Ingen server? Opret en gratis konto på caldav.rpix.dk. Skriv derefter https://caldav.rpix.dk/dav/ som adresse og din e-mailadresse som bruger, og tryk på Find samlinger.</string>
+    <string name="create_free_account">Opret gratis konto</string>
     <string name="server_url">Adresse til samlingen</string>
     <string name="server_url_hint">https://radicale.example.dk/bruger/noter/</string>
     <string name="user">Bruger</string>

@@ -1,5 +1,6 @@
 package dk.rpix.noter.ui
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings as SystemSettings
@@ -58,6 +59,7 @@ import dk.rpix.noter.core.CertificateError
 import dk.rpix.noter.core.NotCalDavError
 import dk.rpix.noter.core.technicalDetail
 import dk.rpix.noter.data.Account
+import java.util.Locale
 import dk.rpix.noter.sync.LOCAL_NETWORK_PERMISSION
 import dk.rpix.noter.sync.SyncScheduler
 import dk.rpix.noter.sync.davClient
@@ -72,6 +74,9 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
  * Meddelelse på indstillingsskærmen: strengressource + evt. tal (HTTP-status).
  * [appSettings] viser en knap til appens side i systemindstillingerne.
  */
+/** Tilmelding til den gratis server (kun et link; intet login eller serveradresse er indbygget). */
+private const val FREE_ACCOUNT_URL = "https://caldav.rpix.dk/register.php"
+
 data class Notice(
     val res: Int,
     val arg: Int? = null,
@@ -86,12 +91,20 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
     var password by mutableStateOf("")
     var hasPassword by mutableStateOf(false)
         private set
+    /** De gemte indstillinger er læst, så [hasPassword] kan bruges (undgår blink i hjælpeteksten). */
+    var loaded by mutableStateOf(false)
+        private set
     var busy by mutableStateOf(false)
         private set
     var notice by mutableStateOf<Notice?>(null)
         private set
     var collections by mutableStateOf<List<CollectionInfo>?>(null)
         private set
+
+    /** Ingen browser kunne åbne tilmeldingssiden. */
+    fun noBrowser() {
+        notice = Notice(R.string.no_browser)
+    }
 
     /** Skærmen skal bede om ACCESS_LOCAL_NETWORK (Android 17+), før [pending] kan køre. */
     var askLocalNetwork by mutableStateOf(false)
@@ -108,6 +121,7 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
             url = app.settings.url.first()
             user = app.settings.user.first()
             hasPassword = app.settings.hasPassword.first()
+            loaded = true
         }
     }
 
@@ -254,6 +268,25 @@ fun SettingsScreen(onBack: () -> Unit, onAbout: () -> Unit) {
             Modifier.padding(padding).fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            // Hjælp til den, der ikke har en server endnu; skjules, når der er gemt et login
+            if (vm.loaded && !vm.hasPassword) {
+                Column {
+                    Text(
+                        stringResource(R.string.free_account_hint),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    TextButton(onClick = {
+                        // Portalen findes kun på dansk og engelsk
+                        val lang = if (Locale.getDefault().language == "da") "da" else "en"
+                        try {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("$FREE_ACCOUNT_URL?lang=$lang")))
+                        } catch (e: ActivityNotFoundException) {
+                            vm.noBrowser()
+                        }
+                    }) { Text(stringResource(R.string.create_free_account)) }
+                }
+            }
             OutlinedTextField(
                 value = vm.url,
                 onValueChange = { vm.url = it },
