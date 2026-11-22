@@ -1,0 +1,1 @@
+Servere på lokalnetværket virker igen på Android 17: DavNotes beder nu om adgang til lokalnetværket. Fejlbeskeder i indstillingerne viser den tekniske årsag nedenunder. Har du ingen server, linker indstillingerne til en gratis konto på caldav.rpix.dk.

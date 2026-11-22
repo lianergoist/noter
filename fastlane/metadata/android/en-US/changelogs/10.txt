@@ -1,0 +1,1 @@
+Servers on the local network work again on Android 17: DavNotes now asks for access to the local network. Error messages in the settings show the technical cause underneath. If you have no server, the settings link to a free account at caldav.rpix.dk.

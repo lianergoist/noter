@@ -1,0 +1,1 @@
+Los servidores de la red local vuelven a funcionar en Android 17: DavNotes ahora pide acceso a la red local. Los mensajes de error de los ajustes muestran debajo la causa técnica. Si no tienes servidor, los ajustes enlazan a una cuenta gratuita en caldav.rpix.dk.
