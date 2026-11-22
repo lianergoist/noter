@@ -1,5 +1,10 @@
 package dk.rpix.noter.ui
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings as SystemSettings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -52,16 +58,27 @@ import dk.rpix.noter.core.CertificateError
 import dk.rpix.noter.core.NotCalDavError
 import dk.rpix.noter.core.technicalDetail
 import dk.rpix.noter.data.Account
+import dk.rpix.noter.sync.LOCAL_NETWORK_PERMISSION
 import dk.rpix.noter.sync.SyncScheduler
 import dk.rpix.noter.sync.davClient
+import dk.rpix.noter.sync.localNetworkBlocked
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
-/** Meddelelse på indstillingsskærmen: strengressource + evt. tal (HTTP-status). */
-data class Notice(val res: Int, val arg: Int? = null, val error: Boolean = true, val detail: String? = null)
+/**
+ * Meddelelse på indstillingsskærmen: strengressource + evt. tal (HTTP-status).
+ * [appSettings] viser en knap til appens side i systemindstillingerne.
+ */
+data class Notice(
+    val res: Int,
+    val arg: Int? = null,
+    val error: Boolean = true,
+    val detail: String? = null,
+    val appSettings: Boolean = false,
+)
 
 class SettingsViewModel(private val app: NoterApp) : ViewModel() {
     var url by mutableStateOf("")
@@ -75,6 +92,16 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
         private set
     var collections by mutableStateOf<List<CollectionInfo>?>(null)
         private set
+
+    /** Skærmen skal bede om ACCESS_LOCAL_NETWORK (Android 17+), før [pending] kan køre. */
+    var askLocalNetwork by mutableStateOf(false)
+        private set
+    private var pending: (suspend (DavClient, Account) -> Unit)? = null
+
+    /** Spørgsmålet er stillet; svaret kommer til [onLocalNetworkResult] (også efter rotation). */
+    fun localNetworkAsked() {
+        askLocalNetwork = false
+    }
 
     init {
         viewModelScope.launch {
@@ -102,12 +129,18 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
     }
 
     private fun run(block: suspend (DavClient, Account) -> Unit) {
-        if (busy) return
+        if (busy || pending != null) return
         viewModelScope.launch {
             notice = null
             val account = account() ?: return@launch
             busy = true
             try {
+                // Android 17+: uden tilladelsen ender forbindelsen i en timeout (issue #3)
+                if (withContext(Dispatchers.IO) { localNetworkBlocked(app, account.url) }) {
+                    pending = block
+                    askLocalNetwork = true
+                    return@launch
+                }
                 block(davClient(account), account)
             } catch (_: AuthError) {
                 notice = Notice(R.string.err_login)
@@ -126,6 +159,14 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
                 busy = false
             }
         }
+    }
+
+    /** Svaret på spørgsmålet om lokalnetværket: kør handlingen, eller forklar, hvad der mangler. */
+    fun onLocalNetworkResult(granted: Boolean) {
+        val block = pending
+        pending = null
+        if (granted) block?.let(::run)
+        else notice = Notice(R.string.err_local_network, appSettings = true)
     }
 
     /** Tjek login og samling, gem kontoen og start synkroniseringen. */
@@ -186,6 +227,16 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
 fun SettingsScreen(onBack: () -> Unit, onAbout: () -> Unit) {
     val app = noterApp(LocalContext.current)
     val vm: SettingsViewModel = viewModel(factory = viewModelFactory { initializer { SettingsViewModel(app) } })
+    val context = LocalContext.current
+    val askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        vm.onLocalNetworkResult(it)
+    }
+    LaunchedEffect(vm.askLocalNetwork) {
+        if (vm.askLocalNetwork) {
+            vm.localNetworkAsked()
+            askPermission.launch(LOCAL_NETWORK_PERMISSION)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -245,6 +296,13 @@ fun SettingsScreen(onBack: () -> Unit, onAbout: () -> Unit) {
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
+                }
+                if (n.appSettings) {
+                    OutlinedButton(onClick = {
+                        context.startActivity(
+                            Intent(SystemSettings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)),
+                        )
+                    }) { Text(stringResource(R.string.open_app_settings)) }
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
