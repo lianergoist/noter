@@ -27,7 +27,7 @@ samme på telefonen, tabletten og i browseren. Ingen reklamer, ingen sporing og 
 - **Let formatering.** Overskrifter, fed, kursiv, lister, afkrydsningslister, citater og links, med knapper over tastaturet.
   Noterne forbliver almindelig tekst, så andre apps stadig kan læse dem.
 - **Åbn og del filer.** Gør en tekst- eller Markdown-fil til en note, eller del en note som fil til mail, Drive eller en anden app.
-- **På dit sprog.** Dansk, engelsk, tysk, fransk og spansk.
+- **På dit sprog.** Dansk, engelsk, tysk, fransk, spansk og ukrainsk.
 
 ## Hvor ligger mine noter?
 
@@ -39,7 +39,8 @@ noter. Du har to muligheder:
    [Læs om caldav.rpix.dk](https://rpix.dk/projekter/caldav/) eller
    [opret en konto](https://caldav.rpix.dk/register.php).
 2. **Din egen server.** DavNotes virker med enhver CalDAV-server, der kan synkronisere ændringer, fx
-   [Radicale](https://radicale.org/).
+   [Radicale](https://radicale.org/), Baïkal eller Nextcloud. Serveren skal godtage Basic-godkendelse over HTTPS;
+   DavNotes understøtter ikke Digest. I Baïkal sætter du *WebDAV authentication type* til *Basic* i admin-indstillingerne.
 
 På computeren kan du læse og skrive de samme noter i browseren med
 [WebNotes](https://caldav.rpix.dk/notes/).
@@ -56,6 +57,8 @@ På computeren kan du læse og skrive de samme noter i browseren med
 ## Godt at vide
 
 - Adgangskoden gemmes krypteret på telefonen og sendes kun over en sikker forbindelse (HTTPS).
+- På Android 17 og nyere beder DavNotes om adgang til lokalnetværket, når din server står på dit hjemmenetværk.
+  Tillad det, ellers kan appen ikke nå serveren.
 - Noterne synkroniseres, når appen åbnes, efter hver ændring og cirka en gang i timen i baggrunden.
   Har du ikke brug for den timevise sync, kan du slå **Synkronisér i baggrunden** fra i indstillingerne.
 - Noterne virker også med andre apps, fx [jtx Board](https://jtx.techbee.at/) via [DAVx⁵](https://www.davx5.com/).
