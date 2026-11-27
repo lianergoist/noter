@@ -17,3 +17,6 @@ local.properties
 .kotlin
 /.idea/deploymentTargetSelector.xml
 /.idea/deviceManager.xml
+/.idea/migrations.xml
+# Byggede udgivelser (APK til GitHub, AAB til Play)
+/release/
