@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -142,11 +143,21 @@ object SyncScheduler {
 
     private val online = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
+    /** Hver time; UPDATE, så et job fra en ældre version (hvert kvarter) får det nye interval. */
     fun schedulePeriodic(context: Context) {
-        val req = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES)
+        val req = PeriodicWorkRequestBuilder<SyncWorker>(1, TimeUnit.HOURS)
             .setConstraints(online)
             .build()
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(PERIODIC, ExistingPeriodicWorkPolicy.KEEP, req)
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(PERIODIC, ExistingPeriodicWorkPolicy.UPDATE, req)
+    }
+
+    /** Planlæg eller stop det periodiske job ud fra konto, loginfejl og indstillingen. */
+    suspend fun applyPeriodic(context: Context, settings: Settings) {
+        if (settings.backgroundSync.first() && settings.account() != null && !settings.authFailed.first()) {
+            schedulePeriodic(context)
+        } else {
+            cancelPeriodic(context)
+        }
     }
 
     fun cancelPeriodic(context: Context) {

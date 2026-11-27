@@ -109,12 +109,15 @@ class Settings(context: Context) {
         val LAST_SYNC = longPreferencesKey("last_sync")
         val LAST_ERROR = stringPreferencesKey("last_error")
         val AUTH_FAILED = booleanPreferencesKey("auth_failed")
+        val BACKGROUND_SYNC = booleanPreferencesKey("background_sync")
     }
 
     val url: Flow<String> = store.data.map { it[Keys.URL] ?: "" }
     val user: Flow<String> = store.data.map { it[Keys.USER] ?: "" }
     val hasPassword: Flow<Boolean> = store.data.map { it[Keys.PASSWORD] != null }
     val authFailed: Flow<Boolean> = store.data.map { it[Keys.AUTH_FAILED] ?: false }
+    /** Periodisk sync i baggrunden (issue #8); sync ved start og efter ændringer sker altid. */
+    val backgroundSync: Flow<Boolean> = store.data.map { it[Keys.BACKGROUND_SYNC] ?: true }
     val syncState: Flow<SyncState> = store.data.map {
         SyncState(it[Keys.LAST_SYNC], SyncError.decode(it[Keys.LAST_ERROR]))
     }
@@ -139,6 +142,8 @@ class Settings(context: Context) {
             it.remove(Keys.LAST_ERROR)
         }
     }
+
+    suspend fun setBackgroundSync(on: Boolean) = store.edit { it[Keys.BACKGROUND_SYNC] = on }
 
     suspend fun storedPassword(): String? = store.data.first()[Keys.PASSWORD]?.let(PasswordCrypto::decrypt)
 

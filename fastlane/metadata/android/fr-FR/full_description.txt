@@ -7,7 +7,7 @@
 <li>Les liens du texte s'ouvrent dans le navigateur.</li>
 <li>Ouvrir des fichiers texte et Markdown comme nouvelles notes, aussi via « Ouvrir avec » et « Partager », et partager une note sous forme de fichier.</li>
 <li>Enregistrement automatique pendant la saisie et à la sortie d'une note.</li>
-<li>Synchronisation à l'ouverture de l'application, après chaque modification, en tirant pour actualiser et environ toutes les 15 minutes.</li>
+<li>Synchronisation à l'ouverture de l'application, après chaque modification, en tirant pour actualiser et environ une fois par heure (désactivable).</li>
 <li>Aucune note n'est écrasée à l'aveugle. Si une note a été modifiée ici et ailleurs, votre version est enregistrée comme nouvelle note avec « (conflit) » dans le titre. Le texte n'est jamais fusionné.</li>
 <li>Partage la collection avec d'autres clients, par exemple jtx Board via DAVx⁵. Les propriétés définies par d'autres applications sont conservées lors de la modification.</li>
 <li>Trouve vos collections sur le serveur et peut créer une nouvelle collection de notes.</li>

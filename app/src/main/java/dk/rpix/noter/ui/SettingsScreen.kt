@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -27,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -35,10 +37,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -100,6 +104,17 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
         private set
     var collections by mutableStateOf<List<CollectionInfo>?>(null)
         private set
+    var backgroundSync by mutableStateOf(true)
+        private set
+
+    /** Slå periodisk sync til/fra (issue #8). */
+    fun changeBackgroundSync(on: Boolean) {
+        backgroundSync = on
+        app.appScope.launch {
+            app.settings.setBackgroundSync(on)
+            SyncScheduler.applyPeriodic(app, app.settings)
+        }
+    }
 
     /** Ingen browser kunne åbne tilmeldingssiden. */
     fun noBrowser() {
@@ -121,6 +136,7 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
             url = app.settings.url.first()
             user = app.settings.user.first()
             hasPassword = app.settings.hasPassword.first()
+            backgroundSync = app.settings.backgroundSync.first()
             loaded = true
         }
     }
@@ -231,7 +247,7 @@ class SettingsViewModel(private val app: NoterApp) : ViewModel() {
         password = ""
         hasPassword = true
         notice = Notice(R.string.settings_saved, error = false)
-        SyncScheduler.schedulePeriodic(app)
+        SyncScheduler.applyPeriodic(app, app.settings)
         app.appScope.launch { app.syncManager.syncNow() }
     }
 }
@@ -356,11 +372,23 @@ fun SettingsScreen(onBack: () -> Unit, onAbout: () -> Unit) {
             OutlinedButton(onClick = vm::createCollection, enabled = !vm.busy) {
                 Text(stringResource(R.string.create_collection))
             }
-            Text(
-                stringResource(R.string.sync_interval_note),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(
+                Modifier.fillMaxWidth()
+                    .toggleable(value = vm.backgroundSync, role = Role.Switch, onValueChange = vm::changeBackgroundSync)
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.background_sync), style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        stringResource(if (vm.backgroundSync) R.string.sync_interval_note else R.string.sync_interval_note_off),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = vm.backgroundSync, onCheckedChange = null)
+            }
             TextButton(onClick = onAbout) { Text(stringResource(R.string.about)) }
         }
     }

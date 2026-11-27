@@ -7,7 +7,7 @@
 <li>Links im Text lassen sich im Browser öffnen.</li>
 <li>Text- und Markdown-Dateien als neue Notizen öffnen, auch über „Öffnen mit“ und „Teilen“, und eine Notiz als Datei teilen.</li>
 <li>Speichert automatisch beim Schreiben und beim Verlassen einer Notiz.</li>
-<li>Synchronisiert beim Öffnen der App, nach jeder Änderung, beim Herunterziehen zum Aktualisieren und etwa alle 15 Minuten.</li>
+<li>Synchronisiert beim Öffnen der App, nach jeder Änderung, beim Herunterziehen zum Aktualisieren und etwa einmal pro Stunde (abschaltbar).</li>
 <li>Überschreibt nie blind. Wurde eine Notiz hier und an anderer Stelle geändert, wird deine Version als neue Notiz mit „(Konflikt)“ im Titel gespeichert. Text wird nie zusammengeführt.</li>
 <li>Teilt die Sammlung mit anderen Clients, z. B. jtx Board über DAVx⁵. Eigenschaften anderer Apps bleiben beim Bearbeiten unverändert.</li>
 <li>Findet deine Sammlungen auf dem Server und kann eine neue Notizen-Sammlung anlegen.</li>

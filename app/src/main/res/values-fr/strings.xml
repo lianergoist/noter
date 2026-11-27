@@ -75,7 +75,9 @@
     <string name="err_not_found">La collection n\'existe pas sur le serveur. Touchez Créer une collection de notes ou choisissez-en une autre avec Rechercher des collections.</string>
     <string name="err_server">Le serveur a répondu avec l\'erreur %1$d. Vérifiez l\'adresse et réessayez.</string>
     <string name="err_not_caldav">Le serveur ne semble pas être un serveur CalDAV. Vérifiez l\'adresse ou utilisez un serveur avec des calendriers.</string>
-    <string name="sync_interval_note">Les notes se synchronisent à l\'ouverture de l\'application, après chaque modification et environ toutes les 15 minutes.</string>
+    <string name="background_sync">Synchroniser en arrière-plan</string>
+    <string name="sync_interval_note">Les notes se synchronisent à l\'ouverture de l\'application, après chaque modification et environ une fois par heure.</string>
+    <string name="sync_interval_note_off">Les notes se synchronisent à l\'ouverture de l\'application et après chaque modification.</string>
 
     <!-- Om -->
     <string name="about">À propos de DavNotes</string>

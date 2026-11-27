@@ -7,7 +7,7 @@
 <li>Links in the text can be opened in the browser.</li>
 <li>Open text and Markdown files as new notes, also via "Open with" and "Share", and share a note as a file.</li>
 <li>Saves automatically while you type and when you leave a note.</li>
-<li>Syncs when you open the app, after every change, with pull to refresh and about every 15 minutes.</li>
+<li>Syncs when you open the app, after every change, with pull to refresh and about once an hour (can be turned off).</li>
 <li>Never overwrites a note blindly. If a note was changed both here and somewhere else, your version is saved as a new note with "(conflict)" in the title. Text is never merged.</li>
 <li>Shares the collection with other clients, such as jtx Board via DAVx⁵. Properties set by other apps are kept unchanged when you edit a note.</li>
 <li>Finds your collections on the server and can create a new notes collection.</li>

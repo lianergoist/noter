@@ -355,7 +355,7 @@ listemarkering fortsættes ikke.
 
 ## 7. Android-specifikt
 
-- **Sync-triggere:** unik periodisk `WorkManager`-opgave (minimum 15 min), en engangsopgave efter lokale ændringer
+- **Sync-triggere:** unik periodisk `WorkManager`-opgave (hver time; kan slås fra med kontakten "Synkronisér i baggrunden" i indstillingerne, issue #8), en engangsopgave efter lokale ændringer
   (`NetworkType.CONNECTED`, med backoff), samt når appen kommer i forgrunden, og træk-for-at-opdatere.
   Vis tidspunkt for sidste vellykkede sync og seneste fejl på en rolig måde (ingen dialoger ved offline).
 - `AuthError` → bed om nye loginoplysninger, og stop de periodiske forsøg, til de er rettet.

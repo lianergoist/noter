@@ -74,7 +74,9 @@
     <string name="err_not_found">Колекція не існує на сервері. Натисніть Створити колекцію нотаток, або оберіть іншу зі Знайти колекції.</string>
     <string name="err_server">Сервер показує помилку %1$d. Перевірте адресу і спробуйте знову.</string>
     <string name="err_not_caldav">Сервер не схожий на CalDAV сервер. Перевірте адресу або оберіть сервер з календарями.</string>
-    <string name="sync_interval_note">Нотатки синхронізуються при відкритті додатку, за кожної зміни та орієнтовно кожні 15 хвилин.</string>
+    <string name="background_sync">Синхронізувати у фоні</string>
+    <string name="sync_interval_note">Нотатки синхронізуються при відкритті додатку, за кожної зміни та орієнтовно щогодини.</string>
+    <string name="sync_interval_note_off">Нотатки синхронізуються при відкритті додатку та за кожної зміни.</string>
 
     <!-- Om -->
     <string name="about">Про DavNotes</string>

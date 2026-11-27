@@ -7,7 +7,7 @@
 <li>Links i teksten kan åbnes i browseren.</li>
 <li>Åbn tekst- og Markdown-filer som nye noter, også via "Åbn med" og "Del", og del en note som fil.</li>
 <li>Gemmer automatisk, mens du skriver, og når du forlader en note.</li>
-<li>Synkroniserer, når appen åbnes, efter hver ændring, ved træk-for-at-opdatere og cirka hvert kvarter.</li>
+<li>Synkroniserer, når appen åbnes, efter hver ændring, ved træk-for-at-opdatere og cirka en gang i timen (kan slås fra).</li>
 <li>Ingen note overskrives i blinde. Er en note ændret både her og et andet sted, gemmes din version som en ny note med "(konflikt)" i titlen. Tekst flettes aldrig.</li>
 <li>Deler samling med andre klienter, fx jtx Board via DAVx⁵. Egenskaber, som andre apps har sat, bevares uændret, når du redigerer en note.</li>
 <li>Finder dine samlinger på serveren og kan oprette en ny noter-samling.</li>

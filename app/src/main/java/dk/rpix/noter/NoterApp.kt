@@ -9,7 +9,6 @@ import dk.rpix.noter.sync.SyncScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /** Manuel afhængighedsstyring: alt deles herfra. */
@@ -24,9 +23,7 @@ class NoterApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        appScope.launch {
-            if (settings.account() != null && !settings.authFailed.first()) SyncScheduler.schedulePeriodic(this@NoterApp)
-        }
+        appScope.launch { SyncScheduler.applyPeriodic(this@NoterApp, settings) }
     }
 
     /** Efter hver lokal ændring. */

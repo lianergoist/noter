@@ -75,7 +75,9 @@
     <string name="err_not_found">Samlingen findes ikke på serveren. Tryk på Opret noter-samling, eller vælg en anden med Find samlinger.</string>
     <string name="err_server">Serveren svarede med fejl %1$d. Tjek adressen, og prøv igen.</string>
     <string name="err_not_caldav">Serveren ligner ikke en CalDAV-server. Tjek adressen, eller brug en server med kalendere.</string>
-    <string name="sync_interval_note">Noterne synkroniseres, når appen åbnes, efter hver ændring og cirka hvert kvarter.</string>
+    <string name="background_sync">Synkronisér i baggrunden</string>
+    <string name="sync_interval_note">Noterne synkroniseres, når appen åbnes, efter hver ændring og cirka en gang i timen.</string>
+    <string name="sync_interval_note_off">Noterne synkroniseres, når appen åbnes, og efter hver ændring.</string>
 
     <!-- Om -->
     <string name="about">Om DavNotes</string>

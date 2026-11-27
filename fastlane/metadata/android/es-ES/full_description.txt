@@ -7,7 +7,7 @@
 <li>Los enlaces del texto se abren en el navegador.</li>
 <li>Abrir archivos de texto y Markdown como notas nuevas, también con «Abrir con» y «Compartir», y compartir una nota como archivo.</li>
 <li>Guarda automáticamente mientras escribes y al salir de una nota.</li>
-<li>Sincroniza al abrir la app, después de cada cambio, al deslizar para actualizar y cada 15 minutos aproximadamente.</li>
+<li>Sincroniza al abrir la app, después de cada cambio, al deslizar para actualizar y aproximadamente una vez por hora (se puede desactivar).</li>
 <li>Nunca sobrescribe una nota a ciegas. Si una nota se modificó aquí y en otro lugar, tu versión se guarda como una nota nueva con «(conflicto)» en el título. El texto nunca se fusiona.</li>
 <li>Comparte la colección con otros clientes, como jtx Board mediante DAVx⁵. Las propiedades que fijan otras apps se conservan al editar una nota.</li>
 <li>Encuentra tus colecciones en el servidor y puede crear una colección de notas nueva.</li>
