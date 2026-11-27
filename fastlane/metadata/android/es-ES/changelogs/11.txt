@@ -1,0 +1,1 @@
+La sincronización en segundo plano ahora se puede desactivar en los ajustes («Sincronizar en segundo plano»). Las notas se siguen sincronizando al abrir la app, después de cada cambio y al deslizar para actualizar. Si está activada, se realiza aproximadamente una vez por hora en lugar de cada 15 minutos.

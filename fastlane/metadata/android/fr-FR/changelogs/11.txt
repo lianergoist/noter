@@ -1,0 +1,1 @@
+La synchronisation en arrière-plan peut désormais être désactivée dans les paramètres (« Synchroniser en arrière-plan »). Les notes se synchronisent toujours à l'ouverture de l'application, après chaque modification et en tirant pour actualiser. Activée, elle a lieu environ une fois par heure au lieu de toutes les 15 minutes.

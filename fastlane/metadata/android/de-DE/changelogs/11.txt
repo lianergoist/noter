@@ -1,0 +1,1 @@
+Die Synchronisierung im Hintergrund lässt sich jetzt in den Einstellungen abschalten („Im Hintergrund synchronisieren“). Die Notizen werden weiterhin beim Öffnen der App, nach jeder Änderung und beim Herunterziehen zum Aktualisieren synchronisiert. Ist sie eingeschaltet, läuft sie etwa einmal pro Stunde statt alle 15 Minuten.

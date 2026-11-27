@@ -1,0 +1,1 @@
+Background sync can now be turned off in the settings ("Sync in the background"). Notes still sync when you open the app, after every change and when you pull to refresh. When it is on, it runs about once an hour instead of every 15 minutes.

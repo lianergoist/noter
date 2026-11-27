@@ -1,0 +1,1 @@
+Synkronisering i baggrunden kan nu slås fra i indstillingerne ("Synkronisér i baggrunden"). Noterne synkroniseres stadig, når appen åbnes, efter hver ændring og ved træk-for-at-opdatere. Er den slået til, sker den cirka en gang i timen i stedet for hvert kvarter.
