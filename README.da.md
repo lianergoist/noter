@@ -56,6 +56,8 @@ På computeren kan du læse og skrive de samme noter i browseren med
 ## Godt at vide
 
 - Adgangskoden gemmes krypteret på telefonen og sendes kun over en sikker forbindelse (HTTPS).
+- Noterne synkroniseres, når appen åbnes, efter hver ændring og cirka en gang i timen i baggrunden.
+  Har du ikke brug for den timevise sync, kan du slå **Synkronisér i baggrunden** fra i indstillingerne.
 - Noterne virker også med andre apps, fx [jtx Board](https://jtx.techbee.at/) via [DAVx⁵](https://www.davx5.com/).
   DavNotes lader det være, som de apps har tilføjet til en note.
 - Konfliktkopier er almindelige noter. Slet den, du ikke skal bruge.

@@ -59,6 +59,8 @@ On a computer you can read and write the same notes in the browser with
 - Your password is stored encrypted on the phone and is only ever sent over a secure connection (HTTPS).
 - On Android 17 and later, DavNotes asks for access to the local network when your server is on your home network.
   Allow it, or the app can't reach the server.
+- Notes sync when you open the app, after every change and about once an hour in the background.
+  If you don't need the hourly sync, turn off **Sync in the background** in the settings.
 - The notes also work with other apps, such as [jtx Board](https://jtx.techbee.at/) via [DAVx⁵](https://www.davx5.com/).
   DavNotes leaves alone whatever those apps have added to a note.
 - Conflict copies are ordinary notes. Delete the one you don't need.
